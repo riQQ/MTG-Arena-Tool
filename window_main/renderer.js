@@ -12,7 +12,6 @@ global
   addCardTile,
   getReadableEvent,
   get_deck_colors,
-  get_deck_types_ammount,
   get_deck_export,
   get_deck_export_txt,
   get_rank_index_16,
@@ -23,8 +22,6 @@ global
   compare_cards,
   windowBackground,
   windowRenderer,
-  deck_count_types,
-  removeDuplicates,
   $$
 */
 
@@ -2622,7 +2619,7 @@ function getDeckWinrate(deckid, lastEdit = "") {
       match.type == "match" &&
       match.playerDeck.id == deckid
     ) {
-      let oppDeck = new Deck(match.oppDeck);
+      let oppDeck = match.oppDeck;
       var oppDeckColors = oppDeck.colors;
 
       if (oppDeckColors.length > 0) {

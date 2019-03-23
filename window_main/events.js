@@ -2,12 +2,13 @@
 globals
   ipc_send,
   matchesHistory,
+  Deck,
   cardsDb,
   mana,
   get_rank_index_16,
   timeSince,
   toMMSS,
-  get_deck_colors,
+  playerData,
   addHover,
   compare_cards,
   getReadableEvent,
@@ -218,8 +219,8 @@ function attachDeleteCourseButton(course) {
 function createMatchRow(match) {
   //  if (match.opponent == undefined) continue;
   //  if (match.opponent.userid.indexOf("Familiar") !== -1) continue;
-  match.playerDeck.mainDeck.sort(compare_cards);
-  match.oppDeck.mainDeck.sort(compare_cards);
+  match.playerDeck.mainboard.get().sort(compare_cards);
+  match.oppDeck.mainboard.get().sort(compare_cards);
 
   // Create the DOM structure
   // rowContainer
@@ -265,7 +266,7 @@ function createMatchRow(match) {
 
   // Insert contents of flexTopLeft
 
-  var tileGrpid = match.playerDeck.deckTileId;
+  var tileGrpid = match.playerDeck.tile;
   try {
     cardsDb.get(tileGrpid).images["art_crop"];
   } catch (e) {
@@ -288,7 +289,7 @@ function createMatchRow(match) {
   );
 
   // Insert contents of flexBottom
-  match.playerDeck.colors.forEach(function(color) {
+  match.playerDeck.colors.get().forEach(color => {
     var m = createDivision(["mana_s20", "mana_" + mana[color]]);
     flexBottom.appendChild(m);
   });
@@ -319,7 +320,7 @@ function createMatchRow(match) {
     )
   );
 
-  get_deck_colors(match.oppDeck).forEach(function(color) {
+  match.oppDeck.colors.get().forEach(color => {
     var m = createDivision(["mana_s20", "mana_" + mana[color]]);
     flexCenterBottom.appendChild(m);
   });
@@ -362,6 +363,12 @@ function expandEvent(course, expandDiv) {
     )
     .filter(match => match !== undefined && match.type === "match")
     .map(match => {
+      if (!(match.playerDeck instanceof Deck)) {
+        match.playerDeck = new Deck(match.playerDeck);
+      }
+      if (!(match.oppDeck instanceof Deck)) {
+        match.oppDeck = new Deck(match.oppDeck);
+      }
       let row = createMatchRow(match);
       expandDiv.appendChild(row);
       addHover(match, expandDiv);
