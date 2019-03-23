@@ -26,10 +26,24 @@ class CardsList {
     return this._list;
   }
 
+  /**
+   * Counts all cards in the list, if provided it only counts
+   * for the given propierty.
+   **/
   count(prop = "quantity") {
     return this._list.sum(prop);
   }
 
+  /**
+   * Same as count(), but here we can apply a filter function to the list.
+   **/
+  countFilter(prop = "quantity", func) {
+    return this._list.filter(func).sum(prop);
+  }
+
+  /**
+   * Creates a n object containing how many of each type the list has
+   **/
   countTypesAll() {
     var types = { art: 0, cre: 0, enc: 0, ins: 0, lan: 0, pla: 0, sor: 0 };
 
@@ -56,6 +70,9 @@ class CardsList {
     return types;
   }
 
+  /**
+   * Counts how many cards of a given type the list has.
+   **/
   countType(type) {
     let types = this.countTypesAll();
     if (type.includes("Land", 0)) return types.lan;
@@ -69,6 +86,9 @@ class CardsList {
     return 0;
   }
 
+  /**
+   * Creates an object containing the colors distribution of the list.
+   **/
   getColorsAmmounts() {
     let colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
 
@@ -106,10 +126,12 @@ class CardsList {
     return colors;
   }
 
+  /**
+   * Creates an object containing the lands color distribution of the list.
+   **/
   getLandsAmmounts() {
     var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
 
-    //var mana = {0: "", 1: "white", 2: "blue", 3: "black", 4: "red", 5: "green", 6: "colorless", 7: "", 8: "x"}
     this._list.forEach(function(card) {
       var quantity = card.quantity;
       card = cardsDb.get(card.id);
@@ -153,16 +175,18 @@ class CardsList {
     return colors;
   }
 
-  countFilter(prop = "quantity", func) {
-    return this._list.filter(func).sum(prop);
-  }
-
+  /**
+   * Inserts a new propierty to each card in the list.
+   **/
   addPropierty(_prop, _default = 0) {
     this._list.forEach(obj => {
       obj[_prop] = _default;
     });
   }
 
+  /**
+   * Get all colors in the list as a Colors object.
+   **/
   getColors() {
     let colors = new Colors();
     this._list.forEach(card => {
@@ -177,6 +201,10 @@ class CardsList {
     return colors;
   }
 
+  /**
+   * Removes all duplicate cards an merges them.
+   * This replaces the _list with a new one.
+   **/
   removeDuplicates() {
     var newList = [];
 
