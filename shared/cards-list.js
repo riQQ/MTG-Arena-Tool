@@ -202,10 +202,11 @@ class CardsList {
   }
 
   /**
-   * Removes all duplicate cards an merges them.
-   * This replaces the _list with a new one.
+   * Removes all duplicate cards and merges them.
+   * If ReplaceList is set, replaces the _list with the new one.
+   * Returns the new list (not a cardsList object)
    **/
-  removeDuplicates() {
+  removeDuplicates(replaceList = true) {
     var newList = [];
 
     this._list.forEach(function(card) {
@@ -229,9 +230,11 @@ class CardsList {
       }
     });
 
-    this._list = newList;
+    if (replaceList) {
+      this._list = newList;
+    }
 
-    return this._list;
+    return newList;
   }
 }
 
