@@ -965,47 +965,6 @@ ipc.on("tou_set", function(event, arg) {
 });
 
 //
-function drawDeck(div, deck) {
-  var unique = makeId(4);
-  div.html("");
-  var prevIndex = 0;
-  deck.mainDeck.forEach(function(card) {
-    let grpId = card.id;
-    let type = cardsDb.get(grpId).type;
-    let cardTypeSort = get_card_type_sort(type);
-    if (prevIndex == 0) {
-      let q = deck_count_types(deck, type, false);
-      addCardSeparator(cardTypeSort, div, q);
-    } else if (prevIndex != 0) {
-      if (cardTypeSort != get_card_type_sort(cardsDb.get(prevIndex).type)) {
-        let q = deck_count_types(deck, type, false);
-        addCardSeparator(cardTypeSort, div, q);
-      }
-    }
-
-    if (card.quantity > 0) {
-      addCardTile(grpId, unique + "a", card.quantity, div);
-    }
-
-    prevIndex = grpId;
-  });
-
-  if (deck.sideboard != undefined) {
-    if (deck.sideboard.length > 0) {
-      addCardSeparator(99, div, deck.sideboard.sum("quantity"));
-      prevIndex = 0;
-      deck.sideboard.forEach(function(card) {
-        var grpId = card.id;
-        //var type = cardsDb.get(grpId).type;
-        if (card.quantity > 0) {
-          addCardTile(grpId, unique + "b", card.quantity, div);
-        }
-      });
-    }
-  }
-}
-
-//
 function drawCardList(div, cards) {
   let unique = makeId(4);
   let counts = {};
@@ -1363,8 +1322,6 @@ function setChangesTimeline() {
     });
 
     butbox.on("click", function() {
-      // This requires some UX indicators
-      //drawDeck($('.decklist'), {mainDeck: change.previousMain, sideboard: change.previousSide});
       var hasc = button.hasClass("change_button_active");
 
       $(".change_data_box_inside").each(function() {
@@ -1527,12 +1484,10 @@ function open_match(id) {
   );
   let flr = $('<div class="deck_top_colors"></div>');
 
-  if (match.playerDeck.colors != undefined) {
-    match.playerDeck.colors.forEach(function(color) {
-      var m = $('<div class="mana_s20 mana_' + mana[color] + '"></div>');
-      flr.append(m);
-    });
-  }
+  match.playerDeck.colors.get().forEach(color => {
+    var m = $('<div class="mana_s20 mana_' + mana[color] + '"></div>');
+    flr.append(m);
+  });
   top.append(flr);
 
   var flc = $(
@@ -1542,9 +1497,8 @@ function open_match(id) {
     $('<div class="button_simple openLog">Action log</div>').appendTo(flc);
   }
 
-  var tileGrpid = match.playerDeck.deckTileId;
-  if (cardsDb.get(tileGrpid)) {
-    change_background("", tileGrpid);
+  if (cardsDb.get(match.playerDeck.tile)) {
+    change_background("", match.playerDeck.tile);
   }
   var fld = $('<div class="flex_item"></div>');
 
@@ -1588,7 +1542,7 @@ function open_match(id) {
   var dl = $('<div class="decklist"></div>');
   flt.appendTo(dl);
 
-  drawDeck(dl, match.playerDeck);
+  match.playerDeck.draw(dl);
 
   $(
     '<div class="button_simple centered exportDeckPlayer">Export to Arena</div>'
@@ -1637,15 +1591,15 @@ function open_match(id) {
   var odl = $('<div class="decklist"></div>');
   flt.appendTo(odl);
 
-  match.oppDeck.mainDeck.sort(compare_cards);
-  match.oppDeck.sideboard.sort(compare_cards);
-  match.oppDeck.mainDeck.forEach(function(c) {
-    c.quantity = 9999;
+  match.oppDeck.mainboard._list.sort(compare_cards);
+  match.oppDeck.sideboard._list.sort(compare_cards);
+  match.oppDeck.mainboard.get().forEach(c => {
+    c.mensurable = false;
   });
-  match.oppDeck.sideboard.forEach(function(c) {
-    c.quantity = 9999;
+  match.oppDeck.sideboard.get().forEach(c => {
+    c.mensurable = false;
   });
-  drawDeck(odl, match.oppDeck);
+  match.oppDeck.draw(odl);
 
   $(
     '<div class="button_simple centered exportDeck">Export to Arena</div>'

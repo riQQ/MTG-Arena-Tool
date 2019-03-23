@@ -1,6 +1,7 @@
 /*
 globals
   ipc_send,
+  Deck,
   matchesHistory,
   get_rank_index,
   cardsDb,
@@ -197,7 +198,7 @@ function open_history_tab(loadMore) {
     var tileGrpid, tile;
     if (match.type == "match") {
       let t;
-      tileGrpid = match.playerDeck.deckTileId;
+      tileGrpid = match.playerDeck.tile;
       try {
         t = cardsDb.get(tileGrpid).images["art_crop"];
       } catch (e) {
@@ -227,7 +228,7 @@ function open_history_tab(loadMore) {
       );
       flt.appendChild(d);
 
-      match.playerDeck.colors.forEach(function(color) {
+      match.playerDeck.colors.get().forEach(function(color) {
         var m = createDivision(["mana_s20", "mana_" + mana[color]]);
         flb.appendChild(m);
       });
@@ -253,8 +254,7 @@ function open_history_tab(loadMore) {
       );
       fcb.appendChild(d);
 
-      var cc = get_deck_colors(match.oppDeck);
-      cc.forEach(function(color) {
+      match.oppDeck.colors.get().forEach(function(color) {
         var m = createDivision(["mana_s20", "mana_" + mana[color]]);
         fcb.appendChild(m);
       });
@@ -830,16 +830,11 @@ function sort_history() {
     if (mid != null && match != undefined) {
       if (match.type != "draft" && match.type != "Event") {
         try {
-          if (match.playerDeck.mainDeck == undefined) {
-            match.playerDeck = JSON.parse(
-              '{"deckTileId":67003,"description":null,"format":"Standard","colors":[],"id":"00000000-0000-0000-0000-000000000000","isValid":false,"lastUpdated":"2018-05-31T00:06:29.7456958","lockedForEdit":false,"lockedForUse":false,"mainDeck":[],"name":"Undefined","resourceId":"00000000-0000-0000-0000-000000000000","sideboard":[]}'
-            );
-          } else {
-            match.playerDeck.colors = get_deck_colors(match.playerDeck);
-          }
           match.playerDeck.mainDeck.sort(compare_cards);
-          match.oppDeck.colors = get_deck_colors(match.oppDeck);
+          match.playerDeck = new Deck(match.playerDeck);
+
           match.oppDeck.mainDeck.sort(compare_cards);
+          match.oppDeck = new Deck(match.oppDeck);
         } catch (e) {
           console.log(e, match);
         }

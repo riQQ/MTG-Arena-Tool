@@ -803,31 +803,20 @@ function addCardTile(grpId, indent, quantity, element) {
 
     if (renderer == 0) {
       if (card.type.indexOf("Basic Land") == -1) {
-        quantity = get_wc_missing(grpId, quantity);
-
-        //if (grpId == 67306 && quantity > 4) {
-        //  quantity = 4;
-        //}
+        quantity = getWildcardsMissing(grpId, quantity);
 
         let xoff = rarities.indexOf(card.rarity) * -24;
 
-        //if (cards[grpId] == undefined) {
         if (quantity > 0) {
           let yoff = quantity * -24;
 
-          var asasdf = createDivision(["not_owned_sprite"]);
-          asasdf.style.cssText = `background-position: ${xoff}px ${yoff}px; left: calc(0px - 100% + ${ww -
+          var notOwned = createDivision(["not_owned_sprite"]);
+          notOwned.style.cssText = `background-position: ${xoff}px ${yoff}px; left: calc(0px - 100% + ${ww -
             14}px);`;
-          asasdf.title = "${quantity} missing";
-          cont.appendChild(asasdf);
+          notOwned.title = `${quantity} missing`;
+          cont.appendChild(notOwned);
         }
-        /*}
-        else if (quantity > cards[grpId]) {
-          let yoff = (quantity - cards[grpId]) * -24;
-          cont.append(`<div style="background-position: ${xoff}px ${yoff}px; left: calc(0px - 100% + ${(ww-14)}px);" class="not_owned_sprite" title="${(quantity-cards[grpId])} missing"></div>`);
-        }
-        */
-      }
+     }
     }
 
     return cont;
@@ -1026,36 +1015,16 @@ function addCardSeparator(i, element, number = 0) {
 
   var str = "";
   switch (i) {
-    case 1:
-      str = "Creature";
-      break;
-    case 2:
-      str = "Planeswalker";
-      break;
-    case 3:
-      str = "Instant";
-      break;
-    case 4:
-      str = "Sorcery";
-      break;
-    case 5:
-      str = "Artifact";
-      break;
-    case 6:
-      str = "Enchantment";
-      break;
-    case 7:
-      str = "Land";
-      break;
-    case 98:
-      str = "Mainboard";
-      break;
-    case 99:
-      str = "Sideboard";
-      break;
-    default:
-      str = i;
-      break;
+    case 1: str = "Creature"; break;
+    case 2: str = "Planeswalker"; break;
+    case 3: str = "Instant"; break;
+    case 4: str = "Sorcery"; break;
+    case 5: str = "Artifact"; break;
+    case 6: str = "Enchantment"; break;
+    case 7: str = "Land"; break;
+    case 98: str = "Mainboard"; break;
+    case 99: str = "Sideboard"; break;
+    default: str = i; break;
   }
 
   if (number > 0) {
@@ -1092,36 +1061,6 @@ function getEventId(arg) {
 }
 
 //
-function removeDuplicates(decklist) {
-  var newList = [];
-  try {
-    decklist.forEach(function(card) {
-      var cname = cardsDb.get(card.id).name;
-      var added = false;
-      newList.forEach(function(c) {
-        var cn = cardsDb.get(c.id).name;
-        if (cn == cname) {
-          if (c.quantity !== 9999) {
-            c.quantity += card.quantity;
-          }
-          if (c.chance != undefined) {
-            c.chance += card.chance;
-          }
-          added = true;
-        }
-      });
-
-      if (!added) {
-        newList.push(card);
-      }
-    });
-    return newList;
-  } catch (e) {
-    return [];
-  }
-}
-
-//
 function get_card_type_sort(a) {
   if (a == undefined) return 0;
   if (a.includes("Creature", 0)) return 1;
@@ -1135,48 +1074,6 @@ function get_card_type_sort(a) {
 }
 
 //
-function deck_count_types(deck, type, side) {
-  if (type.includes("Land", 0)) type = "Land";
-  else if (type.includes("Creature", 0)) type = "Creature";
-  else if (type.includes("Artifact", 0)) type = "Artifact";
-  else if (type.includes("Enchantment", 0)) type = "Enchantment";
-  else if (type.includes("Instant", 0)) type = "Instant";
-  else if (type.includes("Sorcery", 0)) type = "Sorcery";
-  else if (type.includes("Planeswalker", 0)) type = "Planeswalker";
-
-  let count = 0;
-  deck.mainDeck.forEach(card => {
-    let c = cardsDb.get(card.id);
-    if (c.type.includes(type, 0)) {
-      if (card.quantity == 9999) count += 1;
-      else count += card.quantity;
-    }
-  });
-
-  if (side) {
-    deck.sideboard.forEach(card => {
-      let c = cardsDb.get(card.id);
-      if (c.type.includes(type, 0)) {
-        if (card.quantity == 9999) count += 1;
-        else count += card.quantity;
-      }
-    });
-  }
-
-  return count;
-}
-
-//
-function deck_count(deck) {
-  let count = 0;
-  deck.mainDeck.forEach(card => {
-    if (card.quantity == 9999) count += 1;
-    else count += card.quantity;
-  });
-  return count;
-}
-
-//
 function compare_cards(a, b) {
   // Yeah this is lazy.. I know
   a = cardsDb.get(a.id);
@@ -1185,28 +1082,16 @@ function compare_cards(a, b) {
   var bs = get_card_type_sort(b.type);
 
   // Order by type?
-  if (as < bs) {
-    return -1;
-  }
-  if (as > bs) {
-    return 1;
-  }
+  if (as < bs) return -1;
+  if (as > bs) return 1;
 
   // by cmc
-  if (a.cmc < b.cmc) {
-    return -1;
-  }
-  if (a.cmc > b.cmc) {
-    return 1;
-  }
+  if (a.cmc < b.cmc) return -1;
+  if (a.cmc > b.cmc) return 1;
 
   // then by name
-  if (a.name < b.name) {
-    return -1;
-  }
-  if (a.name > b.name) {
-    return 1;
-  }
+  if (a.name < b.name) return -1;
+  if (a.name > b.name) return 1;
 
   return 0;
 }
@@ -1217,12 +1102,8 @@ function compare_chances(a, b) {
   a = a.chance;
   b = b.chance;
 
-  if (a > b) {
-    return -1;
-  }
-  if (a < b) {
-    return 1;
-  }
+  if (a > b) return -1;
+  if (a < b) return 1;
 
   return 0;
 }
@@ -1236,28 +1117,16 @@ function compare_draft_cards(a, b) {
   var bs = get_card_type_sort(b.type);
 
   // Order by type?
-  if (as < bs) {
-    return -1;
-  }
-  if (as > bs) {
-    return 1;
-  }
+  if (as < bs) return -1;
+  if (as > bs) return 1;
 
   // by cmc
-  if (a.cmc < b.cmc) {
-    return -1;
-  }
-  if (a.cmc > b.cmc) {
-    return 1;
-  }
+  if (a.cmc < b.cmc) return -1;
+  if (a.cmc > b.cmc) return 1;
 
   // then by name
-  if (a.name < b.name) {
-    return -1;
-  }
-  if (a.name > b.name) {
-    return 1;
-  }
+  if (a.name < b.name) return -1;
+  if (a.name > b.name) return 1;
 
   return 0;
 }
@@ -1403,24 +1272,12 @@ function collectionSortSet(a, b) {
 function getRaritySortValue(rarity) {
   rarity = rarity.toLowerCase();
   switch (rarity) {
-    case "land":
-      return 5;
-      break;
-    case "common":
-      return 4;
-      break;
-    case "uncommon":
-      return 3;
-      break;
-    case "rare":
-      return 2;
-      break;
-    case "mythic":
-      return 1;
-      break;
-    default:
-      return 0;
-      break;
+    case "land": return 5; break;
+    case "common": return 4; break;
+    case "uncommon": return 3; break;
+    case "rare": return 2; break;
+    case "mythic": return 1; break;
+    default: return 0; break;
   }
 }
 //
@@ -1479,83 +1336,6 @@ function get_collection_export() {
   return list;
 }
 
-// When passed a `deck` object sets `deck.colors` to a sorted array
-// of deck colour indices and returns the array.
-//
-// FIXME: Consider renaming to `set_deck_colors` or removing side
-//        effects. `get*` functions should not have side effects.
-// FIXME: Rename to camelCase to match javsascript function naming.
-
-function get_deck_colors(deck) {
-  var colorIndices = [];
-  try {
-    deck.mainDeck.forEach(card => {
-      if (card.quantity < 1) {
-        return;
-      }
-
-      let cardData = cardsDb.get(card.id);
-
-      if (!cardData) {
-        return;
-      }
-
-      let isLand = cardData.type.indexOf("Land") !== -1;
-      let frame = cardData.frame;
-      if (isLand && frame.length < 3) {
-        colorIndices = colorIndices.concat(frame);
-      }
-
-      cardData.cost.forEach(cost => {
-        if (cost === "w") {
-          colorIndices.push(WHITE);
-        } else if (cost === "u") {
-          colorIndices.push(BLUE);
-        } else if (cost === "b") {
-          colorIndices.push(BLACK);
-        } else if (cost === "r") {
-          colorIndices.push(RED);
-        } else if (cost === "g") {
-          colorIndices.push(GREEN);
-        }
-      });
-    });
-
-    colorIndices = Array.from(new Set(colorIndices));
-    colorIndices.sort((a, b) => {
-      return a - b;
-    });
-  } catch (e) {
-    // FIXME: Errors shouldn't be caught silently. If this is an
-    //        expected error then there should be a test to catch only that error.
-    colorIndices = [];
-  }
-
-  deck.colors = colorIndices;
-  return colorIndices;
-}
-
-//
-function get_ids_colors(list) {
-  var colors = [];
-  list.forEach(function(grpid) {
-    var cdb = cardsDb.get(grpid);
-    if (cdb) {
-      //var card_name = cdb.name;
-      var card_cost = cdb.cost;
-      card_cost.forEach(function(c) {
-        if (c.indexOf("w") !== -1 && !colors.includes(1)) colors.push(1);
-        if (c.indexOf("u") !== -1 && !colors.includes(2)) colors.push(2);
-        if (c.indexOf("b") !== -1 && !colors.includes(3)) colors.push(3);
-        if (c.indexOf("r") !== -1 && !colors.includes(4)) colors.push(4);
-        if (c.indexOf("g") !== -1 && !colors.includes(5)) colors.push(5);
-      });
-    }
-  });
-
-  return colors;
-}
-
 //
 function add_deck_colors(colors, deck) {
   var cols = [0, 0, 0, 0, 0, 0];
@@ -1585,52 +1365,27 @@ function add_deck_colors(colors, deck) {
   return colors;
 }
 
-//
-function compare_colors(color_a, color_b) {
-  if (color_a.length != color_b.length) return false;
-
-  for (var i = color_a.length; i--; ) {
-    if (color_a[i] !== color_b[i]) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 function get_rank_class(ranking) {
   switch (ranking) {
-    case "A+":
-      return "blue";
-    case "A":
-      return "blue";
+    case "A+": return "blue";
+    case "A": return "blue";
 
-    case "A-":
-      return "green";
-    case "B+":
-      return "green";
-    case "B":
-      return "green";
+    case "A-": return "green";
+    case "B+": return "green";
+    case "B": return "green";
 
-    case "C-":
-      return "orange";
-    case "D+":
-      return "orange";
+    case "C-": return "orange";
+    case "D+": return "orange";
 
-    case "D":
-      return "orange";
-    case "D-":
-      return "red";
-    case "F":
-      return "red";
+    case "D": return "orange";
+    case "D-": return "red";
+    case "F": return "red";
 
-    default:
-      return "white";
+    default: return "white";
   }
 }
 
-// DEPRECATE
-function get_wc_missing(grpid, quantity) {
+function getWildcardsMissing(grpid, quantity) {
   let card = cardsDb.get(grpid);
 
   if (grpid == 67306 && quantity > 4) {
@@ -1655,55 +1410,6 @@ function get_wc_missing(grpid, quantity) {
   return Math.max(0, quantity - have);
 }
 
-// DEPRECATE
-function get_deck_missing(deck) {
-  var missing = { rare: 0, common: 0, uncommon: 0, mythic: 0 };
-
-  deck.mainDeck.forEach(function(card) {
-    var grpid = card.id;
-    var quantity = card.quantity;
-    var rarity = cardsDb.get(grpid).rarity;
-
-    let add = get_wc_missing(grpid, quantity);
-
-    if (rarity == "common") {
-      missing.common += add;
-    }
-    if (rarity == "uncommon") {
-      missing.uncommon += add;
-    }
-    if (rarity == "rare") {
-      missing.rare += add;
-    }
-    if (rarity == "mythic") {
-      missing.mythic += add;
-    }
-  });
-
-  deck.sideboard.forEach(function(card) {
-    var grpid = card.id;
-    var quantity = card.quantity;
-    var rarity = cardsDb.get(grpid).rarity;
-
-    let add = get_wc_missing(grpid, quantity);
-
-    if (rarity == "common") {
-      missing.common += add;
-    }
-    if (rarity == "uncommon") {
-      missing.uncommon += add;
-    }
-    if (rarity == "rare") {
-      missing.rare += add;
-    }
-    if (rarity == "mythic") {
-      missing.mythic += add;
-    }
-  });
-
-  return missing;
-}
-
 //
 function get_deck_missing_short(deck) {
   var missing = { r: 0, c: 0, u: 0, m: 0 };
@@ -1713,20 +1419,12 @@ function get_deck_missing_short(deck) {
     var quantity = card.quantity;
     var rarity = cardsDb.get(grpid).rarity;
 
-    let add = get_wc_missing(grpid, quantity);
+    let add = getWildcardsMissing(grpid, quantity);
 
-    if (rarity == "common") {
-      missing.c += add;
-    }
-    if (rarity == "uncommon") {
-      missing.u += add;
-    }
-    if (rarity == "rare") {
-      missing.r += add;
-    }
-    if (rarity == "mythic") {
-      missing.m += add;
-    }
+    if (rarity == "common") missing.c += add;
+    if (rarity == "uncommon") missing.u += add;
+    if (rarity == "rare") missing.r += add;
+    if (rarity == "mythic") missing.m += add;
   });
 
   deck.sideboard.forEach(function(card) {
@@ -1734,20 +1432,12 @@ function get_deck_missing_short(deck) {
     var quantity = card.quantity;
     var rarity = cardsDb.get(grpid).rarity;
 
-    let add = get_wc_missing(grpid, quantity);
+    let add = getWildcardsMissing(grpid, quantity);
 
-    if (rarity == "common") {
-      missing.c += add;
-    }
-    if (rarity == "uncommon") {
-      missing.u += add;
-    }
-    if (rarity == "rare") {
-      missing.r += add;
-    }
-    if (rarity == "mythic") {
-      missing.m += add;
-    }
+    if (rarity == "common") missing.c += add;
+    if (rarity == "uncommon") missing.u += add;
+    if (rarity == "rare") missing.r += add;
+    if (rarity == "mythic") missing.m += add;
   });
 
   return missing;
@@ -1813,49 +1503,6 @@ function get_deck_sideboarded(deck_a, deck_b) {
 }
 
 //
-function get_deck_cost(deck) {
-  var cost = { rare: 0, common: 0, uncommon: 0, mythic: 0 };
-
-  deck.mainDeck.forEach(function(card) {
-    var grpid = card.id;
-    var rarity = cardsDb.get(grpid).rarity;
-
-    if (rarity == "common") {
-      cost.common += card.quantity;
-    }
-    if (rarity == "uncommon") {
-      cost.uncommon += card.quantity;
-    }
-    if (rarity == "rare") {
-      cost.rare += card.quantity;
-    }
-    if (rarity == "mythic") {
-      cost.mythic += card.quantity;
-    }
-  });
-
-  deck.sideboard.forEach(function(card) {
-    var grpid = card.id;
-    var rarity = cardsDb.get(grpid).rarity;
-
-    if (rarity == "common") {
-      cost.common += card.quantity;
-    }
-    if (rarity == "uncommon") {
-      cost.uncommon += card.quantity;
-    }
-    if (rarity == "rare") {
-      cost.rare += card.quantity;
-    }
-    if (rarity == "mythic") {
-      cost.mythic += card.quantity;
-    }
-  });
-
-  return cost;
-}
-
-//
 function get_deck_curve(deck) {
   var curve = [];
 
@@ -1879,112 +1526,7 @@ function get_deck_curve(deck) {
     }
   });
 
-  //console.log(curve);
   return curve;
-}
-
-//
-function get_deck_types_ammount(deck) {
-  var types = { art: 0, cre: 0, enc: 0, ins: 0, lan: 0, pla: 0, sor: 0 };
-
-  deck.mainDeck.forEach(function(card) {
-    var c = cardsDb.get(card.id);
-    if (c) {
-      if (c.type.includes("Land", 0)) types.lan += card.quantity;
-      else if (c.type.includes("Creature", 0)) types.cre += card.quantity;
-      else if (c.type.includes("Artifact", 0)) types.art += card.quantity;
-      else if (c.type.includes("Enchantment", 0)) types.enc += card.quantity;
-      else if (c.type.includes("Instant", 0)) types.ins += card.quantity;
-      else if (c.type.includes("Sorcery", 0)) types.sor += card.quantity;
-      else if (c.type.includes("Planeswalker", 0)) types.pla += card.quantity;
-    }
-  });
-
-  return types;
-}
-
-// DEPRECATE
-function get_deck_colors_ammount(deck) {
-  var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
-
-  //var mana = {0: "", 1: "white", 2: "blue", 3: "black", 4: "red", 5: "green", 6: "colorless", 7: "", 8: "x"}
-  deck.mainDeck.forEach(function(card) {
-    if (card.quantity > 0) {
-      cardsDb.get(card.id).cost.forEach(function(c) {
-        if (c.indexOf("w") !== -1) {
-          colors.w += card.quantity;
-          colors.total += card.quantity;
-        }
-        if (c.indexOf("u") !== -1) {
-          colors.u += card.quantity;
-          colors.total += card.quantity;
-        }
-        if (c.indexOf("b") !== -1) {
-          colors.b += card.quantity;
-          colors.total += card.quantity;
-        }
-        if (c.indexOf("r") !== -1) {
-          colors.r += card.quantity;
-          colors.total += card.quantity;
-        }
-        if (c.indexOf("g") !== -1) {
-          colors.g += card.quantity;
-          colors.total += card.quantity;
-        }
-        if (c.indexOf("c") !== -1) {
-          colors.c += card.quantity;
-          colors.total += card.quantity;
-        }
-      });
-    }
-  });
-
-  return colors;
-}
-
-// DEPRECATE
-function get_deck_lands_ammount(deck) {
-  var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
-
-  //var mana = {0: "", 1: "white", 2: "blue", 3: "black", 4: "red", 5: "green", 6: "colorless", 7: "", 8: "x"}
-  deck.mainDeck.forEach(function(card) {
-    var quantity = card.quantity;
-    card = cardsDb.get(card.id);
-    if (quantity > 0) {
-      if (card.type.indexOf("Land") != -1 || card.type.indexOf("land") != -1) {
-        if (card.frame.length < 5) {
-          card.frame.forEach(function(c) {
-            if (c == 1) {
-              colors.w += quantity;
-              colors.total += quantity;
-            }
-            if (c == 2) {
-              colors.u += quantity;
-              colors.total += quantity;
-            }
-            if (c == 3) {
-              colors.b += quantity;
-              colors.total += quantity;
-            }
-            if (c == 4) {
-              colors.r += quantity;
-              colors.total += quantity;
-            }
-            if (c == 5) {
-              colors.g += quantity;
-              colors.total += quantity;
-            }
-            if (c == 6) {
-              colors.c += quantity;
-              colors.total += quantity;
-            }
-          });
-        }
-      }
-    }
-  });
-
-  return colors;
 }
 
 //
@@ -2068,8 +1610,6 @@ function get_deck_export_txt(deck) {
   deck.mainDeck.forEach(function(card) {
     var grpid = card.id;
     var card_name = cardsDb.get(grpid).name;
-    //var card_set = cardsDb.get(grpid).set;
-    //var card_cn = cardsDb.get(grpid).cid;
 
     str +=
       (card.quantity == 9999 ? 1 : card.quantity) + " " + card_name + "\r\n";
@@ -2081,8 +1621,6 @@ function get_deck_export_txt(deck) {
   deck.sideboard.forEach(function(card) {
     var grpid = card.id;
     var card_name = cardsDb.get(grpid).name;
-    //var card_set = cardsDb.get(grpid).set;
-    //var card_cn = cardsDb.get(grpid).cid;
 
     str +=
       (card.quantity == 9999 ? 1 : card.quantity) + " " + card_name + "\r\n";
@@ -2097,53 +1635,23 @@ function get_frame_class(frame) {
     return "tile_c";
   }
   if (frame.length == 1) {
-    if (frame.includes(1)) {
-      return "tile_w";
-    }
-    if (frame.includes(2)) {
-      return "tile_u";
-    }
-    if (frame.includes(3)) {
-      return "tile_b";
-    }
-    if (frame.includes(4)) {
-      return "tile_r";
-    }
-    if (frame.includes(5)) {
-      return "tile_g";
-    }
+    if (frame.includes(1)) return "tile_w";
+    if (frame.includes(2)) return "tile_u";
+    if (frame.includes(3)) return "tile_b";
+    if (frame.includes(4)) return "tile_r";
+    if (frame.includes(5)) return "tile_g";
   }
   if (frame.length == 2) {
-    if (frame.includes(4) && frame.includes(1)) {
-      return "tile_wr";
-    }
-    if (frame.includes(1) && frame.includes(3)) {
-      return "tile_wb";
-    }
-    if (frame.includes(1) && frame.includes(2)) {
-      return "tile_uw";
-    }
-    if (frame.includes(2) && frame.includes(4)) {
-      return "tile_ur";
-    }
-    if (frame.includes(2) && frame.includes(5)) {
-      return "tile_ug";
-    }
-    if (frame.includes(2) && frame.includes(3)) {
-      return "tile_ub";
-    }
-    if (frame.includes(4) && frame.includes(5)) {
-      return "tile_rg";
-    }
-    if (frame.includes(5) && frame.includes(1)) {
-      return "tile_gw";
-    }
-    if (frame.includes(3) && frame.includes(4)) {
-      return "tile_br";
-    }
-    if (frame.includes(3) && frame.includes(5)) {
-      return "tile_bg";
-    }
+    if (frame.includes(4) && frame.includes(1)) return "tile_wr";
+    if (frame.includes(1) && frame.includes(3)) return "tile_wb";
+    if (frame.includes(1) && frame.includes(2)) return "tile_uw";
+    if (frame.includes(2) && frame.includes(4)) return "tile_ur";
+    if (frame.includes(2) && frame.includes(5)) return "tile_ug";
+    if (frame.includes(2) && frame.includes(3)) return "tile_ub";
+    if (frame.includes(4) && frame.includes(5)) return "tile_rg";
+    if (frame.includes(5) && frame.includes(1)) return "tile_gw";
+    if (frame.includes(3) && frame.includes(4)) return "tile_br";
+    if (frame.includes(3) && frame.includes(5)) return "tile_bg";
   }
   if (frame.length > 2) {
     return "tile_multi";
@@ -2207,14 +1715,6 @@ function makeId(length) {
 }
 
 //
-function debugDeck(deck) {
-  deck.forEach(function(card) {
-    var c = cardsDb.get(card.id);
-    ipc_send("ipc_log", card.quantity + "x " + c.name + " (" + card.id + ")");
-  });
-}
-
-//
 function timestamp() {
   return Math.floor(Date.now() / 1000);
 }
@@ -2227,17 +1727,13 @@ function toMMSS(sec_num) {
   var minutes = Math.floor((sec_num - hours * 3600) / 60);
   var seconds = sec_num - hours * 3600 - minutes * 60;
 
-  if (minutes < 10) {
-    minutes = "0" + minutes;
-  }
-  if (seconds < 10) {
-    seconds = "0" + seconds;
-  }
-  if (hours > 0) {
+  if (minutes < 10) minutes = "0" + minutes;
+  if (seconds < 10) seconds = "0" + seconds;
+
+  if (hours > 0)
     return hours + ":" + minutes + ":" + seconds;
-  } else {
+  else
     return minutes + ":" + seconds;
-  }
 }
 
 //
@@ -2264,15 +1760,9 @@ function toHHMMSS(sec_num) {
   var minutes = Math.floor((sec_num - hours * 3600) / 60);
   var seconds = sec_num - hours * 3600 - minutes * 60;
 
-  if (hours < 10) {
-    hours = "0" + hours;
-  }
-  if (minutes < 10) {
-    minutes = "0" + minutes;
-  }
-  if (seconds < 10) {
-    seconds = "0" + seconds;
-  }
+  if (hours < 10) hours = "0" + hours;
+  if (minutes < 10) minutes = "0" + minutes;
+  if (seconds < 10) seconds = "0" + seconds;
   return hours + ":" + minutes + ":" + seconds;
 }
 
@@ -2280,12 +1770,8 @@ function toHHMMSS(sec_num) {
 function toHHMM(sec_num) {
   var hours = Math.floor(sec_num / 3600);
   var minutes = Math.floor((sec_num - hours * 3600) / 60);
-  if (hours < 10) {
-    hours = "0" + hours;
-  }
-  if (minutes < 10) {
-    minutes = "0" + minutes;
-  }
+  if (hours < 10) hours = "0" + hours;
+  if (minutes < 10) minutes = "0" + minutes;
   return hours + ":" + minutes;
 }
 
@@ -2303,11 +1789,6 @@ function add(a, b) {
 Array.prototype.sum = function(prop) {
   var total = 0;
   this.forEach(val => total += val[prop]);
-  /*
-  for (var i = 0, _len = this.length; i < _len; i++) {
-    total += this[i][prop];
-  }
-  */
   return total;
 };
 

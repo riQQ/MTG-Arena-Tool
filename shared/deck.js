@@ -2,12 +2,12 @@
 /*
 globals
   cardsDb,
-  cards,
   makeId,
   get_card_type_sort,
   addCardSeparator,
   addCardTile,
-  compare_cards
+  compare_cards,
+  getWildcardsMissing
 */
 const CardsList = require("./cards-list.js");
 const Colors = require("./colors.js");
@@ -142,32 +142,6 @@ class Deck {
       });
     }
   }
-}
-
-//
-function getWildcardsMissing(grpid, quantity) {
-  let card = cardsDb.get(grpid);
-
-  if (grpid == 67306 && quantity > 4) {
-    quantity = 4;
-  }
-  if (grpid == 69172 && quantity > 4) {
-    quantity = 4;
-  }
-
-  let arr = card.reprints;
-  if (!arr) arr = [grpid];
-  else arr.push(grpid);
-
-  let have = 0;
-  arr.forEach(id => {
-    let n = cards[id];
-    if (n !== undefined) {
-      have += n;
-    }
-  });
-
-  return Math.max(0, quantity - have);
 }
 
 module.exports = Deck;
