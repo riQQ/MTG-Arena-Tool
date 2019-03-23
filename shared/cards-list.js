@@ -27,6 +27,27 @@ class CardsList {
   }
 
   /**
+   * Adds a card to the list
+  **/
+  add(grpId, quantity = 1, merge = false) {
+    if (merge) {
+      this._list.forEach(function(card) {
+        if (card.id == grpId) {
+          card.quantity += quantity;
+          return;
+        }
+      });
+    }
+    else {
+      this._list.push({
+        quantity: quantity,
+        id: grpId,
+        mensurable: true
+      });
+    }
+  }
+
+  /**
    * Counts all cards in the list, if provided it only counts
    * for the given propierty.
    **/
