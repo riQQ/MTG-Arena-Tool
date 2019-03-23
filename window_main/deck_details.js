@@ -5,8 +5,6 @@ global
     ipc_send,
     change_background,
     get_deck_curve,
-    get_deck_export,
-    get_deck_export_txt,
     mana,
     ConicGradient,
     getDeckWinrate,
@@ -359,13 +357,13 @@ function openDeck(deck, deck_type) {
   $(".openHistory").click(() => ipc_send("get_deck_changes", deck.id));
 
   $(".exportDeck").click(() => {
-    let list = get_deck_export(deck);
+    let list = deck.getExportArena();
     pop("Copied to clipboard", 1000);
     ipc_send("set_clipboard", list);
   });
 
   $(".exportDeckStandard").click(() => {
-    let list = get_deck_export_txt(deck);
+    let list = deck.getExportTxt();
     ipc_send("export_txt", { str: list, name: deck.name });
   });
 

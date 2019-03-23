@@ -7,7 +7,9 @@ globals
   addCardSeparator,
   addCardTile,
   compare_cards,
-  getWildcardsMissing
+  getWildcardsMissing,
+  setsList,
+  get_set_code
 */
 const CardsList = require("./cards-list.js");
 const Colors = require("./colors.js");
@@ -148,6 +150,77 @@ class Deck {
         }
       });
     }
+  }
+
+  /**
+   * Returns a txt format string of this deck.
+   **/
+  getExportTxt() {
+    let str = "";
+    let mainList = this.mainboard.removeDuplicates(false);
+    mainList.forEach(function(card) {
+      let grpid = card.id;
+      let card_name = cardsDb.get(grpid).name;
+
+      str += (card.mensurable ? card.quantity : 1) + " " + card_name + "\r\n";
+    });
+
+    str += "\r\n";
+
+    let sideList = this.sideboard.removeDuplicates(false);
+    sideList.forEach(function(card) {
+      let grpid = card.id;
+      let card_name = cardsDb.get(grpid).name;
+
+      str += (card.mensurable ? card.quantity : 1) + " " + card_name + "\r\n";
+    });
+
+    return str;
+  }
+
+  getExportArena() {
+    let str = "";
+    let listMain = this.mainboard.removeDuplicates(false);
+    listMain.forEach(function(card) {
+      let grpid = card.id;
+      let cardObj = cardsDb.get(grpid);
+
+      if (cardObj.set == "Mythic Edition") {
+        grpid = cardObj.reprints[0];
+        cardObj = cardsDb.get(grpid);
+      }
+
+      let card_name = cardObj.name;
+      let card_set = cardObj.set;
+      let card_cn = cardObj.cid;
+      let card_q = card.mensurable ? card.quantity : 1;
+
+      let set_code = setsList[card_set].arenacode || get_set_code(card_set);
+      str += `${card_q} ${card_name} (${set_code}) ${card_cn} \r\n`;
+    });
+
+    str += "\r\n";
+
+    let listSide = this.sideboard.removeDuplicates(false);
+    listSide.forEach(function(card) {
+      let grpid = card.id;
+      let cardObj = cardsDb.get(grpid);
+
+      if (cardObj.set == "Mythic Edition") {
+        grpid = cardObj.reprints[0];
+        cardObj = cardsDb.get(grpid);
+      }
+
+      let card_name = cardObj.name;
+      let card_set = cardObj.set;
+      let card_cn = cardObj.cid;
+      let card_q = card.mensurable ? card.quantity : 1;
+
+      let set_code = setsList[card_set].arenacode || get_set_code(card_set);
+      str += `${card_q} ${card_name} (${set_code}) ${card_cn} \r\n`;
+    });
+
+    return str;
   }
 }
 

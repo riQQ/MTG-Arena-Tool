@@ -12,8 +12,6 @@ global
   addCardTile,
   getReadableEvent,
   get_deck_colors,
-  get_deck_export,
-  get_deck_export_txt,
   get_rank_index_16,
   get_rank_index,
   draftRanks
@@ -1855,20 +1853,20 @@ function open_match(id) {
   });
 
   $(".exportDeckPlayer").click(function() {
-    var list = get_deck_export(match.playerDeck);
+    var list = match.playerDeck.getExportArena();
     ipc_send("set_clipboard", list);
   });
   $(".exportDeckStandardPlayer").click(function() {
-    var list = get_deck_export_txt(match.playerDeck);
+    var list = match.playerDeck.getExportTxt();
     ipc_send("export_txt", { str: list, name: match.playerDeck.name });
   });
 
   $(".exportDeck").click(function() {
-    var list = get_deck_export(match.oppDeck);
+    var list = match.oppDeck.getExportArena();
     ipc_send("set_clipboard", list);
   });
   $(".exportDeckStandard").click(function() {
-    var list = get_deck_export_txt(match.oppDeck);
+    var list = match.oppDeck.getExportTxt();
     ipc_send("export_txt", {
       str: list,
       name: match.opponent.name.slice(0, -6) + "'s deck"
