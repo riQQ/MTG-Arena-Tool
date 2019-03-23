@@ -1,15 +1,10 @@
 /*
 global
     change_background,
-    drawDeck,
     drawDeckVisual,
     ipc_send,
     change_background,
-    get_deck_types_ammount,
     get_deck_curve,
-    get_deck_colors_ammount,
-    get_deck_lands_ammount,
-    get_deck_missing,
     get_deck_export,
     get_deck_export_txt,
     mana,
@@ -27,7 +22,7 @@ function deckColorBar(deck) {
   let deckColors = $(
     '<div class="deck_top_colors" style="align-self: center;"></div>'
   );
-  deck.colors.forEach(color => {
+  deck.colors.get().forEach(color => {
     deckColors.append($(`<div class="mana_s20 mana_${mana[color]}"></div>`));
   });
   return deckColors;
@@ -166,7 +161,7 @@ function deckWinrateCurves(deck) {
           )};">${cwr.tag}</div>`
         )
       );
-      colors.forEach(function(color) {
+      colors.get().forEach(function(color) {
         curveNumber.append(
           $(
             `<div style="margin: 0 auto !important" class="mana_s16 mana_${
@@ -218,7 +213,7 @@ function deckWinrateCurves(deck) {
             </div>`);
 
       let colors = cwr.colors;
-      colors.forEach(function(color) {
+      colors.get().forEach(function(color) {
         curveNumber.append(
           $(
             `<div style="margin: 0 auto !important" class="mana_s16 mana_${
@@ -245,7 +240,7 @@ function deckStatsSection(deck, deck_type) {
     stats
   );
 
-  let cardTypes = get_deck_types_ammount(deck);
+  let cardTypes = deck.mainboard.countTypesAll();
   let typesContainer = $('<div class="types_container"></div>');
   orderedCardTypes.forEach((cardTypeKey, index) => {
     $(`<div class="type_icon_cont">
@@ -265,13 +260,13 @@ function deckStatsSection(deck, deck_type) {
   pieContainer.appendTo(stats);
 
   // Deck colors
-  let colorCounts = get_deck_colors_ammount(deck);
+  let colorCounts = deck.mainboard.getColorsAmmounts();
   let pieChart;
   pieChart = colorPieChart(colorCounts, "Mana Symbols");
   pieChart.appendTo(pieContainer);
 
   // Lands colors
-  let landCounts = get_deck_lands_ammount(deck);
+  let landCounts = deck.mainboard.getLandsAmmounts();
   pieChart = colorPieChart(landCounts, "Mana Sources");
   pieChart.appendTo(pieContainer);
 
@@ -292,7 +287,7 @@ function deckStatsSection(deck, deck_type) {
     mythic: economyHistory.wcMythic
   };
 
-  let missingWildcards = get_deck_missing(deck);
+  let missingWildcards = deck.getMissingWildcards();
   let costSection = $(
     '<div class="wildcards_cost"><span>Wildcards you have/need</span></div>'
   );
@@ -341,13 +336,12 @@ function openDeck(deck, deck_type) {
 
   deckColorBar(deck).appendTo(top);
 
-  let tileGrpId = deck.deckTileId;
-  if (cardsDb.get(tileGrpId)) {
-    change_background("", tileGrpId);
+  if (cardsDb.get(deck.tile)) {
+    change_background("", deck.tile);
   }
 
   let deckListSection = $('<div class="decklist"></div>');
-  drawDeck(deckListSection, deck);
+  deck.draw(deckListSection);
 
   let statsSection = deckStatsSection(deck, deck_type);
 
@@ -382,5 +376,5 @@ function openDeck(deck, deck_type) {
 }
 
 module.exports = {
-  open_deck: openDeck
+  openDeck: openDeck
 };

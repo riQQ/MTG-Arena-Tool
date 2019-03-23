@@ -4,9 +4,6 @@ global
   shell
   settings
 */
-const windowBackground = 0;
-const windowRenderer = 1;
-const windowOverlay = 2;
 
 // Colour indices
 const WHITE = 1;
@@ -15,11 +12,19 @@ const BLACK = 3;
 const RED = 4;
 const GREEN = 5;
 
+const windowBackground = 0;
+const windowRenderer = 1;
+const windowOverlay = 2;
+
 const math = require("mathjs");
 math.config({ precision: 2000 });
 
 const Database = require("../shared/database.js");
 const cardsDb = new Database();
+
+const Deck = require("../shared/deck.js");
+const CardsList = require("../shared/cards-list.js");
+const Colors = require("../shared/colors.js");
 
 const enums = {
   CounterType: {
@@ -1624,7 +1629,7 @@ function get_rank_class(ranking) {
   }
 }
 
-//
+// DEPRECATE
 function get_wc_missing(grpid, quantity) {
   let card = cardsDb.get(grpid);
 
@@ -1650,7 +1655,7 @@ function get_wc_missing(grpid, quantity) {
   return Math.max(0, quantity - have);
 }
 
-//
+// DEPRECATE
 function get_deck_missing(deck) {
   var missing = { rare: 0, common: 0, uncommon: 0, mythic: 0 };
 
@@ -1854,7 +1859,7 @@ function get_deck_cost(deck) {
 function get_deck_curve(deck) {
   var curve = [];
 
-  deck.mainDeck.forEach(function(card) {
+  deck.mainboard.get().forEach(card => {
     var grpid = card.id;
     var cmc = cardsDb.get(grpid).cmc;
     if (curve[cmc] == undefined) curve[cmc] = [0, 0, 0, 0, 0, 0];
@@ -1863,29 +1868,17 @@ function get_deck_curve(deck) {
 
     if (cardsDb.get(grpid).type.indexOf("Land") == -1) {
       card_cost.forEach(function(c) {
-        if (c.indexOf("w") !== -1) curve[cmc][1] += card.quantity;
-        if (c.indexOf("u") !== -1) curve[cmc][2] += card.quantity;
-        if (c.indexOf("b") !== -1) curve[cmc][3] += card.quantity;
-        if (c.indexOf("r") !== -1) curve[cmc][4] += card.quantity;
-        if (c.indexOf("g") !== -1) curve[cmc][5] += card.quantity;
+        if (c.indexOf("w") !== -1) curve[cmc][WHITE] += card.quantity;
+        if (c.indexOf("u") !== -1) curve[cmc][BLUE] += card.quantity;
+        if (c.indexOf("b") !== -1) curve[cmc][BLACK] += card.quantity;
+        if (c.indexOf("r") !== -1) curve[cmc][RED] += card.quantity;
+        if (c.indexOf("g") !== -1) curve[cmc][GREEN] += card.quantity;
       });
 
       curve[cmc][0] += card.quantity;
     }
   });
-  /*
-  // Do not account sideboard?
-  deck.sideboard.forEach(function(card) {
-    var grpid = card.id;
-    var cmc = cardsDb.get(grpid).cmc;
-    if (curve[cmc] == undefined)  curve[cmc] = 0;
-    curve[cmc] += card.quantity
 
-    if (cardsDb.get(grpid).rarity !== 'land') {
-      curve[cmc] += card.quantity
-    }
-  });
-  */
   //console.log(curve);
   return curve;
 }
@@ -1910,7 +1903,7 @@ function get_deck_types_ammount(deck) {
   return types;
 }
 
-//
+// DEPRECATE
 function get_deck_colors_ammount(deck) {
   var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
 
@@ -1949,7 +1942,7 @@ function get_deck_colors_ammount(deck) {
   return colors;
 }
 
-//
+// DEPRECATE
 function get_deck_lands_ammount(deck) {
   var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
 
@@ -2309,9 +2302,12 @@ function add(a, b) {
 //
 Array.prototype.sum = function(prop) {
   var total = 0;
+  this.forEach(val => total += val[prop]);
+  /*
   for (var i = 0, _len = this.length; i < _len; i++) {
     total += this[i][prop];
   }
+  */
   return total;
 };
 

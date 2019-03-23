@@ -6,7 +6,7 @@ global
 	sort_decks,
 	cards,
 	getDeckWinrate,
-	open_deck,
+	openDeck,
 	tags_colors,
 	ipc_send,
 	selectAdd
@@ -33,15 +33,11 @@ function open_decks_tab() {
     decks_top_filter.classList.add("decks_top_filter");
 
     let tags_list = [];
-    decks.forEach(function(deck) {
-      if (deck.tags) {
-        deck.tags.forEach(tag => {
-          if (tags_list.indexOf(tag) == -1) {
-            tags_list.push(tag);
-          }
-        });
-      }
+    decks.forEach(deck => {
+      tags_list = tags_list.concat(deck.tags);
     });
+    tags_list = Array.from(new Set(tags_list));
+    console.log(tags_list);
 
     var select = $('<select id="query_select"></select>');
     if (filterTag != "All") {
@@ -51,7 +47,6 @@ function open_decks_tab() {
       if (tag !== filterTag) {
         select.append('<option value="' + tag + '">' + tag + "</option>");
       }
-      //reateTag(tag, decks_top, false);
     });
     decks_top_filter.appendChild(select[0]);
     selectAdd(select, filterDecks);
@@ -68,7 +63,7 @@ function open_decks_tab() {
     let wrTotalLosses = 0;
     let wrTotal = 0;
     decks.forEach(function(deck, index) {
-      var tileGrpid = deck.deckTileId;
+      var tileGrpid = deck.tile;
 
       var filter = false;
       if (filterTag !== "All") {
@@ -135,7 +130,7 @@ function open_decks_tab() {
           mythic: economyHistory.wcMythic
         };
 
-        let missingWildcards = get_deck_missing(deck);
+        let missingWildcards = deck.getMissingWildcards();
 
         let wc;
         let n = 0;
@@ -187,7 +182,7 @@ function open_decks_tab() {
         d.innerHTML = deck.name;
         flt.appendChild(d);
 
-        deck.colors.forEach(function(color) {
+        deck.colors.get().forEach(color => {
           var d = document.createElement("div");
           d.classList.add("mana_s20");
           d.classList.add("mana_" + mana[color]);
@@ -260,7 +255,7 @@ function open_decks_tab() {
 
         $("." + deck.id).on("click", function() {
           var deck = decks[index];
-          open_deck(deck, 2);
+          openDeck(deck, 2);
           $(".moving_ux").animate({ left: "-100%" }, 250, "easeInOutCubic");
         });
 

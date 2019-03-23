@@ -1,6 +1,9 @@
 /*
 global
   setsList,
+  Deck,
+  CardsList,
+  Colors,
   cardsDb,
   makeId,
   timeSince,
@@ -31,7 +34,7 @@ const remote = require("electron").remote;
 const open_home_tab = require("./home").open_home_tab;
 const open_tournament = require("./home").open_tournament;
 const set_tou_state = require("./home").set_tou_state;
-const open_deck = require("./deck_details").open_deck;
+const openDeck = require("./deck_details").openDeck;
 const open_decks_tab = require("./decks").open_decks_tab;
 const open_history_tab = require("./history").open_history_tab;
 const open_explore_tab = require("./explore").open_explore_tab;
@@ -239,15 +242,18 @@ ipc.on("set_player_data", (event, _data) => {
   playerData = _data;
 
   if (sidebarActive != -99) {
-    $(".top_username").html(playerData.name.slice(0, -6));
-    $(".top_username_id").html(playerData.name.slice(-6));
+    $$(".top_username")[0].innerHTML = playerData.name.slice(0, -6);
+    $$(".top_username_id")[0].innerHTML = playerData.name.slice(-6);
 
     let rankOffset;
     let constructed = playerData.rank.constructed;
     rankOffset = get_rank_index(constructed.rank, constructed.tier);
     let constructedRankIcon = $$(".top_constructed_rank")[0];
     constructedRankIcon.style.backgroundPosition = rankOffset * -48 + "px 0px";
-    constructedRankIcon.setAttribute("title", constructed.rank + " " + constructed.tier);
+    constructedRankIcon.setAttribute(
+      "title",
+      constructed.rank + " " + constructed.tier
+    );
 
     let limited = playerData.rank.limited;
     rankOffset = get_rank_index(limited.rank, limited.tier);
@@ -300,7 +306,7 @@ ipc.on("set_decks", function(event, arg) {
   }
   if (arg != null) {
     delete arg.index;
-    decks = Object.values(arg);
+    decks = Object.values(arg).map(deck => new Deck(deck));
   }
   open_decks_tab();
 });
@@ -501,14 +507,12 @@ function set_ladder_decks(arg) {
 ipc.on("open_course_deck", function(event, arg) {
   $(".moving_ux").animate({ left: "-100%" }, 250, "easeInOutCubic");
   arg = arg.CourseDeck;
-  arg.colors = get_deck_colors(arg);
-  arg.mainDeck.sort(compare_cards);
-  arg.sideboard.sort(compare_cards);
-  console.log(arg);
 
-  arg.mainDeck = removeDuplicates(arg.mainDeck);
-  arg.sideboard = removeDuplicates(arg.sideboard);
-  open_deck(arg, 1);
+  let deck = new Deck(arg);
+  deck.mainboard.removeDuplicates();
+  deck.sideboard.removeDuplicates();
+  deck.getColors();
+  openDeck(deck, 1);
 });
 
 //
@@ -1018,7 +1022,7 @@ function drawDeckVisual(_div, _stats, deck) {
 
   for (var cmc = 0; cmc < 21; cmc++) {
     for (var qq = 4; qq > -1; qq--) {
-      deck.mainDeck.forEach(function(c) {
+      deck.mainboard.get().forEach(function(c) {
         var grpId = c.id;
         var card = cardsDb.get(grpId);
         var quantity;
@@ -1043,7 +1047,7 @@ function drawDeckVisual(_div, _stats, deck) {
     }
   }
 
-  var types = get_deck_types_ammount(deck);
+  var types = deck.mainboard.countTypesAll();
   var typesdiv = $('<div class="types_container"></div>');
   $(
     '<div class="type_icon_cont"><div title="Creatures"     class="type_icon type_cre"></div><span>' +
@@ -1098,7 +1102,7 @@ function drawDeckVisual(_div, _stats, deck) {
     );
 
     $(".openDeck").click(function() {
-      open_deck(-1, 2);
+      openDeck(-1, 2);
     });
   }
 
@@ -1161,56 +1165,54 @@ function drawDeckVisual(_div, _stats, deck) {
   div.css("max-width", (sz + 6) * 1.5 + "px");
   div.appendTo(_div);
 
-  if (deck.sideboard != undefined) {
-    tileNow = $('<div class="deck_visual_tile_side"></div>');
-    tileNow.css("width", (sz + 6) * 5 + "px");
-    tileNow.appendTo(div);
+  tileNow = $('<div class="deck_visual_tile_side"></div>');
+  tileNow.css("width", (sz + 6) * 5 + "px");
+  tileNow.appendTo(div);
 
-    if (deck.sideboard.length == 0) {
-      tileNow.css("display", "none");
-    }
+  if (deck.sideboard.count == 0) {
+    tileNow.css("display", "none");
+  }
 
-    _n = 0;
-    deck.sideboard.forEach(function(c) {
-      var grpId = c.id;
-      var card = cardsDb.get(grpId);
-      if (c.quantity > 0) {
-        let dfc = "";
-        if (card.dfc == "DFC_Back") dfc = "a";
-        if (card.dfc == "DFC_Front") dfc = "b";
-        if (card.dfc == "SplitHalf") dfc = "a";
-        if (dfc != "b") {
-          for (let i = 0; i < c.quantity; i++) {
-            var d;
-            if (_n % 2 == 1) {
-              d = $(
-                '<div style="width: ' +
-                  sz +
-                  'px !important;" class="deck_visual_card_side"></div>'
-              );
-            } else {
-              d = $(
-                '<div style="margin-left: 60px; width: ' +
-                  sz +
-                  'px !important;" class="deck_visual_card_side"></div>'
-              );
-            }
-            let img = $(
-              '<img style="width: ' +
+  _n = 0;
+  deck.sideboard.get().forEach(function(c) {
+    var grpId = c.id;
+    var card = cardsDb.get(grpId);
+    if (c.quantity > 0) {
+      let dfc = "";
+      if (card.dfc == "DFC_Back") dfc = "a";
+      if (card.dfc == "DFC_Front") dfc = "b";
+      if (card.dfc == "SplitHalf") dfc = "a";
+      if (dfc != "b") {
+        for (let i = 0; i < c.quantity; i++) {
+          var d;
+          if (_n % 2 == 1) {
+            d = $(
+              '<div style="width: ' +
                 sz +
-                'px !important;" class="deck_visual_card_img"></img>'
+                'px !important;" class="deck_visual_card_side"></div>'
             );
-            img.attr("src", get_card_image(card));
-            img.appendTo(d);
-            d.appendTo(tileNow);
-
-            addCardHover(img, card);
-            _n++;
+          } else {
+            d = $(
+              '<div style="margin-left: 60px; width: ' +
+                sz +
+                'px !important;" class="deck_visual_card_side"></div>'
+            );
           }
+          let img = $(
+            '<img style="width: ' +
+              sz +
+              'px !important;" class="deck_visual_card_img"></img>'
+          );
+          img.attr("src", get_card_image(card));
+          img.appendTo(d);
+          d.appendTo(tileNow);
+
+          addCardHover(img, card);
+          _n++;
         }
       }
-    });
-  }
+    }
+  });
 }
 
 //
@@ -1385,7 +1387,7 @@ function setChangesTimeline() {
   $('<div class="button_simple openDeck">View stats</div>').appendTo(cont);
 
   $(".openDeck").click(function() {
-    open_deck(-1, 2);
+    openDeck(-1, 2);
   });
   time.appendTo(cont);
 }
@@ -2646,7 +2648,7 @@ function getWinrateClass(wr) {
 }
 
 //
-function getDeckWinrate(deckid, lastEdit) {
+function getDeckWinrate(deckid, lastEdit = "") {
   var wins = 0;
   var loss = 0;
   var winsLastEdit = 0;
@@ -2660,73 +2662,76 @@ function getDeckWinrate(deckid, lastEdit) {
 
   matchesHistory.matches.forEach(function(matchid, index) {
     let match = matchesHistory[matchid];
-    if (matchid != null && match != undefined) {
-      if (match.type == "match") {
-        if (match.playerDeck.id == deckid) {
-          var oppDeckColors = get_deck_colors(match.oppDeck);
-          if (oppDeckColors.length > 0) {
-            let added = -1;
+    if (
+      matchid != null &&
+      match != undefined &&
+      match.type == "match" &&
+      match.playerDeck.id == deckid
+    ) {
+      let oppDeck = new Deck(match.oppDeck);
+      var oppDeckColors = oppDeck.colors;
 
-            colorsWinrates.forEach(function(wr, index) {
-              if (compare_colors(wr.colors, oppDeckColors)) {
-                added = index;
-              }
-            });
+      if (oppDeckColors.length > 0) {
+        let added = -1;
 
-            if (added == -1) {
-              added =
-                colorsWinrates.push({
-                  colors: oppDeckColors,
-                  wins: 0,
-                  losses: 0
-                }) - 1;
-            }
+        colorsWinrates.forEach(function(wr, index) {
+          if (wr.colors.equalTo(oppDeckColors)) {
+            added = index;
+          }
+        });
 
-            if (match.player.win > match.opponent.win) {
-              if (index > -1) {
-                colorsWinrates[added].wins++;
-              }
+        if (added == -1) {
+          added =
+            colorsWinrates.push({
+              colors: oppDeckColors,
+              wins: 0,
+              losses: 0
+            }) - 1;
+        }
 
-              wins++;
-            }
-            if (match.player.win < match.opponent.win) {
-              if (index > -1) {
-                colorsWinrates[added].losses++;
-              }
-              loss++;
-            }
-
-            if (match.date > lastEdit) {
-              if (match.player.win > match.opponent.win) {
-                winsLastEdit++;
-              } else {
-                lossLastEdit++;
-              }
-            }
+        if (match.player.win > match.opponent.win) {
+          if (index > -1) {
+            colorsWinrates[added].wins++;
           }
 
-          if (match.tags !== undefined && match.tags.length > 0) {
-            let tag = match.tags[0];
-            let added = -1;
-
-            tagsWinrates.forEach(function(wr, index) {
-              if (wr.tag == tag) {
-                added = index;
-              }
-            });
-
-            if (added == -1) {
-              added = tagsWinrates.push({ tag: tag, wins: 0, losses: 0 }) - 1;
-            }
-
-            tagsWinrates[added].colors = oppDeckColors;
-            if (match.player.win > match.opponent.win) {
-              tagsWinrates[added].wins += 1;
-            }
-            if (match.player.win < match.opponent.win) {
-              tagsWinrates[added].losses += 1;
-            }
+          wins++;
+        }
+        if (match.player.win < match.opponent.win) {
+          if (index > -1) {
+            colorsWinrates[added].losses++;
           }
+          loss++;
+        }
+
+        if (match.date > lastEdit) {
+          if (match.player.win > match.opponent.win) {
+            winsLastEdit++;
+          } else {
+            lossLastEdit++;
+          }
+        }
+      }
+
+      if (match.tags !== undefined && match.tags.length > 0) {
+        let tag = match.tags[0];
+        let added = -1;
+
+        tagsWinrates.forEach(function(wr, index) {
+          if (wr.tag == tag) {
+            added = index;
+          }
+        });
+
+        if (added == -1) {
+          added = tagsWinrates.push({ tag: tag, wins: 0, losses: 0 }) - 1;
+        }
+
+        tagsWinrates[added].colors = oppDeckColors;
+        if (match.player.win > match.opponent.win) {
+          tagsWinrates[added].wins += 1;
+        }
+        if (match.player.win < match.opponent.win) {
+          tagsWinrates[added].losses += 1;
         }
       }
     }
@@ -2769,13 +2774,15 @@ function compare_color_winrates(a, b) {
   a = a.colors;
   b = b.colors;
 
-  if (a.length < b.length) return -1;
-  if (a.length > b.length) return 1;
+  let al = a.length;
+  let bl = b.length;
+  if (al < bl) return -1;
+  if (al > bl) return 1;
 
-  let sa = a.reduce(function(_a, _b) {
+  let sa = a.get().reduce(function(_a, _b) {
     return _a + _b;
   }, 0);
-  let sb = b.reduce(function(_a, _b) {
+  let sb = b.get().reduce(function(_a, _b) {
     return _a + _b;
   }, 0);
   if (sa < sb) return -1;
@@ -2788,9 +2795,8 @@ function compare_color_winrates(a, b) {
 function sort_decks() {
   decks.sort(compare_decks);
   decks.forEach(function(deck) {
-    deck.colors = [];
-    deck.colors = get_deck_colors(deck);
-    deck.mainDeck.sort(compare_cards);
+    deck.getColors();
+    deck.sortMainboard(compare_cards);
   });
 }
 
