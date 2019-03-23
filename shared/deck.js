@@ -13,9 +13,9 @@ const CardsList = require("./cards-list.js");
 const Colors = require("./colors.js");
 
 class Deck {
-  constructor(mtgaDeck) {
-    this.mainboard = new CardsList(mtgaDeck.mainDeck.sort(compare_cards));
-    this.sideboard = new CardsList(mtgaDeck.sideboard.sort(compare_cards));
+  constructor(mtgaDeck, main = false, side = false) {
+    this.mainboard = new CardsList(mtgaDeck.mainDeck || main);
+    this.sideboard = new CardsList(mtgaDeck.sideboard || side);
     this.name = mtgaDeck.name || "";
     this.id = mtgaDeck.id || "";
     this.lastUpdated = mtgaDeck.lastUpdated || "";
@@ -24,9 +24,16 @@ class Deck {
     this.tags = mtgaDeck.tags || [mtgaDeck.format];
     this.custom = mtgaDeck.custom || false;
 
+    this.sortMainboard(compare_cards);
+    this.sortSideboard(compare_cards);
+
     return this;
   }
 
+  /**
+   * returns the colors of this deck, or creates a new colors object
+   * if not defined yet.
+   **/
   get colors() {
     return this._colors || this.getColors();
   }
@@ -61,7 +68,7 @@ class Deck {
   }
 
   /**
-   *
+   * Return how many of each wildcard we need to complete this deck.
    **/
   getMissingWildcards(countMainboard = true, countSideboard = true) {
     let missing = {
