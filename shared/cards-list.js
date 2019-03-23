@@ -1,0 +1,210 @@
+"use strict";
+/*
+globals
+  cardsDb
+*/
+const Colors = require("./colors.js");
+
+class CardsList {
+  /**
+   * Creates a list of cards based on an array of objects with the form
+   * {quantity, id}
+   * If an array of IDs is given it defaults all quantities to 1
+   **/
+  constructor(list = []) {
+    if (!list) list = [];
+    this._list = list.map(obj => {
+      return {
+        quantity: obj.quantity || 1,
+        id: obj.id || obj,
+        mensurable: true
+      };
+    });
+  }
+
+  get() {
+    return this._list;
+  }
+
+  count(prop = "quantity") {
+    return this._list.sum(prop);
+  }
+
+  countTypesAll() {
+    var types = { art: 0, cre: 0, enc: 0, ins: 0, lan: 0, pla: 0, sor: 0 };
+
+    this._list.forEach(function(card) {
+      var c = cardsDb.get(card.id);
+      if (c) {
+        if (c.type.includes("Land", 0))
+          types.lan += card.mensurable ? card.quantity : 1;
+        else if (c.type.includes("Creature", 0))
+          types.cre += card.mensurable ? card.quantity : 1;
+        else if (c.type.includes("Artifact", 0))
+          types.art += card.mensurable ? card.quantity : 1;
+        else if (c.type.includes("Enchantment", 0))
+          types.enc += card.mensurable ? card.quantity : 1;
+        else if (c.type.includes("Instant", 0))
+          types.ins += card.mensurable ? card.quantity : 1;
+        else if (c.type.includes("Sorcery", 0))
+          types.sor += card.mensurable ? card.quantity : 1;
+        else if (c.type.includes("Planeswalker", 0))
+          types.pla += card.mensurable ? card.quantity : 1;
+      }
+    });
+
+    return types;
+  }
+
+  countType(type) {
+    let types = this.countTypesAll();
+    if (type.includes("Land", 0)) return types.lan;
+    else if (type.includes("Creature", 0)) return types.cre;
+    else if (type.includes("Artifact", 0)) return types.art;
+    else if (type.includes("Enchantment", 0)) return types.enc;
+    else if (type.includes("Instant", 0)) return types.ins;
+    else if (type.includes("Sorcery", 0)) return types.sor;
+    else if (type.includes("Planeswalker", 0)) return types.pla;
+
+    return 0;
+  }
+
+  getColorsAmmounts() {
+    let colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
+
+    this._list.forEach(function(card) {
+      if (card.quantity > 0) {
+        cardsDb.get(card.id).cost.forEach(function(c) {
+          if (c.indexOf("w") !== -1) {
+            colors.w += card.quantity;
+            colors.total += card.quantity;
+          }
+          if (c.indexOf("u") !== -1) {
+            colors.u += card.quantity;
+            colors.total += card.quantity;
+          }
+          if (c.indexOf("b") !== -1) {
+            colors.b += card.quantity;
+            colors.total += card.quantity;
+          }
+          if (c.indexOf("r") !== -1) {
+            colors.r += card.quantity;
+            colors.total += card.quantity;
+          }
+          if (c.indexOf("g") !== -1) {
+            colors.g += card.quantity;
+            colors.total += card.quantity;
+          }
+          if (c.indexOf("c") !== -1) {
+            colors.c += card.quantity;
+            colors.total += card.quantity;
+          }
+        });
+      }
+    });
+
+    return colors;
+  }
+
+  getLandsAmmounts() {
+    var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
+
+    //var mana = {0: "", 1: "white", 2: "blue", 3: "black", 4: "red", 5: "green", 6: "colorless", 7: "", 8: "x"}
+    this._list.forEach(function(card) {
+      var quantity = card.quantity;
+      card = cardsDb.get(card.id);
+      if (quantity > 0) {
+        if (
+          card.type.indexOf("Land") != -1 ||
+          card.type.indexOf("land") != -1
+        ) {
+          if (card.frame.length < 5) {
+            card.frame.forEach(function(c) {
+              if (c == 1) {
+                colors.w += quantity;
+                colors.total += quantity;
+              }
+              if (c == 2) {
+                colors.u += quantity;
+                colors.total += quantity;
+              }
+              if (c == 3) {
+                colors.b += quantity;
+                colors.total += quantity;
+              }
+              if (c == 4) {
+                colors.r += quantity;
+                colors.total += quantity;
+              }
+              if (c == 5) {
+                colors.g += quantity;
+                colors.total += quantity;
+              }
+              if (c == 6) {
+                colors.c += quantity;
+                colors.total += quantity;
+              }
+            });
+          }
+        }
+      }
+    });
+
+    return colors;
+  }
+
+  countFilter(prop = "quantity", func) {
+    return this._list.filter(func).sum(prop);
+  }
+
+  addPropierty(_prop, _default = 0) {
+    this._list.forEach(obj => {
+      obj[_prop] = _default;
+    });
+  }
+
+  getColors() {
+    let colors = new Colors();
+    this._list.forEach(card => {
+      let cardData = cardsDb.get(card.id);
+      let isLand = cardData.type.indexOf("Land") !== -1;
+      if (isLand && cardData.frame.length < 3) {
+        colors.addFromArray(cardData.frame);
+      }
+      colors.addFromCost(cardData.cost);
+    });
+
+    return colors;
+  }
+
+  removeDuplicates() {
+    var newList = [];
+
+    this._list.forEach(function(card) {
+      var cname = cardsDb.get(card.id).name;
+      var added = false;
+      newList.forEach(function(c) {
+        var cn = cardsDb.get(c.id).name;
+        if (cn == cname) {
+          if (c.mensurable) {
+            c.quantity += card.quantity;
+          }
+          if (c.chance) {
+            c.chance += card.chance;
+          }
+          added = true;
+        }
+      });
+
+      if (!added) {
+        newList.push(card);
+      }
+    });
+
+    this._list = newList;
+
+    return this._list;
+  }
+}
+
+module.exports = CardsList;
