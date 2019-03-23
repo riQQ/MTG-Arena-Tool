@@ -363,12 +363,6 @@ function expandEvent(course, expandDiv) {
     )
     .filter(match => match !== undefined && match.type === "match")
     .map(match => {
-      if (!(match.playerDeck instanceof Deck)) {
-        match.playerDeck = new Deck(match.playerDeck);
-      }
-      if (!(match.oppDeck instanceof Deck)) {
-        match.oppDeck = new Deck(match.oppDeck);
-      }
       let row = createMatchRow(match);
       expandDiv.appendChild(row);
       addHover(match, expandDiv);

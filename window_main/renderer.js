@@ -1,9 +1,9 @@
 /*
 global
   setsList,
+  playerDataDefault,
   Deck,
   CardsList,
-  Colors,
   cardsDb,
   makeId,
   timeSince,
@@ -324,6 +324,7 @@ ipc.on("set_history", function(event, arg) {
   if (arg != null) {
     try {
       matchesHistory = JSON.parse(arg);
+      preProcessHistory();
     } catch (e) {
       console.log("Error parsing JSON:", arg);
       return false;
@@ -336,9 +337,34 @@ ipc.on("set_history", function(event, arg) {
 //
 ipc.on("set_history_data", function(event, arg) {
   if (arg != null) {
-    matchesHistory = JSON.parse(arg);
+    try {
+      matchesHistory = JSON.parse(arg);
+      preProcessHistory();
+    } catch (e) {
+      console.log("Error parsing JSON:", arg);
+    }
   }
 });
+
+//
+function preProcessHistory() {
+  matchesHistory.matches.forEach(matchId => {
+    let match = matchesHistory[matchId];
+    if (
+      matchId != null &&
+      match != undefined &&
+      match.type != "draft" &&
+      match.type != "Event"
+    ) {
+      if (!(match.playerDeck instanceof Deck)) {
+        match.playerDeck = new Deck(match.playerDeck);
+      }
+      if (!(match.oppDeck instanceof Deck)) {
+        match.oppDeck = new Deck(match.oppDeck);
+      }
+    }
+  });
+}
 
 //
 ipc.on("set_events", function(event, arg) {

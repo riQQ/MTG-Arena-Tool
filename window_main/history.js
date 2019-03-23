@@ -823,24 +823,6 @@ function deleteMatch(_match) {
 
 function sort_history() {
   matchesHistory.matches.sort(compare_matches);
-
-  matchesHistory.matches.forEach(function(mid) {
-    var match = matchesHistory[mid];
-
-    if (mid != null && match != undefined) {
-      if (match.type != "draft" && match.type != "Event") {
-        try {
-          match.playerDeck.mainDeck.sort(compare_cards);
-          match.playerDeck = new Deck(match.playerDeck);
-
-          match.oppDeck.mainDeck.sort(compare_cards);
-          match.oppDeck = new Deck(match.oppDeck);
-        } catch (e) {
-          console.log(e, match);
-        }
-      }
-    }
-  });
 }
 
 function compare_matches(a, b) {
