@@ -26,7 +26,7 @@ class Deck {
     this.name = mtgaDeck.name || "";
     this.id = mtgaDeck.id || "";
     this.lastUpdated = mtgaDeck.lastUpdated || "";
-    this.tile = mtgaDeck.deckTileId || 67003;
+    this.tile = mtgaDeck.deckTileId ? mtgaDeck.deckTileId : 67003;
     this._colors = undefined;
     this.tags = mtgaDeck.tags || [mtgaDeck.format];
     this.custom = mtgaDeck.custom || false;
@@ -65,7 +65,7 @@ class Deck {
       name: this.name,
       id: this.id,
       lastUpdated: this.lastUpdated,
-      tile: this.tile,
+      deckTileId: this.tile,
       tags: this.tags,
       custom: this.custom
     };
@@ -262,7 +262,8 @@ class Deck {
     ret.tags = this.tags;
     ret.custom = this.custom;
 
-    return ret;
+    let cloned = objectClone(ret);
+    return cloned;
   }
 
   getUniqueString(checkSide = true) {
