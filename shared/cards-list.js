@@ -31,10 +31,10 @@ class CardsList {
   **/
   add(grpId, quantity = 1, merge = false) {
     if (merge) {
-      this._list.forEach(function(card) {
+      this._list.forEach((card, index) => {
         if (card.id == grpId) {
           card.quantity += quantity;
-          return;
+          return card;
         }
       });
     }
@@ -44,7 +44,10 @@ class CardsList {
         id: grpId,
         mensurable: true
       });
+      return this._list[this._list.length-1];
     }
+
+    return 0;
   }
 
   /**
