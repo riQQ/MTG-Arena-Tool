@@ -1612,8 +1612,8 @@ function open_match(id) {
   var odl = $('<div class="decklist"></div>');
   flt.appendTo(odl);
 
-  match.oppDeck.mainboard._list.sort(compare_cards);
-  match.oppDeck.sideboard._list.sort(compare_cards);
+  match.oppDeck.sortMainboard(compare_cards);
+  match.oppDeck.sortSideboard(compare_cards);
   match.oppDeck.mainboard.get().forEach(c => {
     c.mensurable = false; 
   });
