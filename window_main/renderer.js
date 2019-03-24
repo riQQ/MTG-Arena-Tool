@@ -1615,7 +1615,7 @@ function open_match(id) {
   match.oppDeck.mainboard._list.sort(compare_cards);
   match.oppDeck.sideboard._list.sort(compare_cards);
   match.oppDeck.mainboard.get().forEach(c => {
-    c.mensurable = false;
+    c.mensurable = false; 
   });
   match.oppDeck.sideboard.get().forEach(c => {
     c.mensurable = false;

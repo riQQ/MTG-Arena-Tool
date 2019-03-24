@@ -6,7 +6,7 @@ function onLabelOutLogInfo(entry, json) {
 
   if (json.params.messageName == "DuelScene.GameStop") {
     var payload = json.params.payloadObject;
-    var mid = payload.matchId + "-" + playerData.arenaId;
+    var mid = `${payload.matchId}-${playerData.arenaId}`;
     var time = payload.secondsCount;
     if (mid == currentMatch.matchId) {
       gameNumberCompleted = payload.gameNumber;
@@ -39,10 +39,10 @@ function onLabelOutLogInfo(entry, json) {
 
       if (gameNumberCompleted > 1) {
         let deckDiff = {};
-        currentMatch.player.deck.mainDeck.forEach(card => {
+        currentMatch.player.deck.mainboard.get().forEach(card => {
           deckDiff[card.id] = card.quantity;
         });
-        currentMatch.player.originalDeck.mainDeck.forEach(card => {
+        currentMatch.player.originalDeck.mainboard.get().forEach(card => {
           deckDiff[card.id] = (deckDiff[card.id] || 0) - card.quantity;
         });
         matchGameStats.forEach((stats, i) => {
@@ -83,7 +83,7 @@ function onLabelOutLogInfo(entry, json) {
       let landsInDeck = 0;
       let multiCardPositions = { "2": {}, "3": {}, "4": {} };
       let cardCounts = {};
-      currentMatch.player.deck.mainDeck.forEach(card => {
+      currentMatch.player.deck.mainboard.get().forEach(card => {
         cardCounts[card.id] = card.quantity;
         deckSize += card.quantity;
         if (card.quantity >= 2 && card.quantity <= 4) {
@@ -149,29 +149,19 @@ function onLabelGreToClient(entry, json) {
         let att = obj.attackerInstanceId;
         if (!attackersDetected.includes(att)) {
           if (currentMatch.gameObjs[att] != undefined) {
-            let str =
-              actionLogGenerateLink(currentMatch.gameObjs[att].grpId) +
-              " attacked ";
+            let str = actionLogGenerateLink(currentMatch.gameObjs[att].grpId) + " attacked ";
             let rec;
             if (obj.selectedDamageRecipient !== undefined) {
               rec = obj.selectedDamageRecipient;
               if (rec.type == "DamageRecType_Player") {
-                actionLog(
-                  currentMatch.gameObjs[att].controllerSeatId,
-                  new Date(),
-                  str + getNameBySeat(rec.playerSystemSeatId)
-                );
+                actionLog( currentMatch.gameObjs[att].controllerSeatId, new Date(), str + getNameBySeat(rec.playerSystemSeatId));
                 //ipc_send("", str+getNameBySeat(rec.playerSystemSeatId));
               }
             }
             if (obj.legalDamageRecipients !== undefined) {
               rec = obj.legalDamageRecipients.forEach(function(rec) {
                 if (rec.type == "DamageRecType_Player") {
-                  actionLog(
-                    currentMatch.gameObjs[att].controllerSeatId,
-                    new Date(),
-                    str + getNameBySeat(rec.playerSystemSeatId)
-                  );
+                  actionLog( currentMatch.gameObjs[att].controllerSeatId, new Date(), str + getNameBySeat(rec.playerSystemSeatId));
                   //ipc_send("ipc_log", str+getNameBySeat(rec.playerSystemSeatId));
                 }
               });
@@ -247,26 +237,13 @@ function onLabelGreToClient(entry, json) {
           }
           currentMatch.prevTurn = currentMatch.turn.turnNumber;
           currentMatch.turn = msg.gameStateMessage.turnInfo;
-          // turnPhase = msg.gameStateMessage.turnInfo.phase;
-          // turnStep = msg.gameStateMessage.turnInfo.step;
-          // turnNumber = msg.gameStateMessage.turnInfo.turnNumber;
-          // turnActive = msg.gameStateMessage.turnInfo.activePlayer;
-          // currentMatch.currentPriority = msg.gameStateMessage.turnInfo.priorityPlayer;
-          // turnDecision = msg.gameStateMessage.turnInfo.decisionPlayer;
 
           if (
             currentMatch.turn.turnNumber != undefined &&
             currentMatch.prevTurn !== currentMatch.turn.turnNumber
           ) {
             attackersDetected = [];
-            actionLog(
-              -1,
-              new Date(),
-              getNameBySeat(currentMatch.turn.activePlayer) +
-                "'s turn begin. (#" +
-                currentMatch.turn.turnNumber +
-                ")"
-            );
+            actionLog( -1, new Date(), `${getNameBySeat(currentMatch.turn.activePlayer)} 's turn begin. (#${currentMatch.turn.turnNumber})`);
             //ipc_send("ipc_log", playerName+"'s turn begin. (#"+turnNumber+")");
           }
           if (!firstPass) {
@@ -307,11 +284,7 @@ function onLabelGreToClient(entry, json) {
                   } else {
                     let loser = 0;
                     if (index == gameInfo.gameNumber - 1) {
-                      actionLog(
-                        -1,
-                        new Date(),
-                        getNameBySeat(res.winningTeamId) + " wins!"
-                      );
+                      actionLog( -1, new Date(), getNameBySeat(res.winningTeamId) + " wins!");
                     }
                     if (res.winningTeamId == currentMatch.player.seat) {
                       loser = currentMatch.opponent.seat;
@@ -323,18 +296,10 @@ function onLabelGreToClient(entry, json) {
                     }
 
                     if (res.reason == "ResultReason_Concede") {
-                      actionLog(
-                        -1,
-                        new Date(),
-                        getNameBySeat(loser) + " conceded."
-                      );
+                      actionLog( -1, new Date(), getNameBySeat(loser) + " conceded.");
                     }
                     if (res.reason == "ResultReason_Timeout") {
-                      actionLog(
-                        -1,
-                        new Date(),
-                        getNameBySeat(loser) + " timed out."
-                      );
+                      actionLog( -1, new Date(), getNameBySeat(loser) + " timed out.");
                     }
                     if (res.reason == "ResultReason_Loop") {
                       actionLog(-1, new Date(), "Game ended in a loop.");
@@ -384,9 +349,7 @@ function onLabelGreToClient(entry, json) {
                     console.log("undefined value: ", obj);
                   } else if (currentMatch.gameObjs[_orig] != undefined) {
                     //console.log("AnnotationType_ObjectIdChanged", aff, _orig, _new, currentMatch.gameObjs[_orig], currentMatch.gameObjs);
-                    currentMatch.gameObjs[_new] = JSON.parse(
-                      JSON.stringify(currentMatch.gameObjs[_orig])
-                    );
+                    currentMatch.gameObjs[_new] = objectClone(currentMatch.gameObjs[_orig]);
                     //currentMatch.gameObjs[_orig] = undefined;
                   }
 
@@ -397,14 +360,10 @@ function onLabelGreToClient(entry, json) {
 
                 // An object changed zone, here we only update the currentMatch.gameObjs array
                 if (obj.type.includes("AnnotationType_EnteredZoneThisTurn")) {
-                  if (
-                    currentMatch.gameObjs[aff] &&
-                    currentMatch.zones[affector]
-                  ) {
+                  if (currentMatch.gameObjs[aff] && currentMatch.zones[affector]) {
                     //console.log("AnnotationType_EnteredZoneThisTurn", aff, affector, currentMatch.gameObjs[aff], currentMatch.zones[affector], currentMatch.gameObjs);
                     currentMatch.gameObjs[aff].zoneId = affector;
-                    currentMatch.gameObjs[aff].zoneName =
-                      currentMatch.zones[affector].type;
+                    currentMatch.gameObjs[aff].zoneName = currentMatch.zones[affector].type;
                   }
                 }
 
@@ -421,32 +380,18 @@ function onLabelGreToClient(entry, json) {
                     //var pn = currentMatch.opponent.name;
                     if (currentMatch.gameObjs[aff] != undefined) {
                       // We ooly check for abilities here, since cards and spells are better processed with "AnnotationType_ZoneTransfer"
-                      if (
-                        currentMatch.gameObjs[aff].type ==
-                        "GameObjectType_Ability"
-                      ) {
+                      if (currentMatch.gameObjs[aff].type == "GameObjectType_Ability") {
                         var src = currentMatch.gameObjs[aff].objectSourceGrpId;
                         var abId = currentMatch.gameObjs[aff].grpId;
                         var ab = cardsDb.getAbility(abId);
                         //var cname = "";
                         try {
-                          ab = replaceAll(
-                            ab,
-                            "CARDNAME",
-                            cardsDb.get(src).name
-                          );
+                          ab = replaceAll(ab, "CARDNAME", cardsDb.get(src).name);
                         } catch (e) {
                           //
                         }
 
-                        actionLog(
-                          currentMatch.gameObjs[aff].controllerSeatId,
-                          new Date(),
-                          actionLogGenerateLink(src) +
-                            '\'s <a class="card_ability click-on" title="' +
-                            ab +
-                            '">ability</a>'
-                        );
+                        actionLog(currentMatch.gameObjs[aff].controllerSeatId, new Date(), `${actionLogGenerateLink(src)}\'s <a class="card_ability click-on" title="${ab}">ability</a>`);
                         //ipc_send("ipc_log", cardsDb.get(src).name+"'s ability");
                         //console.log(cardsDb.get(src).name+"'s ability", currentMatch.gameObjs[aff]);
                       } else {
@@ -503,32 +448,10 @@ function onLabelGreToClient(entry, json) {
                           affd == currentMatch.player.seat ||
                           affd == currentMatch.opponent.seat
                         ) {
-                          actionLog(
-                            currentMatch.gameObjs[aff].controllerSeatId,
-                            new Date(),
-                            actionLogGenerateLink(
-                              currentMatch.gameObjs[aff].grpId
-                            ) +
-                              " dealt " +
-                              damage +
-                              " damage to " +
-                              getNameBySeat(affd)
-                          );
+                          actionLog( currentMatch.gameObjs[aff].controllerSeatId, new Date(), `${actionLogGenerateLink(currentMatch.gameObjs[aff].grpId)} dealt ${damage} damage to ${getNameBySeat(affd)}`);
                           //ipc_send("ipc_log", currentMatch.gameObjs[aff].name+" dealt "+damage+" damage to "+getNameBySeat(affd));
                         } else {
-                          actionLog(
-                            currentMatch.gameObjs[aff].controllerSeatId,
-                            new Date(),
-                            actionLogGenerateLink(
-                              currentMatch.gameObjs[aff].grpId
-                            ) +
-                              " dealt " +
-                              damage +
-                              " damage to " +
-                              actionLogGenerateLink(
-                                currentMatch.gameObjs[affd].grpId
-                              )
-                          );
+                          actionLog(currentMatch.gameObjs[aff].controllerSeatId, new Date(), `${actionLogGenerateLink(currentMatch.gameObjs[aff].grpId)} dealt ${damage} damage to ${actionLogGenerateLink(currentMatch.gameObjs[affd].grpId)}`);
                           //ipc_send("ipc_log", currentMatch.gameObjs[aff].name+" dealt "+damage+" damage to "+currentMatch.gameObjs[affd]);
                         }
                       } catch (e) {
@@ -602,17 +525,7 @@ function onLabelGreToClient(entry, json) {
               if (diff > 0) sign = "+";
 
               if (diff != 0) {
-                actionLog(
-                  obj.controllerSeatId,
-                  new Date(),
-                  getNameBySeat(obj.controllerSeatId) +
-                    "'s life changed to " +
-                    obj.lifeTotal +
-                    " (" +
-                    sign +
-                    diff +
-                    ")"
-                );
+                actionLog(obj.controllerSeatId,new Date(), `${getNameBySeat(obj.controllerSeatId)} 's life changed to ${obj.lifeTotal} (${sign} ${diff})`);
               }
 
               playerLife = obj.lifeTotal;
@@ -620,17 +533,7 @@ function onLabelGreToClient(entry, json) {
               diff = obj.lifeTotal - opponentLife;
               if (diff > 0) sign = "+";
               if (diff != 0) {
-                actionLog(
-                  obj.controllerSeatId,
-                  new Date(),
-                  getNameBySeat(obj.controllerSeatId) +
-                    "'s life changed to " +
-                    obj.lifeTotal +
-                    " (" +
-                    sign +
-                    diff +
-                    ")"
-                );
+                actionLog( obj.controllerSeatId, new Date(), `${getNameBySeat(obj.controllerSeatId)}'s life changed to ${obj.lifeTotal} (${sign}${diff})`);
               }
 
               opponentLife = obj.lifeTotal;
@@ -643,8 +546,7 @@ function onLabelGreToClient(entry, json) {
   });
   tryZoneTransfers();
 
-  var str = JSON.stringify(currentMatch.player.deck);
-  currentMatch.playerCards = JSON.parse(str);
+  currentMatch.playerCards = currentMatch.player.deck.clone();
   forceDeckUpdate();
   update_deck(false);
 }
@@ -667,37 +569,26 @@ function onLabelClientToMatchServiceMessageTypeClientToGREMessage(entry, json) {
     let deckResp = json.payload.submitdeckresp;
     //console.log("deckResp", deckResp);
 
-    let tempMain = {};
-    let tempSide = {};
-    deckResp.deck.deckcards.forEach(function(grpId) {
-      if (tempMain[grpId] == undefined) {
-        tempMain[grpId] = 1;
-      } else {
-        tempMain[grpId] += 1;
-      }
+    let tempMain = new CardsList();
+    let tempSide = new CardsList();
+    deckResp.deck.deckcards.forEach(grpId => {
+      tempMain.add(grpId, 1);
     });
     if (deckResp.deck.sideboardcards !== undefined) {
-      deckResp.deck.sideboardcards.forEach(function(grpId) {
-        if (tempSide[grpId] == undefined) {
-          tempSide[grpId] = 1;
-        } else {
-          tempSide[grpId] += 1;
-        }
+      deckResp.deck.sideboardcards.forEach(grpId => {
+        tempSide.add(grpId, 1);
       });
     }
 
-    var newDeck = {};
-    newDeck.mainDeck = [];
+    var newDeck = new Deck();
+
     Object.keys(tempMain).forEach(function(key) {
-      var c = { id: key, quantity: tempMain[key] };
-      newDeck.mainDeck.push(c);
+      newDeck.mainboard.add(key, tempMain[key]);
     });
 
-    newDeck.sideboard = [];
     if (deckResp.deck.sideboardcards !== undefined) {
       Object.keys(tempSide).forEach(function(key) {
-        var c = { id: key, quantity: tempSide[key] };
-        newDeck.sideboard.push(c);
+        newDeck.sideboard.add(key, tempSide[key]);
       });
     }
     currentMatch.player.deck = newDeck;

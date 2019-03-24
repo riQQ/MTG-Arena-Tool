@@ -1,6 +1,7 @@
 /*
 global
   cardsDb,
+  Deck,
   stripTags,
   windowBackground,
   windowRenderer,
@@ -598,7 +599,7 @@ ipc.on("add_history_tag", function(event, arg) {
     match.tags = [arg.name];
   }
 
-  httpApi.httpSetDeckTag(arg.name, match.oppDeck.mainDeck, match.eventId);
+  httpApi.httpSetDeckTag(arg.name, match.oppDeck.mainboard.get(), match.eventId);
   store.set(arg.match, match);
 });
 
@@ -1368,60 +1369,30 @@ function tryZoneTransfers() {
       var affectorGrpid;
       //console.log("AnnotationType_ZoneTransfer", obj, obj.aff, gameObjs, _src, _dest, _cat);
       if (_cat == "CastSpell") {
-        actionLog(
-          owner,
-          obj.time,
-          getNameBySeat(owner) + " casted " + actionLogGenerateLink(grpid)
-        );
+        actionLog(owner, obj.time, getNameBySeat(owner) + " casted " + actionLogGenerateLink(grpid));
       } else if (_cat == "Resolve") {
-        actionLog(
-          owner,
-          obj.time,
-          getNameBySeat(owner) + " resolved " + actionLogGenerateLink(grpid)
-        );
+        actionLog(owner, obj.time, getNameBySeat(owner) + " resolved " + actionLogGenerateLink(grpid));
       } else if (_cat == "PlayLand") {
-        actionLog(
-          owner,
-          obj.time,
-          getNameBySeat(owner) + " played " + actionLogGenerateLink(grpid)
-        );
+        actionLog(owner, obj.time, getNameBySeat(owner) + " played " + actionLogGenerateLink(grpid));
       } else if (_cat == "Countered") {
         affectorGrpid = currentMatch.gameObjs[obj.affectorId].grpId;
         if (affectorGrpid == undefined) {
           removeFromList = false;
         } else {
-          actionLog(
-            owner,
-            obj.time,
-            actionLogGenerateLink(affectorGrpid) +
-              " countered " +
-              actionLogGenerateLink(grpid)
-          );
+          actionLog(owner, obj.time, actionLogGenerateLink(affectorGrpid) + " countered " + actionLogGenerateLink(grpid));
         }
       } else if (_cat == "Destroy") {
         affectorGrpid = currentMatch.gameObjs[obj.affectorId].grpId;
         if (affectorGrpid == undefined) {
           removeFromList = false;
         } else {
-          actionLog(
-            owner,
-            obj.time,
-            actionLogGenerateLink(affectorGrpid) +
-              " destroyed " +
-              actionLogGenerateLink(grpid)
-          );
+          actionLog(owner, obj.time, actionLogGenerateLink(affectorGrpid) + " destroyed " + actionLogGenerateLink(grpid));
         }
       } else if (_cat == "Draw") {
         actionLog(owner, obj.time, getNameBySeat(owner) + " drew a card");
         removeFromListAnyway = true;
       } else if (cname != "") {
-        actionLog(
-          owner,
-          obj.time,
-          actionLogGenerateLink(grpid) +
-            " moved to " +
-            currentMatch.zones[_dest].type
-        );
+        actionLog(owner, obj.time, actionLogGenerateLink(grpid) + " moved to " +  currentMatch.zones[_dest].type);
       }
       currentMatch.gameObjs[obj.aff].zoneId = _dest;
       currentMatch.gameObjs[obj.aff].zoneName = currentMatch.zones[_dest].type;
@@ -1518,8 +1489,7 @@ function checkForStartingLibrary() {
   // Check that a post-mulligan scry hasn't been done
   if (library.length == 0 || library[library.length - 1] < library[0]) return;
 
-  if (!currentDeck.mainDeck) return;
-  if (hand.length + library.length == deck_count(currentDeck)) {
+  if (hand.length + library.length == currentDeck.mainboard.count()) {
     if (hand.length >= 2 && hand[0] == hand[1] + 1) hand.reverse();
     initialLibraryInstanceIds = [...hand, ...library];
   }
@@ -1540,11 +1510,9 @@ function createMatch(arg) {
     ipc_send("overlay_set_bounds", obj);
   }
 
-  let str = JSON.stringify(currentDeck);
-
   currentMatch.player.originalDeck = originalDeck;
-  currentMatch.player.deck = JSON.parse(str);
-  currentMatch.playerCards = JSON.parse(str);
+  currentMatch.player.deck = originalDeck.clone();
+  currentMatch.playerCards = originalDeck.clone();
 
   currentMatch.opponent.name = arg.opponentScreenName;
   currentMatch.opponent.rank = arg.opponentRankingClass;
@@ -1571,7 +1539,7 @@ function createMatch(arg) {
   );
 
   if (currentMatch.eventId == "DirectGame") {
-    httpApi.httpTournamentCheck(currentDeck, currentMatch.opponent.name, true);
+    httpApi.httpTournamentCheck(currentDeck.getSave(), currentMatch.opponent.name, true);
   }
 
   ipc_send("set_priority_timer", currentMatch.priorityTimers, windowOverlay);
@@ -1605,19 +1573,19 @@ function createDraft() {
 
 //
 function select_deck(arg) {
-  if (arg.CourseDeck !== undefined) {
-    currentDeck = arg.CourseDeck;
+  if (arg.CourseDeck) {
+    currentDeck = new Deck(arg.CourseDeck);
   } else {
-    currentDeck = arg;
+    currentDeck = new Deck(arg);
   }
-  originalDeck = currentDeck;
-  //console.log(currentDeck, arg);
-  ipc_send("set_deck", currentDeck, windowOverlay);
+  console.log("Select deck: ", currentDeck, arg);
+  originalDeck = currentDeck.clone();
+  ipc_send("set_deck", currentDeck.getSave(), windowOverlay);
 }
 
 //
 function clear_deck() {
-  var deck = { mainDeck: [], sideboard: [], name: "" };
+  let deck = new Deck({});
   ipc_send("set_deck", deck, windowOverlay);
 }
 
@@ -1626,20 +1594,25 @@ function update_deck(force) {
   var nd = new Date();
   if (nd - lastDeckUpdate > 1000 || debugLog || !firstPass || force) {
     if (overlayDeckMode == 0) {
-      ipc_send("set_deck", currentMatch.playerCards, windowOverlay);
+      // Remaining
+      ipc_send("set_deck", currentMatch.playerCards.getSave(), windowOverlay);
     }
     if (overlayDeckMode == 1) {
-      ipc_send("set_deck", currentMatch.player.deck, windowOverlay);
+      // Full deck
+      ipc_send("set_deck", currentMatch.player.deck.getSave(), windowOverlay);
     }
     if (overlayDeckMode == 2) {
-      ipc_send("set_deck", currentMatch.playerCards, windowOverlay);
+      // Odds
+      ipc_send("set_deck", currentMatch.playerCards.getSave(), windowOverlay);
     }
     if (overlayDeckMode == 3) {
+      // Opponent cards
       let currentOppDeck = getOppDeck();
-      ipc_send("set_deck", currentOppDeck, windowOverlay);
+      ipc_send("set_deck", currentOppDeck.getSave(), windowOverlay);
     }
     if (overlayDeckMode == 4) {
-      ipc_send("set_deck", currentMatch.playerCards, windowOverlay);
+      // Action log
+      ipc_send("set_deck", currentMatch.playerCards.getSave(), windowOverlay);
     }
     lastDeckUpdate = nd;
   }
@@ -1656,17 +1629,11 @@ function forceDeckUpdate(removeUsed = true) {
   var typeArt = 0;
   var typeEnc = 0;
   var typeLan = 0;
-  if (
-    (debugLog || !firstPass) &&
-    currentMatch.playerCards.mainDeck != undefined
-  ) {
-    /*
-    // DEBUG
-    currentMatch.playerCards.mainDeck = [];
-    decksize = 0;
-    cardsleft = 0;
-    */
-    currentMatch.playerCards.mainDeck.forEach(function(card) {
+
+  currentMatch.playerCards = currentMatch.player.deck.clone();
+
+  if (debugLog || !firstPass) {
+    currentMatch.playerCards.mainboard.get().forEach(card => {
       card.total = card.quantity;
       decksize += card.quantity;
       cardsleft += card.quantity;
@@ -1677,14 +1644,11 @@ function forceDeckUpdate(removeUsed = true) {
       if (currentMatch.gameObjs[key] != undefined) {
         if (currentMatch.zones[currentMatch.gameObjs[key].zoneId]) {
           if (
-            currentMatch.zones[currentMatch.gameObjs[key].zoneId].type !=
-              "ZoneType_Limbo" &&
-            currentMatch.zones[currentMatch.gameObjs[key].zoneId].type !=
-              "ZoneType_Library"
+            currentMatch.zones[currentMatch.gameObjs[key].zoneId].type != "ZoneType_Limbo" &&
+            currentMatch.zones[currentMatch.gameObjs[key].zoneId].type != "ZoneType_Library"
           ) {
             if (
-              currentMatch.gameObjs[key].ownerSeatId ==
-                currentMatch.player.seat &&
+              currentMatch.gameObjs[key].ownerSeatId == currentMatch.player.seat &&
               currentMatch.gameObjs[key].type != "GameObjectType_Token" &&
               currentMatch.gameObjs[key].type != "GameObjectType_Ability"
             ) {
@@ -1698,15 +1662,13 @@ function forceDeckUpdate(removeUsed = true) {
               */
 
               cardsleft -= 1;
-              if (currentMatch.playerCards.mainDeck != undefined) {
-                currentMatch.playerCards.mainDeck.forEach(function(card) {
-                  if (card.id == currentMatch.gameObjs[key].grpId) {
-                    //console.log(currentMatch.gameObjs[key].instanceId, cardsDb.get(currentMatch.gameObjs[key].grpId).name, currentMatch.zones[currentMatch.gameObjs[key].zoneId].type);
-                    card.quantity -= 1;
-                  }
-                  if (card.quantity < 0) card.quantity = 0;
-                });
-              }
+              currentMatch.playerCards.mainboard.get().forEach(card => {
+                if (card.id == currentMatch.gameObjs[key].grpId) {
+                  //console.log(currentMatch.gameObjs[key].instanceId, cardsDb.get(currentMatch.gameObjs[key].grpId).name, currentMatch.zones[currentMatch.gameObjs[key].zoneId].type);
+                  card.quantity -= 1;
+                }
+                //if (card.quantity < 0) card.quantity = 0;
+              });
             }
           }
         }
@@ -1714,11 +1676,8 @@ function forceDeckUpdate(removeUsed = true) {
     });
   }
 
-  if (
-    (debugLog || !firstPass) &&
-    currentMatch.playerCards.mainDeck != undefined
-  ) {
-    currentMatch.playerCards.mainDeck.forEach(function(card) {
+  if (debugLog || !firstPass) {
+    currentMatch.playerCards.mainboard.get().forEach(card => {
       var c = cardsDb.get(card.id);
       if (c) {
         if (c.type.includes("Land", 0)) typeLan += card.quantity;
@@ -1819,7 +1778,7 @@ function forceDeckUpdate(removeUsed = true) {
 function getOppDeck() {
   //var oppDeck = {mainDeck: [], sideboard : []};
   var doAdd = true;
-  currentMatch.opponent.deck = { mainDeck: [], sideboard: [] };
+  currentMatch.opponent.deck = new Deck({}, [], []);
   currentMatch.opponent.deck.name = currentMatch.opponent.name;
   //console.log("Deck "+currentMatch.opponent.name;);
   Object.keys(currentMatch.gameObjs).forEach(function(key) {
@@ -1838,7 +1797,7 @@ function getOppDeck() {
           currentMatch.gameObjs[key].type != "GameObjectType_Ability"
         ) {
           doAdd = true;
-          currentMatch.opponent.deck.mainDeck.forEach(function(card) {
+          currentMatch.opponent.deck.mainboard.get().forEach(function(card) {
             if (card.id == currentMatch.gameObjs[key].grpId) {
               doAdd = false;
               //card.quantity += 1;
@@ -1846,10 +1805,7 @@ function getOppDeck() {
           });
           if (doAdd) {
             if (cardsDb.get(currentMatch.gameObjs[key].grpId) != false) {
-              currentMatch.opponent.deck.mainDeck.push({
-                id: currentMatch.gameObjs[key].grpId,
-                quantity: 9999
-              });
+              currentMatch.opponent.deck.mainboard.add(currentMatch.gameObjs[key].grpId, 1).mensurable = false;
             }
           }
         }
@@ -1871,7 +1827,7 @@ function getOppDeck() {
       arch.cards.forEach(card => {
         let cName = cardsDb.get(card.id).name;
 
-        currentMatch.opponent.deck.mainDeck.forEach(oppCard => {
+        currentMatch.opponent.deck.mainboard.get().forEach(oppCard => {
           let oName = cardsDb.get(oppCard.id).name;
           if (cName == oName) {
             found += card.quantity / arch.average;
@@ -2009,8 +1965,17 @@ function saveMatch(matchId) {
   };
   match.draws = dr;
   match.eventId = currentMatch.eventId;
-  match.playerDeck = currentMatch.player.originalDeck;
-  match.oppDeck = getOppDeck();
+  match.playerDeck = currentMatch.player.originalDeck.getSave();
+
+  let tempOppDeck = getOppDeck();
+  match.oppDeck = tempOppDeck.getSave();
+  match.oppDeck.archetype = tempOppDeck.archetype;
+  delete match.oppDeck.id;
+  delete match.oppDeck.custom;
+  delete match.oppDeck.lastUpdated;
+  delete match.oppDeck.deckTileId;
+  delete match.oppDeck.tags;
+
   if (match.oppDeck.archetype && match.oppDeck.archetype !== "-") {
     match.tags = [match.oppDeck.archetype];
   }
