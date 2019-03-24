@@ -1707,6 +1707,12 @@ function createDivision(classNames, innerHTML) {
 }
 
 //
+function cloneClass(original) {
+    var clone = Object.assign(Object.create(original), original);
+    return clone;
+}
+
+//
 function hypergeometric(
   exact,
   population,
