@@ -1707,9 +1707,8 @@ function createDivision(classNames, innerHTML) {
 }
 
 //
-function cloneClass(original) {
-    var clone = Object.assign(Object.create(original), original);
-    return clone;
+function objectClone(originalObject) {
+    return JSON.parse(JSON.stringify(originalObject));
 }
 
 //
