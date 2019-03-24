@@ -2,9 +2,8 @@
 global
   windowBackground,
   windowOverlay,
-  get_deck_colors,
-  get_deck_uniquestring,
-  removeDuplicates,
+  Deck,
+  addCardHover,
   compare_chances,
   compare_cards,
   get_ids_colors,
@@ -315,9 +314,22 @@ ipc.on("set_deck", function(event, arg) {
   }
 
   if (arg !== null) {
+    console.log(arg);
+    let chanceCre = arg.chanceCre;
+    let chanceIns = arg.chanceIns;
+    let chanceSor = arg.chanceSor;
+    let chancePla = arg.chancePla;
+    let chanceArt = arg.chanceArt;
+    let chanceEnc = arg.chanceEnc;
+    let chanceLan = arg.chanceLan;
+    let cardslist = objectClone(arg.mainDeck);
+    cardsLeft = arg.cardsLeft ? arg.cardsLeft : cardsLeft;
+    arg = new Deck(arg);
+    arg.mainboard._list = cardslist;
+
     if (!changedMode) {
-      let oldstr = get_deck_uniquestring(currentDeck);
-      if (oldstr == get_deck_uniquestring(arg)) return;
+      let oldstr = currentDeck.getUniqueString();
+      if (oldstr == arg.getUniqueString()) return;
     }
     changedMode = true;
 
@@ -379,32 +391,29 @@ ipc.on("set_deck", function(event, arg) {
       }
     }
 
-    arg.colors = get_deck_colors(arg);
-    arg.colors.forEach(function(color) {
+    arg.colors.get().forEach(function(color) {
       $(".overlay_deckcolors").append(
         '<div class="mana_s20 mana_' + mana[color] + '"></div>'
       );
     });
 
-    arg.mainDeck = removeDuplicates(arg.mainDeck);
+    arg.mainboard.removeDuplicates();
 
     if (deckMode == 2) {
-      arg.mainDeck.sort(compare_chances);
+      arg.mainboard.get().sort(compare_chances);
     } else {
-      arg.mainDeck.sort(compare_cards);
+      arg.mainboard.get().sort(compare_cards);
     }
 
     deckListDiv = $(".overlay_decklist");
-    var prevIndex = 0;
 
-    if (arg.cardsLeft && (deckMode == 0 || deckMode == 2)) {
-      cardsLeft = arg.cardsLeft;
+    if (cardsLeft && (deckMode == 0 || deckMode == 2)) {
       deckListDiv.append(
-        '<div class="chance_title">' + arg.cardsLeft + " cards left</div>"
+        '<div class="chance_title">' + cardsLeft + " cards left</div>"
       );
     } else {
       var deckSize = 0;
-      arg.mainDeck.forEach(function(card) {
+      arg.mainboard.get().forEach(function(card) {
         if (deckMode == 3) deckSize++;
         else deckSize += card.quantity;
       });
@@ -414,31 +423,30 @@ ipc.on("set_deck", function(event, arg) {
       );
     }
 
-    arg.mainDeck.forEach(function(card) {
+    arg.mainboard.get().forEach(function(card) {
       var grpId = card.id;
       if (deckMode == 2) {
+        console.log(">", grpId, card.chance);
         addCardTile(
           grpId,
           "a",
-          (card.chance != undefined ? card.chance : "0") + "%",
+          (card.chance ? card.chance : "0") + "%",
           deckListDiv
         );
       } else {
         addCardTile(grpId, "a", card.quantity, deckListDiv);
       }
-      prevIndex = grpId;
     });
     if (showSideboard && arg.sideboard !== undefined) {
       deckListDiv.append('<div class="card_tile_separator">Sideboard</div>');
 
-      arg.sideboard.forEach(function(card) {
+      arg.sideboard.get().forEach(function(card) {
         var grpId = card.id;
         if (deckMode == 2) {
           addCardTile(grpId, "a", "0%", deckListDiv);
         } else {
           addCardTile(grpId, "a", card.quantity, deckListDiv);
         }
-        prevIndex = grpId;
       });
     }
 
@@ -454,37 +462,37 @@ ipc.on("set_deck", function(event, arg) {
       deckListDiv.append('<div class="chance_title"></div>'); // Add some space
       deckListDiv.append(
         '<div class="chance_title">Creature: ' +
-          (arg.chanceCre != undefined ? arg.chanceCre : "0") +
+          (chanceCre ? chanceCre : "0") +
           "%</div>"
       );
       deckListDiv.append(
         '<div class="chance_title">Instant: ' +
-          (arg.chanceIns != undefined ? arg.chanceIns : "0") +
+          (chanceIns ? chanceIns : "0") +
           "%</div>"
       );
       deckListDiv.append(
         '<div class="chance_title">Sorcery: ' +
-          (arg.chanceSor != undefined ? arg.chanceSor : "0") +
+          (chanceSor ? chanceSor : "0") +
           "%</div>"
       );
       deckListDiv.append(
         '<div class="chance_title">Artifact: ' +
-          (arg.chanceArt != undefined ? arg.chanceArt : "0") +
+          (chanceArt ? chanceArt : "0") +
           "%</div>"
       );
       deckListDiv.append(
         '<div class="chance_title">Enchantment: ' +
-          (arg.chanceEnc != undefined ? arg.chanceEnc : "0") +
+          (chanceEnc ? chanceEnc : "0") +
           "%</div>"
       );
       deckListDiv.append(
         '<div class="chance_title">Planeswalker: ' +
-          (arg.chancePla != undefined ? arg.chancePla : "0") +
+          (chancePla ? chancePla : "0") +
           "%</div>"
       );
       deckListDiv.append(
         '<div class="chance_title">Land: ' +
-          (arg.chanceLan != undefined ? arg.chanceLan : "0") +
+          (chanceLan ? chanceLan : "0") +
           "%</div>"
       );
 
@@ -581,16 +589,16 @@ function setDraft(_packN = -1, _pickN = -1) {
 
   let colors;
   if (draftMode == 0) {
-    colors = get_ids_colors(currentDraft.pickedCards);
+    colors = currentDraft.pickedCards.getColors();
     colors.forEach(function(color) {
       $(".overlay_deckcolors").append(
         '<div class="mana_s20 mana_' + mana[color] + '"></div>'
       );
     });
 
-    currentDraft.pickedCards.sort(compare_draft_cards);
+    currentDraft.pickedCards.get().sort(compare_draft_cards);
 
-    currentDraft.pickedCards.forEach(function(grpId) {
+    currentDraft.pickedCards.get().forEach(function(grpId) {
       addCardTile(grpId, "a", 1, $(".overlay_decklist"));
     });
   } else if (draftMode == 1) {
@@ -605,16 +613,15 @@ function setDraft(_packN = -1, _pickN = -1) {
     }
 
     console.log("Key", key, currentDraft);
-    colors = get_ids_colors(draftPack);
-    colors.forEach(function(color) {
+    draftPack.getColors().forEach(function(color) {
       $(".overlay_deckcolors").append(
         '<div class="mana_s20 mana_' + mana[color] + '"></div>'
       );
     });
 
-    draftPack.sort(compare_draft_picks);
+    draftPack.get().sort(compare_draft_picks);
 
-    draftPack.forEach(function(grpId) {
+    draftPack.get().forEach(function(grpId) {
       try {
         var rank = cardsDb.get(grpId).rank;
       } catch (e) {

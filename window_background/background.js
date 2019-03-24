@@ -1603,7 +1603,17 @@ function update_deck(force) {
     }
     if (overlayDeckMode == 2) {
       // Odds
-      ipc_send("set_deck", currentMatch.playerCards.getSave(), windowOverlay);
+      let oddsDeck = currentMatch.playerCards.getSave();
+      oddsDeck.chanceCre = currentMatch.playerCards.chanceCre;
+      oddsDeck.chanceIns = currentMatch.playerCards.chanceIns;
+      oddsDeck.chanceSor = currentMatch.playerCards.chanceSor;
+      oddsDeck.chancePla = currentMatch.playerCards.chancePla;
+      oddsDeck.chanceArt = currentMatch.playerCards.chanceArt;
+      oddsDeck.chanceEnc = currentMatch.playerCards.chanceEnc;
+      oddsDeck.chanceLan = currentMatch.playerCards.chanceLan;
+      oddsDeck.deckSize = currentMatch.playerCards.deckSize;
+      oddsDeck.cardsLeft = currentMatch.playerCards.cardsLeft;
+      ipc_send("set_deck", oddsDeck, windowOverlay);
     }
     if (overlayDeckMode == 3) {
       // Opponent cards
