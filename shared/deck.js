@@ -222,6 +222,39 @@ class Deck {
 
     return str;
   }
+
+  getSave() {
+    let ret = {};
+    ret.mainDeck = this.mainboard.get();
+    ret.sideboard = this.sideboard.get();
+    ret.name = this.name;
+    ret.id = this.id;
+    ret.lastUpdated = this.lastUpdated;
+    ret.deckTileId = this.tile;
+    ret.colors = this.colors.get();
+    ret.tags = this.tags;
+    ret.custom = this.custom;
+
+    return ret;
+  }
+
+  getUniqueString(checkSide = true) {
+    this.sortMainboard(compare_cards);
+    this.sortSideboard(compare_cards);
+
+    let str = "";
+    this.mainboard.get().forEach(card => {
+      str += card.id + "," + card.quantity + ",";
+    });
+
+    if (checkSide) {
+      this.sideboard.get().forEach(card => {
+        str += card.id + "," + card.quantity + ",";
+      });
+    }
+
+    return str;
+  }
 }
 
 module.exports = Deck;
