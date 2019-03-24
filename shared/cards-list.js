@@ -48,6 +48,34 @@ class CardsList {
   }
 
   /**
+   * Removes a card from the list.
+  **/
+  remove(grpId, quantity = 1, byName = false) {
+    if (byName) {
+      let removed = 0;
+      let cardToFind = cardsDb.get(grpId);
+      this._list.forEach(function(card) {
+        let cardInList = cardsDb.get(card.id);
+        if (cardToFind.name == cardInList.name) {
+          let remove = Math.min(card.quantity, quantity);
+          card.quantity -= remove;
+          quantity -= remove;
+        }
+      });
+    }
+    else {
+      let removed = 0;
+      this._list.forEach(function(card) {
+        if (grpId == card.id) {
+          let remove = Math.min(card.quantity, quantity);
+          card.quantity -= remove;
+          quantity -= remove;
+        }
+      });
+    }
+  }
+
+  /**
    * Counts all cards in the list, if provided it only counts
    * for the given propierty.
    **/
