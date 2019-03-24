@@ -16,8 +16,13 @@ const Colors = require("./colors.js");
 
 class Deck {
   constructor(mtgaDeck, main = false, side = false) {
-    this.mainboard = new CardsList(mtgaDeck.mainDeck || main);
-    this.sideboard = new CardsList(mtgaDeck.sideboard || side);
+    if (!mtgaDeck.mainDeck) mtgaDeck.mainDeck = [];
+    if (!mtgaDeck.sideboard) mtgaDeck.sideboard = [];
+    if (main) mtgaDeck.mainDeck = main;
+    if (side) mtgaDeck.sideboard = side;
+
+    this.mainboard = new CardsList(mtgaDeck.mainDeck);
+    this.sideboard = new CardsList(mtgaDeck.sideboard);
     this.name = mtgaDeck.name || "";
     this.id = mtgaDeck.id || "";
     this.lastUpdated = mtgaDeck.lastUpdated || "";
@@ -46,6 +51,28 @@ class Deck {
 
   sortSideboard(func) {
     this.sideboard.get().sort(func);
+  }
+
+
+  /**
+   * returns a clone of this deck, not referenced to this instance.
+   **/
+  clone() {
+    let main = objectClone(this.mainboard.get());
+    let side = objectClone(this.sideboard.get());
+
+    let obj = {
+      name: this.name,
+      id: this.id,
+      lastUpdated: this.lastUpdated,
+      tile: this.tile,
+      tags: this.tags,
+      custom: this.custom
+    };
+
+    let ret = new Deck(objectClone(obj), main, side);
+
+    return ret;
   }
 
   /**
