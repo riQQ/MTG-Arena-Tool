@@ -2,6 +2,16 @@ span i {
     margin-left: 4px;
 }
 
+relative-time {
+  margin-right: 8px;
+  margin-left: 8px;
+  font-size: 16px;
+  font-family: var(--main-font-name-it);
+  white-space: nowrap;
+  font-weight: 300;
+  color: rgba(250, 229, 210, 0.5);
+}
+
 .top_status, .top_status_span {
     width: 24px;
     height: 24px;
@@ -454,7 +464,7 @@ span.top_nav_item_text {
 }
 
 .list_match {
-    /*overflow: hidden;*/
+    white-space: nowrap;
     cursor: pointer;
     padding-left: 16px;
     height: 64px;
@@ -528,6 +538,8 @@ span.top_nav_item_text {
 }
 
 .list_match_time {
+    white-space: nowrap;
+    overflow: hidden;
     width: auto;
     margin-right: 8px;
     margin-left: auto;
@@ -539,24 +551,16 @@ span.top_nav_item_text {
     color: rgba(250, 229, 210, 0.5);
 }
 
+
 .list_match_time_top {
     margin-right: 18px;
 }
 
-.list_match_result_win {
+.list_match_result {
 font-family:  var(--main-font-name);
     font-size: 20px;
     line-height: 64px;
     margin-right: 8px;
-    color: rgba(183, 200, 158, 1);
-}
-
-.list_match_result_loss {
-    line-height: 64px;
-    font-family:  var(--main-font-name);
-    font-size: 20px;
-    margin-right: 8px;
-    color: rgba(221, 130, 99, 1);
 }
 
 .list_match_result_score {
@@ -621,7 +625,7 @@ font-family:  var(--main-font-name);
     align-items: center;
     overflow: -webkit-paged-x;
     display: flex;
-    max-width: calc(100% - 200px);
+    max-width: calc(100% - 300px);
 }
 
 .list_event_expand {
@@ -771,6 +775,7 @@ a:hover {
 
 .list_deck_name {
     -webkit-user-select:none;
+    white-space: nowrap;
     align-self: center;
     margin-left: 2px;
     color: #FAE5D2;
@@ -778,6 +783,7 @@ a:hover {
 
 .list_deck_name_it {
     -webkit-user-select: none;
+    white-space: nowrap;
     margin-left: 8px;
     margin-right: 16px;
     margin-top: 2px;
@@ -791,6 +797,7 @@ a:hover {
 
 .list_deck_right_it {
     -webkit-user-select: none;
+    overflow: hidden;
     line-height: 24px;
     height: 24px;
     margin-left: 8px;
@@ -1249,7 +1256,6 @@ a:hover {
     background-repeat: no-repeat;
 }
 
-
 .paging_container {
     margin: 16px 24px;
     display: flex;
@@ -1550,7 +1556,28 @@ a:hover {
     background-size: contain;
 }
 
+.economy_skin {
+    background-repeat: no-repeat;
+    margin: auto 4px;
+    margin-left: 16px;
+    width: 28px;
+    height: 28px;
+    background-image: url(../images/skin.png);
+    background-size: contain;
+}
+
+.economy_skin_art {
+    background-repeat: no-repeat;
+    margin: auto 4px;
+    width: 40px;
+    height: 40px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 100%;
+}
+
 .mana_filter {
+    align-self: center;
     opacity: 1;
     background-repeat: no-repeat;
     width: 40px;
@@ -1576,8 +1603,7 @@ a:hover {
 
 .mana_filters_explore {
     display: flex;
-    margin-top: 6px;
-    margin-left: 20px;
+    margin: 6px 20px;
 }
 
 .mana_filter:hover, .mana_filter_search:hover, .mana_filters_explore:hover, .rank_filter:hover {
@@ -1585,10 +1611,11 @@ a:hover {
 }
 
 .mana_filter_on, .rank_filter_on {
-    opacity: 0.3;
+    opacity: 0.4;
 }
 
 .rank_filter {
+    align-self: center;
     display: inline-block;
     background-repeat: no-repeat;
     width: 16px;
@@ -1607,7 +1634,15 @@ a:hover {
     margin: 8px 0px;
 }
 
-.input_container_inventory label {
+.input_container_explore {
+    display: flex;
+    height: 24px;
+    width: 100%;
+    margin: 8px;
+    align-self: center;
+}
+
+.input_container_inventory label, .input_container_explore label {
     white-space: pre;
 }
 
@@ -1618,13 +1653,7 @@ a:hover {
     margin: 8px 16px;
 }
 
-.explore_buttons_container {
-    display: flex;
-    height: 24px;
-    margin: 8px 16px;
-}
-
-.input_container input, .input_container_inventory input {
+.input_container input, .input_container_inventory input, .input_container_explore input {
     background-color: rgba(145, 121, 97, 0.35);
     border: 1px solid rgba(250, 229, 210, 0.5);
     display: inline-table;
@@ -1640,7 +1669,7 @@ a:hover {
     padding-left: 4px;
 }
 
-.input_container input:focus, .input_container_inventory input:focus {
+.input_container input:focus, .input_container_inventory input:focus, .input_container_explore input:focus {
     outline-style: none;
 }
 
@@ -2166,6 +2195,105 @@ a:hover {
 
 @import "compass/css3";
 @import "compass";
+
+.explore_buttons_container {
+    display: flex;
+    display: flex;
+    flex-direction: column;
+}
+
+.explore_buttons_row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.select_container {
+    width: 240px;
+    height: 32px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin: 0 8px 0 8px;
+}
+
+.select_button {
+    color: #FAE5D2;
+    line-height: 32px;
+    text-indent: 16px;
+    cursor: pointer;
+    width: inherit;
+    height: 32px;
+    border-radius: 6px;
+    background-color: rgba(145, 121, 97, 0.2);
+    border: 1px solid rgba(250, 229, 210, 0.5);
+    -webkit-transition: all .25s cubic-bezier(0.2, 0.5, 0.35, 1);
+}
+
+.select_button:after {
+    content: "";
+    width: 0px;
+    height: 0;
+    border: 7px solid transparent;
+    border-color: #FAE5D2 transparent transparent transparent;
+    position: absolute;
+    top: 12px;
+    right: 8px;
+}
+
+.select_button:hover {
+    background-color: rgba(145, 121, 97, 0.5);
+    border: 1px solid rgba(250, 229, 210, 1);
+}
+
+.select_button:active, .select_button.active {
+    border-radius: 6px 6px 0px 0px;
+    border-bottom: 0px;
+    background-color: rgba(145, 121, 97, .5);
+}
+
+.select_button:active:after, .select_button.active:after {
+    top: 5px;
+    border-color: transparent transparent #FAE5D2 transparent
+}
+
+.select_options_container {
+    display: none;
+    color: #FAE5D2;
+    cursor: pointer;
+    position: absolute;
+    max-height: 384px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    top: calc(100% + 3px);
+    right: 0px;
+    left: 2px;
+    z-index: 999;
+    margin: -2px;
+    padding: 0px;
+    background-color: hsla(29, 22%, 30%, 1);
+    border: 1px solid rgba(250, 229, 210, 0.5);
+    border-top: 0px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 10px 16px 0px;
+}
+
+.select_option {
+    white-space: nowrap;
+    color: #FAE5D2;
+    margin: 0;
+    padding: 7px 0;
+    text-indent: 15px;
+    border-top: 1px solid rgba(145, 121, 97, 0.5);
+    -webkit-transition: all .25s cubic-bezier(0.2, 0.5, 0.35, 1);
+}
+
+.select_option:hover {
+    background: rgba(250, 229, 210, 0.5);
+}
+
+
+
 
 .select-hidden {
     display: none;

@@ -15,14 +15,20 @@ global
   compare_archetypes,
   onLabelClientToMatchServiceMessageTypeClientToGREMessage,
   onLabelInEventGetPlayerCourse,
+  onLabelInEventGetPlayerCourseV2,
   onLabelInEventGetCombinedRankInfo,
   onLabelInDeckGetDeckLists,
+  onLabelInDeckGetDeckListsV3,
   onLabelInEventGetPlayerCourses,
+  onLabelInEventGetPlayerCoursesV2,
   onLabelInDeckUpdateDeck,
+  onLabelInDeckUpdateDeckV3,
   onLabelInventoryUpdated,
   onLabelInPlayerInventoryGetPlayerInventory,
   onLabelInPlayerInventoryGetPlayerCardsV3,
   onLabelInEventDeckSubmit,
+  onLabelInEventDeckSubmitV3,
+  onLabelInEventGetActiveEvents,
   onLabelEventMatchCreated,
   onLabelOutDirectGameChallenge,
   onLabelInDraftDraftStatus,
@@ -42,10 +48,17 @@ const fs = require("fs");
 const sha1 = require("js-sha1");
 const ipc = electron.ipcRenderer;
 
+const {
+  parseWotcTime,
+  parseWotcTime2,
+  normaliseFields
+} = require("./background-util");
+
 const transform = require("lodash.transform");
 const cloneDeep = require("lodash.clonedeep");
 
 const httpApi = require("./http-api");
+const manifestParser = require("./manifest-parser");
 
 const rememberCfg = {
   email: "",
@@ -511,15 +524,7 @@ ipc.on("request_explore", function(event, arg) {
     ipc_send("offline", 1);
   } else {
     let cards = store.get("cards.cards");
-    if (arg == "all" || arg == "All") {
-      httpApi.httpGetTopDecks("", cards);
-    } else if (arg == "Ranked Ladder") {
-      httpApi.httpGetTopLadderDecks();
-    } else if (arg == "Traditional Ranked Ladder") {
-      httpApi.httpGetTopLadderTraditionalDecks();
-    } else {
-      httpApi.httpGetTopDecks(arg, cards);
-    }
+    httpApi.httpGetExplore(arg, cards);
   }
 });
 
@@ -964,149 +969,199 @@ function onLogEntryFound(entry) {
       updateLoading(entry);
     }
     if ((firstPass && !skipFirstPass) || !firstPass) {
-      switch (entry.label) {
-        case "Log.Info":
-          if (entry.arrow == "==>") {
+      try {
+        switch (entry.label) {
+          case "Log.Info":
+            if (entry.arrow == "==>") {
+              json = entry.json();
+              onLabelOutLogInfo(entry, json);
+            }
+            break;
+
+          case "GreToClientEvent":
             json = entry.json();
-            onLabelOutLogInfo(entry, json);
-          }
-          break;
+            onLabelGreToClient(entry, json);
+            break;
 
-        case "GreToClientEvent":
-          json = entry.json();
-          onLabelGreToClient(entry, json);
-          break;
-
-        case "ClientToMatchServiceMessageType_ClientToGREMessage":
-          json = entry.json();
-          onLabelClientToMatchServiceMessageTypeClientToGREMessage(entry, json);
-          break;
-
-        case "Event.GetPlayerCourse":
-          if (entry.arrow == "<==") {
+          case "ClientToMatchServiceMessageType_ClientToGREMessage":
             json = entry.json();
-            onLabelInEventGetPlayerCourse(entry, json);
-          }
-          break;
+            onLabelClientToMatchServiceMessageTypeClientToGREMessage(
+              entry,
+              json
+            );
+            break;
 
-        case "Event.GetCombinedRankInfo":
-          if (entry.arrow == "<==") {
+          case "Event.GetPlayerCourse":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventGetPlayerCourse(entry, json);
+            }
+            break;
+
+          case "Event.GetPlayerCourseV2":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventGetPlayerCourseV2(entry, json);
+            }
+            break;
+
+          case "Event.GetCombinedRankInfo":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventGetCombinedRankInfo(entry, json);
+            }
+            break;
+
+          case "Rank.Updated":
+            {
+              json = entry.json();
+              onLabelRankUpdated(entry, json);
+            }
+            break;
+
+          case "Event.GetPlayerCourses":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventGetPlayerCourses(entry, json);
+            }
+            break;
+
+          case "Event.GetPlayerCoursesV2":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventGetPlayerCoursesV2(entry, json);
+            }
+            break;
+
+          case "Deck.GetDeckLists":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInDeckGetDeckLists(entry, json);
+            }
+            break;
+
+          case "Deck.GetDeckListsV3":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInDeckGetDeckListsV3(entry, json);
+            }
+            break;
+
+          case "Deck.UpdateDeck":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInDeckUpdateDeck(entry, json);
+            }
+            break;
+
+          case "Deck.UpdateDeckV3":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInDeckUpdateDeckV3(entry, json);
+            }
+            break;
+
+          case "Inventory.Updated":
             json = entry.json();
-            onLabelInEventGetCombinedRankInfo(entry, json);
-          }
-          break;
+            onLabelInventoryUpdated(entry, json);
+            break;
 
-        case "Rank.Updated":
-          {
+          case "PlayerInventory.GetPlayerInventory":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInPlayerInventoryGetPlayerInventory(entry, json);
+            }
+            break;
+
+          case "PlayerInventory.GetPlayerCardsV3":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInPlayerInventoryGetPlayerCardsV3(entry, json);
+            }
+            break;
+
+          case "Event.DeckSubmit":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventDeckSubmit(entry, json);
+            }
+            break;
+
+          case "Event.DeckSubmitV3":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventDeckSubmitV3(entry, json);
+            }
+            break;
+
+          case "Event.MatchCreated":
             json = entry.json();
-            onLabelRankUpdated(entry, json);
-          }
-          break;
+            onLabelEventMatchCreated(entry, json);
+            break;
 
-        case "Event.GetPlayerCourses":
-          if (entry.arrow == "<==") {
+          case "DirectGame.Challenge":
+            if (entry.arrow == "==>") {
+              json = entry.json();
+              onLabelOutDirectGameChallenge(entry, json);
+            }
+            break;
+
+          case "Draft.DraftStatus":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInDraftDraftStatus(entry, json);
+            }
+            break;
+
+          case "Draft.MakePick":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInDraftMakePick(entry, json);
+            } else {
+              json = entry.json();
+              onLabelOutDraftMakePick(entry, json);
+            }
+            break;
+
+          case "Event.CompleteDraft":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventCompleteDraft(entry, json);
+            }
+            break;
+
+          case "Event.GetActiveEventsV2":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventGetActiveEvents(entry, json);
+            }
+            break;
+
+          case "MatchGameRoomStateChangedEvent":
             json = entry.json();
-            onLabelInEventGetPlayerCourses(entry, json);
-          }
-          break;
+            onLabelMatchGameRoomStateChangedEvent(entry, json);
+            break;
 
-        case "Deck.GetDeckLists":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInDeckGetDeckLists(entry, json);
-          }
-          break;
+          case "Event.GetSeasonAndRankDetail":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelInEventGetSeasonAndRankDetail(entry, json);
+            }
+            break;
 
-        case "Deck.UpdateDeck":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInDeckUpdateDeck(entry, json);
-          }
-          break;
+          case "PlayerInventory.GetRewardSchedule":
+            if (entry.arrow == "<==") {
+              json = entry.json();
+              onLabelGetPlayerInventoryGetRewardSchedule(entry, json);
+            }
+            break;
 
-        case "Inventory.Updated":
-          json = entry.json();
-          onLabelInventoryUpdated(entry, json);
-          break;
-
-        case "PlayerInventory.GetPlayerInventory":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInPlayerInventoryGetPlayerInventory(entry, json);
-          }
-          break;
-
-        case "PlayerInventory.GetPlayerCardsV3":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInPlayerInventoryGetPlayerCardsV3(entry, json);
-          }
-          break;
-
-        case "Event.DeckSubmit":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInEventDeckSubmit(entry, json);
-          }
-          break;
-
-        case "Event.MatchCreated":
-          json = entry.json();
-          onLabelEventMatchCreated(entry, json);
-          break;
-
-        case "DirectGame.Challenge":
-          if (entry.arrow == "==>") {
-            json = entry.json();
-            onLabelOutDirectGameChallenge(entry, json);
-          }
-          break;
-
-        case "Draft.DraftStatus":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInDraftDraftStatus(entry, json);
-          }
-          break;
-
-        case "Draft.MakePick":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInDraftMakePick(entry, json);
-          } else {
-            json = entry.json();
-            onLabelOutDraftMakePick(entry, json);
-          }
-          break;
-
-        case "Event.CompleteDraft":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInEventCompleteDraft(entry, json);
-          }
-          break;
-
-        case "MatchGameRoomStateChangedEvent":
-          json = entry.json();
-          onLabelMatchGameRoomStateChangedEvent(entry, json);
-          break;
-
-        case "Event.GetSeasonAndRankDetail":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelInEventGetSeasonAndRankDetail(entry, json);
-          }
-          break;
-
-        case "PlayerInventory.GetRewardSchedule":
-          if (entry.arrow == "<==") {
-            json = entry.json();
-            onLabelGetPlayerInventoryGetRewardSchedule(entry, json);
-          }
-          break;
-
-        default:
-          break;
+          default:
+            break;
+        }
+      } catch (err) {
+        console.log(entry.label, entry.position, entry.json());
+        console.error(err);
       }
     }
   }
@@ -1207,10 +1262,12 @@ function processLogUser(rawString) {
     }
 
     // Get Client Version
-    strCheck = '"ClientVersion":"';
+    strCheck = '"clientVersion": "';
     if (value.indexOf(strCheck) > -1) {
       playerData.arenaVersion = dataChop(value, strCheck, '"');
       ipc_send("ipc_log", "Arena version: " + playerData.arenaVersion);
+      // We request manifest data here
+      //manifestParser.requestManifestData(playerData.arenaVersion);
     }
     /*
     if (firstPass) {
@@ -1856,54 +1913,20 @@ function getOppDeck() {
 }
 
 //
-function saveEconomy(json) {
-  var ctx = json.context;
-  json.id = sha1(json.date.getTime() + ctx);
-  json.date = new Date();
+function saveEconomyTransaction(transaction) {
+  let id = transaction.id;
+  let economyIndex = store.get("economy_index");
 
-  if (ctx.indexOf("Quest.Completed") !== -1) {
-    json.context = "Quest Completed";
-  }
-  if (ctx.indexOf("Booster.Open") !== -1) {
-    json.context = "Booster Open";
-  }
-  if (ctx.indexOf("PlayerReward") !== -1) {
-    json.context = "Player Rewards";
-  }
-  if (ctx.indexOf("WildCard.Redeem") !== -1) {
-    json.context = "Redeem Wildcard";
-  }
-  if (ctx.indexOf("Store.Fulfillment") !== -1) {
-    json.context = "Store";
-  }
-  if (ctx.indexOf("Event.Prize") !== -1) {
-    json.context = "Event Prize";
-  }
-  if (ctx.indexOf("Event.PayEntry") !== -1) {
-    json.context = "Pay Event Entry";
-  }
-  if (ctx.indexOf("Event.GrantCardPool") !== -1) {
-    json.context = "Event Card Pool";
-  }
-  if (ctx.indexOf("Event.Season.Constructed.Payout") !== -1) {
-    json.context = "Constructed Season Rewards";
-  }
-  if (ctx.indexOf("Event.Season.Limited.Payout") !== -1) {
-    json.context = "Limited Season Rewards";
+  if (!economyIndex.includes(id)) {
+    economyIndex.push(id);
+    store.set("economy_index", economyIndex);
+    economy.changes = economyIndex;
   }
 
-  var economy_index = store.get("economy_index");
+  economy[id] = transaction;
+  store.set(id, transaction);
 
-  if (!economy_index.includes(json.id)) {
-    economy_index.push(json.id);
-  }
-
-  httpApi.httpSetEconomy(json);
-
-  economy[json.id] = json;
-  economy.changes = economy_index;
-  store.set("economy_index", economy_index);
-  store.set(json.id, json);
+  httpApi.httpSetEconomy(transaction);
 }
 
 //
@@ -1966,10 +1989,10 @@ function saveMatch(matchId) {
     win: ow
   };
   match.player = {
-    name: currentMatch.player.name,
+    name: playerData.name,
     rank: playerData.rank.constructed.rank,
     tier: playerData.rank.constructed.tier,
-    userid: currentMatch.player.id,
+    userid: playerData.arenaId,
     seat: currentMatch.player.seat,
     win: pw
   };
@@ -2000,6 +2023,7 @@ function saveMatch(matchId) {
     .getVersion()
     .split(".")
     .reduce((acc, cur) => +acc * 256 + +cur);
+  match.toolRunFromSource = !electron.remote.app.isPackaged;
 
   console.log("Save match:", match);
   var matches_index = store.get("matches_index");
@@ -2128,55 +2152,4 @@ function finishLoading() {
     let logReadElapsed = (logReadEnd - logReadStart) / 1000;
     ipc_send("ipc_log", `Log read in ${logReadElapsed}s`);
   }
-}
-
-// Utility functions that belong only to background
-
-//
-function parseWotcTime(str) {
-  try {
-    let datePart = str.split(" ")[0];
-    let timePart = str.split(" ")[1];
-    let midnight = str.split(" ")[2];
-
-    datePart = datePart.split("/");
-    timePart = timePart.split(":");
-
-    timePart.forEach(function(s, index) {
-      timePart[index] = parseInt(s);
-    });
-    datePart.forEach(function(s, index) {
-      datePart[index] = parseInt(s);
-    });
-
-    if (midnight == "PM" && timePart[0] != 12) {
-      timePart[0] += 12;
-    }
-    if (midnight == "AM" && timePart[0] == 12) {
-      timePart[0] = 0;
-    }
-
-    var date = new Date(
-      datePart[2],
-      datePart[0] - 1,
-      datePart[1],
-      timePart[0],
-      timePart[1],
-      timePart[2]
-    );
-    return date;
-  } catch (e) {
-    return new Date();
-  }
-}
-
-function normaliseFields(iterator) {
-  if (typeof iterator == "object") {
-    return transform(iterator, function(result, value, key) {
-      let nkey =
-        typeof key == "string" ? key.replace(/List$/, "").toLowerCase() : key;
-      result[nkey] = normaliseFields(value);
-    });
-  }
-  return iterator;
 }

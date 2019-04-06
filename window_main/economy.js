@@ -1,20 +1,20 @@
 /*
 global
-	$,
-	daysPast,
-	get_colation_set,
-	getEventId,
-	setsList,
-	addCardHover,
-	cardsDb,
-	shell,
-	get_set_scryfall,
-	collectionSortRarity,
-	addCardHover,
-	selectAdd,
-	economyHistory,
-	get_card_image,
-	createDivision
+  $,
+  daysPast,
+  get_colation_set,
+  getReadableEvent,
+  setsList,
+  addCardHover,
+  cardsDb,
+  shell,
+  get_set_scryfall,
+  collectionSortRarity,
+  addCardHover,
+  createSelect,
+  economyHistory,
+  get_card_image,
+  createDivision
 */
 
 var loadEconomy = 0;
@@ -29,6 +29,40 @@ class economyDay {
     this.goldSpent = goldSpent;
     this.gemsSpent = gemsSpent;
   }
+}
+
+// These should match the full text of the event
+const economyTransactionContextsMap = {
+  "Booster.Open": "Booster Open",
+  "Event.GrantCardPool": "Event Card Pool",
+  "Event.PayEntry": "Pay Event Entry",
+  "Event.Season.Constructed.Payout": "Constructed Season Rewards",
+  "Event.Season.Limited.Payout": "Limited Season Rewards",
+  "PlayerReward.OnMatchCompletedDaily": "Player Rewards",
+  "Quest.Completed": "Quest Completed",
+  "Store.Fulfillment": "Store",
+  "Store.Fulfillment.Chest": "Chest Redeem",
+  "Store.Fulfillment.Boosters": "Booster Redeem",
+  "WildCard.Redeem": "Redeem Wildcard",
+  "Vault.Complete": "Vault Opening",
+  "PlayerReward.OnMatchCompletedWeekly": "Weekly rewards"
+};
+
+function getPrettyContext(context, full = true) {
+  if (context.startsWith("Event.Prize")) {
+    var eventCode = context.substring(12);
+    return full ? `Event Prize: ${getReadableEvent(eventCode)}` : "Event Prize";
+  }
+
+  if (context.startsWith("Quest.Completed")) {
+    var questCode = context.substring(16);
+    return full ? `Quest Completed: ${questCode}` : "Quest Completed";
+  }
+
+  var pretty = economyTransactionContextsMap[context];
+
+  // If there's no valid pretty context keep the code as is.
+  return pretty || context;
 }
 
 // creates the economy tab.
@@ -53,8 +87,8 @@ function openEconomyTab(loadMore) {
     loadEconomy < loadEnd;
     loadEconomy++
   ) {
-    let economy_id = economyHistory.changes[loadEconomy];
-    let change = economyHistory[economy_id];
+    let economyId = economyHistory.changes[loadEconomy];
+    let change = economyHistory[economyId];
 
     if (change == undefined) continue;
 
@@ -74,7 +108,7 @@ function openEconomyTab(loadMore) {
       mainDiv.appendChild(createDayHeader(change));
     }
 
-    var div = createChangeRow(change, economy_id);
+    var div = createChangeRow(change, economyId);
     mainDiv.appendChild(div);
 
     $(".list_economy_awarded").on("mousewheel", function(e) {
@@ -99,18 +133,19 @@ function openEconomyTab(loadMore) {
 
 function createDayHeader(change) {
   daysago = daysPast(change.date);
-  let dd = new Date(change.date);
   let div = createDivision(["economy_title", "flex_item"]);
 
-  let fll = createDivision(["flex_item"]);
-  fll.style.lineHeight = "64px";
+  let flexLeft = createDivision(["flex_item"]);
+  flexLeft.style.lineHeight = "64px";
 
-  if (daysago == 0) fll.innerHTML = "Today";
-  if (daysago == 1) fll.innerHTML = "Yesterday";
-  if (daysago > 1)
-    fll.innerHTML = daysago + " Days ago. (" + dd.toDateString() + ")";
+  if (daysago == 0) flexLeft.innerHTML = "Today";
+  if (daysago == 1) flexLeft.innerHTML = "Yesterday";
+  if (daysago > 1) {
+    let date = new Date(change.date);
+    flexLeft.innerHTML = niceDateFormat(date);
+  }
 
-  let flr = createDivision(["economy_day_stats", "flex_item"]);
+  let flexRight = createDivision(["economy_day_stats", "flex_item"]);
 
   let icgo = createDivision(["economy_gold_med"]);
   icgo.title = "Gold";
@@ -127,35 +162,36 @@ function createDayHeader(change) {
   tx.style.lineHeight = "64px";
   tx.classList.add("economy_sub");
 
-  flr.appendChild(icgo);
-  flr.appendChild(up);
+  flexRight.appendChild(icgo);
+  flexRight.appendChild(up);
   tx.innerHTML = dayList[daysago].goldEarned;
-  flr.appendChild(tx);
+  flexRight.appendChild(tx);
 
-  flr.appendChild(down);
+  flexRight.appendChild(down);
   let ntx = tx.cloneNode(true);
   ntx.innerHTML = dayList[daysago].goldSpent;
-  flr.appendChild(ntx);
+  flexRight.appendChild(ntx);
 
-  flr.appendChild(icge);
-  flr.appendChild(up.cloneNode(true));
+  flexRight.appendChild(icge);
+  flexRight.appendChild(up.cloneNode(true));
   ntx = tx.cloneNode(true);
   ntx.innerHTML = dayList[daysago].gemsEarned;
-  flr.appendChild(ntx);
+  flexRight.appendChild(ntx);
 
-  flr.appendChild(down.cloneNode(true));
+  flexRight.appendChild(down.cloneNode(true));
   ntx = tx.cloneNode(true);
   ntx.innerHTML = dayList[daysago].gemsSpent;
-  flr.appendChild(ntx);
+  flexRight.appendChild(ntx);
 
-  div.appendChild(fll);
-  div.appendChild(flr);
+  div.appendChild(flexLeft);
+  div.appendChild(flexRight);
   return div;
 }
 
-function createChangeRow(change, economy_id) {
-  var flb = createDivision(["flex_bottom"]);
-  var flr = createDivision(["tiny_scroll", "list_economy_awarded"]);
+function createChangeRow(change, economyId) {
+  // The next ~200 lines of code will add elements to these two containers
+  var flexBottom = createDivision(["flex_bottom"]);
+  var flexRight = createDivision(["tiny_scroll", "list_economy_awarded"]);
 
   let checkGemsPaid = false;
   let checkGoldPaid = false;
@@ -165,10 +201,11 @@ function createChangeRow(change, economy_id) {
   let checkWildcardsAdded = false;
   let checkGemsEarnt = false;
   let checkGoldEarnt = false;
+  let checkSkinsAdded = false;
 
   var bon, bos;
 
-  if (change.context == "Booster Open") {
+  if (change.contextPretty == "Booster Open") {
     change.delta.boosterDelta.forEach(function(booster) {
       var set = get_colation_set(booster.collationId);
 
@@ -183,28 +220,32 @@ function createChangeRow(change, economy_id) {
 
       bon.innerHTML = "x" + Math.abs(booster.count);
 
-      flb.appendChild(bos);
-      flb.appendChild(bon);
+      flexBottom.appendChild(bos);
+      flexBottom.appendChild(bon);
     });
 
     checkWildcardsAdded = true;
     checkCardsAdded = true;
     checkAetherized = true;
-  } else if (change.context == "Store") {
+  } else if (change.contextPretty == "Store") {
     checkGemsPaid = true;
     checkGoldPaid = true;
     checkBoosterAdded = true;
     checkCardsAdded = true;
     checkAetherized = true;
-  } else if (change.context == "Pay Event Entry") {
+  } else if (change.contextPretty == "Booster Redeem") {
+    checkGemsPaid = true;
+    checkGoldPaid = true;
+    checkBoosterAdded = true;
+  } else if (change.contextPretty == "Pay Event Entry") {
     checkGemsPaid = true;
     checkGoldPaid = true;
 
     bos = createDivision(["economy_ticket_med"]);
     bos.title = "Event Entry";
 
-    flr.appendChild(bos);
-  } else if (change.context == "Redeem Wildcard") {
+    flexRight.appendChild(bos);
+  } else if (change.contextPretty == "Redeem Wildcard") {
     var imgUri = "";
     if (change.delta.wcCommonDelta != undefined) imgUri = "wc_common";
     if (change.delta.wcUncommonDelta != undefined) imgUri = "wc_uncommon";
@@ -214,7 +255,7 @@ function createChangeRow(change, economy_id) {
       bos = createDivision(["economy_wc"]);
       bos.style.backgroundImage = "url(../images/" + imgUri + ".png)";
 
-      flb.appendChild(bos);
+      flexBottom.appendChild(bos);
     }
 
     checkCardsAdded = true;
@@ -226,6 +267,7 @@ function createChangeRow(change, economy_id) {
     checkCardsAdded = true;
     checkAetherized = true;
     checkWildcardsAdded = true;
+    checkSkinsAdded = true;
   }
 
   if (checkGemsPaid && change.delta.gemsDelta != undefined) {
@@ -237,8 +279,8 @@ function createChangeRow(change, economy_id) {
     bon.classList.add("economy_sub");
     bon.innerHTML = Math.abs(change.delta.gemsDelta);
 
-    flb.appendChild(bos);
-    flb.appendChild(bon);
+    flexBottom.appendChild(bos);
+    flexBottom.appendChild(bon);
   }
 
   if (checkGoldPaid && change.delta.goldDelta != undefined) {
@@ -250,8 +292,8 @@ function createChangeRow(change, economy_id) {
     bon.classList.add("economy_sub");
     bon.innerHTML = Math.abs(change.delta.goldDelta);
 
-    flb.appendChild(bos);
-    flb.appendChild(bon);
+    flexBottom.appendChild(bos);
+    flexBottom.appendChild(bon);
   }
 
   if (checkGemsEarnt && change.delta.gemsDelta != undefined) {
@@ -263,8 +305,8 @@ function createChangeRow(change, economy_id) {
     bon.classList.add("economy_sub");
     bon.innerHTML = Math.abs(change.delta.gemsDelta);
 
-    flr.appendChild(bos);
-    flr.appendChild(bon);
+    flexRight.appendChild(bos);
+    flexRight.appendChild(bon);
   }
 
   if (checkGoldEarnt && change.delta.goldDelta != undefined) {
@@ -276,8 +318,8 @@ function createChangeRow(change, economy_id) {
     bon.classList.add("economy_sub");
     bon.innerHTML = Math.abs(change.delta.goldDelta);
 
-    flr.appendChild(bos);
-    flr.appendChild(bon);
+    flexRight.appendChild(bos);
+    flexRight.appendChild(bon);
   }
 
   if (checkBoosterAdded && change.delta.boosterDelta != undefined) {
@@ -294,8 +336,8 @@ function createChangeRow(change, economy_id) {
       bon.classList.add("economy_sub");
       bon.innerHTML = "x" + Math.abs(booster.count);
 
-      flr.appendChild(bos);
-      flr.appendChild(bon);
+      flexRight.appendChild(bos);
+      flexRight.appendChild(bon);
     });
   }
 
@@ -309,8 +351,8 @@ function createChangeRow(change, economy_id) {
       bon.style.lineHeight = "64px";
       bon.classList.add("economy_sub");
       bon.innerHTML = "x" + Math.abs(change.delta.wcCommonDelta);
-      flr.appendChild(bos);
-      flr.appendChild(bon);
+      flexRight.appendChild(bos);
+      flexRight.appendChild(bon);
     }
 
     if (change.delta.wcUncommonDelta != undefined) {
@@ -322,8 +364,8 @@ function createChangeRow(change, economy_id) {
       bon.style.lineHeight = "64px";
       bon.classList.add("economy_sub");
       bon.innerHTML = "x" + Math.abs(change.delta.wcUncommonDelta);
-      flr.appendChild(bos);
-      flr.appendChild(bon);
+      flexRight.appendChild(bos);
+      flexRight.appendChild(bon);
     }
 
     if (change.delta.wcRareDelta != undefined) {
@@ -335,8 +377,8 @@ function createChangeRow(change, economy_id) {
       bon.style.lineHeight = "64px";
       bon.classList.add("economy_sub");
       bon.innerHTML = "x" + Math.abs(change.delta.wcRareDelta);
-      flr.appendChild(bos);
-      flr.appendChild(bon);
+      flexRight.appendChild(bos);
+      flexRight.appendChild(bon);
     }
     if (change.delta.wcMythicDelta != undefined) {
       bos = createDivision(["economy_wc"]);
@@ -347,9 +389,45 @@ function createChangeRow(change, economy_id) {
       bon.style.lineHeight = "64px";
       bon.classList.add("economy_sub");
       bon.innerHTML = "x" + Math.abs(change.delta.wcMythicDelta);
-      flr.appendChild(bos);
-      flr.appendChild(bon);
+      flexRight.appendChild(bos);
+      flexRight.appendChild(bon);
     }
+  }
+
+  if (checkCardsAdded && change.delta.cardsAdded != undefined) {
+    change.delta.cardsAdded.sort(collectionSortRarity);
+    change.delta.cardsAdded.forEach(function(grpId) {
+      var card = cardsDb.get(grpId);
+
+      var d = createDivision(["inventory_card"]);
+      d.style.width = "39px";
+
+      var img = document.createElement("img");
+      img.classList.add("inventory_card_img");
+      img.style.width = "39px";
+      img.src = get_card_image(card);
+
+      d.appendChild(img);
+
+      flexRight.appendChild(d);
+      var imgDom = $(img);
+      addCardHover(imgDom, card);
+
+      imgDom.on("click", function() {
+        if (cardsDb.get(grpId).dfc == "SplitHalf") {
+          card = cardsDb.get(card.dfcId);
+        }
+        //let newname = card.name.split(' ').join('-');
+        shell.openExternal(
+          "https://scryfall.com/card/" +
+            get_set_scryfall(card.set) +
+            "/" +
+            card.cid +
+            "/" +
+            card.name
+        );
+      });
+    });
   }
 
   if (checkAetherized && change.aetherizedCards != undefined) {
@@ -377,7 +455,7 @@ function createChangeRow(change, economy_id) {
         img.src = get_card_image(card);
 
         d.appendChild(img);
-        flr.appendChild(d);
+        flexRight.appendChild(d);
 
         var imgDom = $(img);
         addCardHover(imgDom, card);
@@ -400,63 +478,48 @@ function createChangeRow(change, economy_id) {
     });
   }
 
-  if (checkCardsAdded && change.delta.cardsAdded != undefined) {
-    change.delta.cardsAdded.sort(collectionSortRarity);
-    change.delta.cardsAdded.forEach(function(grpId) {
-      var card = cardsDb.get(grpId);
+  if (checkSkinsAdded && change.delta.artSkinsAdded != undefined) {
+    change.delta.artSkinsAdded.forEach(obj => {
+      let card = cardsDb.getByArt(obj.artId);
 
-      var d = createDivision(["inventory_card"]);
-      d.style.width = "39px";
+      bos = createDivision(["economy_skin_art"]);
+      bos.title = card.name + " Skin";
+      bos.style.backgroundImage = `url("${get_card_art(card)}")`;
 
-      var img = document.createElement("img");
-      img.classList.add("inventory_card_img");
-      img.style.width = "39px";
-      img.src = get_card_image(card);
-
-      d.appendChild(img);
-      flr.appendChild(d);
-
-      var imgDom = $(img);
-      addCardHover(imgDom, card);
-
-      imgDom.on("click", function() {
-        if (cardsDb.get(grpId).dfc == "SplitHalf") {
-          card = cardsDb.get(card.dfcId);
-        }
-        //let newname = card.name.split(' ').join('-');
-        shell.openExternal(
-          "https://scryfall.com/card/" +
-            get_set_scryfall(card.set) +
-            "/" +
-            card.cid +
-            "/" +
-            card.name
-        );
-      });
+      flexRight.appendChild(bos);
     });
   }
 
   // DOM hierarchy is:
-  // div
-  //   fll
-  //      flt
-  //      flb
-  //   flr
+  // changeRow
+  //   flexLeft
+  //      flexTop
+  //      flexBottom
+  //   flexRight
 
-  var flt = createDivision(["flex_top", "economy_sub"]);
-  flt.style.lineHeight = "32px";
-  flt.innerHTML = change.context;
+  var flexTop = createDivision(["flex_top", "economy_sub"]);
+  flexTop.style.lineHeight = "32px";
 
-  var fll = createDivision(["flex_item"]);
-  fll.style.flexDirection = "column";
-  fll.appendChild(flt);
-  fll.appendChild(flb);
+  flexTop.appendChild(
+    createDivision(
+      [],
+      `<span title="${change.originalContext || ""}">${change.context}</span>`
+    )
+  );
 
-  var div = createDivision([economy_id, "list_economy"]);
-  div.appendChild(fll);
-  div.appendChild(flr);
+  var niceDate = niceDateFormat(new Date(change.date));
+  flexTop.appendChild(createDivision(["list_economy_time"], niceDate));
 
-  return div;
+  var flexLeft = createDivision(["flex_item"]);
+  flexLeft.style.flexDirection = "column";
+  flexLeft.appendChild(flexTop);
+  flexLeft.appendChild(flexBottom);
+
+  var changeRow = createDivision([economyId, "list_economy"]);
+  changeRow.appendChild(flexLeft);
+  changeRow.appendChild(flexRight);
+
+  return changeRow;
 }
 
 function createEconomyUI(mainDiv) {
@@ -465,13 +528,18 @@ function createEconomyUI(mainDiv) {
   dayList[0] = new economyDay();
   economyHistory.changes.sort(compare_economy);
 
-  var selectItems = ["All", "Day Summaries"];
+  var topSelectItems = ["All", "Day Summaries"];
+  var selectItems = [];
+
   for (var n = 0; n < economyHistory.changes.length; n++) {
-    let economy_id = economyHistory.changes[n];
-    let change = economyHistory[economy_id];
+    let economyId = economyHistory.changes[n];
+    let change = economyHistory[economyId];
 
     if (change == undefined) continue;
 
+    let ctx = change.originalContext || change.context;
+    change.contextPretty = getPrettyContext(ctx);
+    change.context = getPrettyContext(ctx, false);
     if (!selectItems.includes(change.context)) {
       selectItems.push(change.context);
     }
@@ -496,26 +564,26 @@ function createEconomyUI(mainDiv) {
   mainDiv.classList.remove("flex_item");
   mainDiv.innerHTML = "";
 
-  var d = createDivision(["list_fill"]);
-
   let div = createDivision(["list_economy_top", "flex_item"]);
 
   //
   var selectdiv = createDivision();
   selectdiv.style.margin = "auto 64px auto 0px";
+  let options = [...topSelectItems, ...selectItems];
 
-  var select = $('<select id="query_select"></select>');
-  for (var i = 0; i < selectItems.length; i++) {
-    if (selectItems[i] !== filterEconomy) {
-      select.append(
-        '<option value="' + selectItems[i] + '">' + selectItems[i] + "</option>"
-      );
-    }
-  }
-  select.appendTo(selectdiv);
+  console.log("filterEconomy", filterEconomy);
+  let select = createSelect(
+    selectdiv,
+    options,
+    filterEconomy,
+    res => {
+      filterEconomy = res;
+      openEconomyTab(0);
+    },
+    "query_select"
+  );
+  //$$("#query_select.select_button")[0].innerHTML = filterEconomy;
   div.appendChild(selectdiv);
-  selectAdd(select, updateEconomy);
-  select.next("div.select-styled").text(filterEconomy);
 
   //
   let icwcc = createDivision(["economy_wc_med", "wc_common"]);
@@ -577,20 +645,16 @@ function createEconomyUI(mainDiv) {
   div.appendChild(ntx);
 
   mainDiv.appendChild(div);
+
+  var d = createDivision(["list_fill"]);
   mainDiv.appendChild(d);
 
   loadEconomy = 0;
   daysago = -1;
 }
 
-function updateEconomy() {
-  filterEconomy = getEventId(document.getElementById("query_select").value);
-  openEconomyTab(0);
-}
-
 // Compare two economy events OR the IDs of two economy events.
 // If two IDs are specified then events are retrieved from `economyHistory`
-
 function compare_economy(a, b) {
   /* global economyHistory */
   if (a == undefined) return -1;

@@ -72,6 +72,7 @@ function onLabelOutLogInfo(entry, json) {
         });
 
         game.sideboardChanges = sideboardChanges;
+        game.deck = JSON.parse(JSON.stringify(currentMatch.player.deck));
       }
 
       game.handLands = game.handsDrawn.map(
@@ -122,7 +123,7 @@ function onLabelOutLogInfo(entry, json) {
 
       matchGameStats[gameNumberCompleted - 1] = game;
 
-      saveMatch(mid + "-" + playerData.arenaId);
+      saveMatch(mid);
     }
   }
 }
@@ -567,7 +568,6 @@ function onLabelClientToMatchServiceMessageTypeClientToGREMessage(entry, json) {
   if (json.payload.submitdeckresp) {
     // Get sideboard changes
     let deckResp = json.payload.submitdeckresp;
-    //console.log("deckResp", deckResp);
 
     let tempMain = new CardsList();
     let tempSide = new CardsList();
@@ -615,6 +615,14 @@ function onLabelInEventGetPlayerCourse(entry, json) {
   }
 }
 
+function onLabelInEventGetPlayerCourseV2(entry, json) {
+  if (!json) return;
+  if (json.CourseDeck) {
+    json.CourseDeck = convert_deck_from_v3(json.CourseDeck);
+  }
+  onLabelInEventGetPlayerCourse(entry, json);
+}
+
 function onLabelInEventGetCombinedRankInfo(entry, json) {
   if (!json) return;
 
@@ -635,6 +643,13 @@ function onLabelInEventGetCombinedRankInfo(entry, json) {
   playerData.rank.limited.drawn = json.limitedMatchesDrawn;
 
   updateRank();
+}
+
+function onLabelInEventGetActiveEvents(entry, json) {
+  if (!json) return;
+
+  let activeEvents = json.map(event => event.InternalEventName);
+  ipc_send("set_active_events", JSON.stringify(activeEvents));
 }
 
 function onLabelRankUpdated(entry, json) {
@@ -677,6 +692,11 @@ function onLabelInDeckGetDeckLists(entry, json) {
   ipc_send("set_decks", JSON.stringify(decks));
 }
 
+function onLabelInDeckGetDeckListsV3(entry, json) {
+  if (!json) return;
+  onLabelInDeckGetDeckLists(entry, json.map(d => convert_deck_from_v3(d)));
+}
+
 function onLabelInEventGetPlayerCourses(entry, json) {
   if (!json) return;
 
@@ -693,6 +713,16 @@ function onLabelInEventGetPlayerCourses(entry, json) {
       }
     }
   });
+}
+
+function onLabelInEventGetPlayerCoursesV2(entry, json) {
+  if (!json) return;
+  json.forEach(course => {
+    if (course.CourseDeck) {
+      course.CourseDeck = convert_deck_from_v3(course.CourseDeck);
+    }
+  });
+  onLabelInEventGetPlayerCourses(entry, json);
 }
 
 function onLabelInDeckUpdateDeck(entry, json) {
@@ -773,29 +803,44 @@ function onLabelInDeckUpdateDeck(entry, json) {
   });
 }
 
-function onLabelInventoryUpdated(entry, json) {
+function onLabelInDeckUpdateDeckV3(entry, json) {
   if (!json) return;
-  json.date = parseWotcTime(entry.timestamp);
+  onLabelInDeckUpdateDeck(entry, convert_deck_from_v3(json));
+}
 
-  if (json.delta.boosterDelta.length == 0) delete json.delta.boosterDelta;
-  if (json.delta.cardsAdded.length == 0) delete json.delta.cardsAdded;
-  if (json.delta.decksAdded.length == 0) delete json.delta.decksAdded;
-  if (json.delta.vanityItemsAdded.length == 0)
-    delete json.delta.vanityItemsAdded;
-  if (json.delta.vanityItemsRemoved.length == 0)
-    delete json.delta.vanityItemsRemoved;
+// Given a shallow object of numbers and lists return a
+// new object which doesn't contain 0s or empty lists.
+function minifiedDelta(delta) {
+  let newDelta = {};
+  Object.keys(delta).forEach(key => {
+    let val = delta[key];
+    if (val === 0 || (Array.isArray(val) && !val.length)) {
+      return;
+    }
+    newDelta[key] = val;
+  });
+  return newDelta;
+}
 
-  if (json.delta.gemsDelta == 0) delete json.delta.gemsDelta;
-  if (json.delta.draftTokensDelta == 0) delete json.delta.draftTokensDelta;
-  if (json.delta.goldDelta == 0) delete json.delta.goldDelta;
-  if (json.delta.sealedTokensDelta == 0) delete json.delta.sealedTokensDelta;
-  if (json.delta.vaultProgressDelta == 0) delete json.delta.vaultProgressDelta;
-  if (json.delta.wcCommonDelta == 0) delete json.delta.wcCommonDelta;
-  if (json.delta.wcMythicDelta == 0) delete json.delta.wcMythicDelta;
-  if (json.delta.wcRareDelta == 0) delete json.delta.wcRareDelta;
-  if (json.delta.wcUncommonDelta == 0) delete json.delta.wcUncommonDelta;
+// Called for all "Inventory.Updated" labels
+function onLabelInventoryUpdated(entry, transaction) {
+  // if (!transaction) return;
 
-  saveEconomy(json);
+  // Add missing data
+  transaction.date = parseWotcTime2(entry.timestamp);
+
+  // Reduce the size for storage
+  transaction.delta = minifiedDelta(transaction.delta);
+
+  // Construct a unique ID
+  let context = transaction.context;
+  let milliseconds = transaction.date.getTime();
+  transaction.id = sha1(milliseconds + context);
+
+  // Do not modify the context from now on.
+
+  saveEconomyTransaction(transaction);
+  return;
 }
 
 function onLabelInPlayerInventoryGetPlayerInventory(entry, json) {
@@ -855,6 +900,11 @@ function onLabelInEventDeckSubmit(entry, json) {
   select_deck(json);
 }
 
+function onLabelInEventDeckSubmitV3(entry, json) {
+  if (!json) return;
+  onLabelInEventDeckSubmit(entry, convert_deck_from_v3(json));
+}
+
 function onLabelEventMatchCreated(entry, json) {
   if (!json) return;
   matchBeginTime = parseWotcTime(entry.timestamp);
@@ -881,7 +931,7 @@ function onLabelOutDirectGameChallenge(entry, json) {
   deck = JSON.parse(deck);
   select_deck(deck);
 
-  httpApi.httpTournamentCheck(deck, json.params.opponentDisplayName, false);
+  httpApi.httpTournamentCheck(deck, json.params.opponentDisplayName, false, json.params.playFirst, json.params.bo3);
 }
 
 function onLabelInDraftDraftStatus(entry, json) {

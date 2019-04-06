@@ -615,6 +615,7 @@ const enums = {
 var setsList = cardsDb.get("sets");
 var eventsList = cardsDb.get("events");
 var eventsToFormat = cardsDb.get("events_format");
+var rankedEvents = cardsDb.get("ranked_events");
 var renderer = 0;
 var rarities = ["common", "uncommon", "rare", "mythic"];
 
@@ -639,7 +640,7 @@ var playerDataDefault = {
   arenaId: "",
   arenaVersion: "",
   patreon: false,
-  platreon_tier: 0,
+  patreon_tier: 0,
   decks_last_used: [],
   rank: {
     constructed: {
@@ -824,6 +825,55 @@ function addCardTile(grpId, indent, quantity, element) {
   return false;
 }
 
+/**
+ * Creates a select box
+ * This is a "fixed" version of SelectAdd and should replace it.
+ **/
+function createSelect(parent, options, current, callback, divClass) {
+  let selectContainer = createDivision(["select_container", divClass]);
+  selectContainer.id = divClass;
+  if (!options.includes(current)) current = options[0];
+  selectContainer.value = current;
+
+  let selectButton = createDivision(["select_button"], current);
+  let selectOptions = createDivision(["select_options_container"]);
+
+  selectContainer.appendChild(selectButton);
+  selectContainer.appendChild(selectOptions);
+
+  selectButton.addEventListener("click", () => {
+    if (!selectButton.classList.contains("active")) {
+      current = selectContainer.value;
+
+      selectButton.classList.add("active");
+      selectOptions.style.display = "block";
+      for (let i = 0; i < options.length; i++) {
+        if (options[i] !== current) {
+          let option = createDivision(["select_option"], options[i]);
+          selectOptions.appendChild(option);
+
+          option.addEventListener("click", () => {
+            selectButton.classList.remove("active");
+            selectButton.innerHTML = options[i];
+            selectContainer.value = options[i];
+            selectOptions.style.display = "none";
+            selectOptions.innerHTML = "";
+            callback(options[i]);
+          });
+        }
+      }
+    } else {
+      selectButton.classList.remove("active");
+      selectOptions.innerHTML = "";
+      selectOptions.style.display = "none";
+    }
+  });
+
+  parent.appendChild(selectContainer);
+
+  return selectContainer;
+}
+
 // When given a <select> element will convert to
 // list format to allow more style options
 function selectAdd(selectElement, callback) {
@@ -934,7 +984,7 @@ function addCardHover(element, card) {
     mainImageElement.addEventListener("load", evt => {
       $$(".loader").forEach(el => (el.style.opacity = 0));
     });
-    
+
     // show card quantity
     if (renderer == 0) {
       attachOwnerhipStars(card, $$(".hover_card_quantity")[0]);
@@ -952,16 +1002,14 @@ function attachOwnerhipStars(card, starContainer) {
   starContainer.innerHTML = "";
   starContainer.style.opacity = 1;
 
+  let owned = cards[card.id];
+  let aquired = cardsNew[card.id];
   for (let i = 0; i < 4; i++) {
     let color = "gray";
 
-    if (cardsNew[card.id] != undefined && i < cardsNew[card.id]) {
-      color = "orange";
-    } else if (i < cards[card.id]) {
-      color = "green";
-    } else {
-      color = "gray";
-    }
+    if (i < owned) color = "green";
+    if (aquired && i >= owned-aquired && i < owned) color = "orange";
+
     starContainer.appendChild(
       createDivision([`inventory_card_quantity_${color}`])
     );
@@ -978,6 +1026,19 @@ function get_card_image(cardObj) {
     return "../images/notfound.png";
   } else {
     return "https://img.scryfall.com/cards" + cardObj.images[cardQuality];
+  }
+}
+
+//
+function get_card_art(cardObj) {
+  if (typeof cardObj !== "object") {
+    cardObj = cardsDb.get(cardObj);
+  }
+
+  if (!cardObj) {
+    return "../images/notfound.png";
+  } else {
+    return "https://img.scryfall.com/cards" + cardObj.images.art_crop;
   }
 }
 
@@ -1530,6 +1591,228 @@ function get_deck_curve(deck) {
 }
 
 //
+function get_deck_types_ammount(deck) {
+  var types = { art: 0, cre: 0, enc: 0, ins: 0, lan: 0, pla: 0, sor: 0 };
+
+  deck.mainDeck.forEach(function(card) {
+    var c = cardsDb.get(card.id);
+    if (c) {
+      if (c.type.includes("Land", 0)) types.lan += card.quantity;
+      else if (c.type.includes("Creature", 0)) types.cre += card.quantity;
+      else if (c.type.includes("Artifact", 0)) types.art += card.quantity;
+      else if (c.type.includes("Enchantment", 0)) types.enc += card.quantity;
+      else if (c.type.includes("Instant", 0)) types.ins += card.quantity;
+      else if (c.type.includes("Sorcery", 0)) types.sor += card.quantity;
+      else if (c.type.includes("Planeswalker", 0)) types.pla += card.quantity;
+    }
+  });
+
+  return types;
+}
+
+//
+function get_deck_colors_ammount(deck) {
+  var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
+
+  //var mana = {0: "", 1: "white", 2: "blue", 3: "black", 4: "red", 5: "green", 6: "colorless", 7: "", 8: "x"}
+  deck.mainDeck.forEach(function(card) {
+    if (card.quantity > 0) {
+      cardsDb.get(card.id).cost.forEach(function(c) {
+        if (c.indexOf("w") !== -1) {
+          colors.w += card.quantity;
+          colors.total += card.quantity;
+        }
+        if (c.indexOf("u") !== -1) {
+          colors.u += card.quantity;
+          colors.total += card.quantity;
+        }
+        if (c.indexOf("b") !== -1) {
+          colors.b += card.quantity;
+          colors.total += card.quantity;
+        }
+        if (c.indexOf("r") !== -1) {
+          colors.r += card.quantity;
+          colors.total += card.quantity;
+        }
+        if (c.indexOf("g") !== -1) {
+          colors.g += card.quantity;
+          colors.total += card.quantity;
+        }
+        if (c.indexOf("c") !== -1) {
+          colors.c += card.quantity;
+          colors.total += card.quantity;
+        }
+      });
+    }
+  });
+
+  return colors;
+}
+
+//
+function get_deck_lands_ammount(deck) {
+  var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
+
+  //var mana = {0: "", 1: "white", 2: "blue", 3: "black", 4: "red", 5: "green", 6: "colorless", 7: "", 8: "x"}
+  deck.mainDeck.forEach(function(card) {
+    var quantity = card.quantity;
+    card = cardsDb.get(card.id);
+    if (quantity > 0) {
+      if (card.type.indexOf("Land") != -1 || card.type.indexOf("land") != -1) {
+        if (card.frame.length < 5) {
+          card.frame.forEach(function(c) {
+            if (c == 1) {
+              colors.w += quantity;
+              colors.total += quantity;
+            }
+            if (c == 2) {
+              colors.u += quantity;
+              colors.total += quantity;
+            }
+            if (c == 3) {
+              colors.b += quantity;
+              colors.total += quantity;
+            }
+            if (c == 4) {
+              colors.r += quantity;
+              colors.total += quantity;
+            }
+            if (c == 5) {
+              colors.g += quantity;
+              colors.total += quantity;
+            }
+            if (c == 6) {
+              colors.c += quantity;
+              colors.total += quantity;
+            }
+          });
+        }
+      }
+    }
+  });
+
+  return colors;
+}
+
+//
+function get_deck_export(deck) {
+  let str = "";
+  deck.mainDeck = removeDuplicates(deck.mainDeck);
+  deck.mainDeck.forEach(function(card) {
+    let grpid = card.id;
+    let cardObj = cardsDb.get(grpid);
+
+    if (cardObj.set == "Mythic Edition") {
+      grpid = cardObj.reprints[0];
+      cardObj = cardsDb.get(grpid);
+    }
+
+    let card_name = cardObj.name;
+    let card_set = cardObj.set;
+    let card_cn = cardObj.cid;
+    let card_q = card.quantity;
+    if (card_q == 9999) card_q = 1;
+
+    try {
+      card_set = setsList[card_set].arenacode;
+      str +=
+        card_q + " " + card_name + " (" + card_set + ") " + card_cn + "\r\n";
+    } catch (e) {
+      str +=
+        card_q +
+        " " +
+        card_name +
+        " (" +
+        get_set_code(card_set) +
+        ") " +
+        card_cn +
+        "\r\n";
+    }
+  });
+
+  str += "\r\n";
+
+  deck.sideboard = removeDuplicates(deck.sideboard);
+  deck.sideboard.forEach(function(card) {
+    let grpid = card.id;
+    let cardObj = cardsDb.get(grpid);
+
+    if (cardObj.set == "Mythic Edition") {
+      grpid = cardObj.reprints[0];
+      cardObj = cardsDb.get(grpid);
+    }
+
+    let card_name = cardObj.name;
+    let card_set = cardObj.set;
+    let card_cn = cardObj.cid;
+    let card_q = card.quantity;
+    if (card_q == 9999) card_q = 1;
+
+    try {
+      card_set = setsList[card_set].arenacode;
+      str +=
+        card_q + " " + card_name + " (" + card_set + ") " + card_cn + "\r\n";
+    } catch (e) {
+      str +=
+        card_q +
+        " " +
+        card_name +
+        " (" +
+        get_set_code(card_set) +
+        ") " +
+        card_cn +
+        "\r\n";
+    }
+  });
+
+  return str;
+}
+
+//
+function get_deck_export_txt(deck) {
+  var str = "";
+  deck.mainDeck = removeDuplicates(deck.mainDeck);
+  deck.mainDeck.forEach(function(card) {
+    var grpid = card.id;
+    var card_name = cardsDb.get(grpid).name;
+    //var card_set = cardsDb.get(grpid).set;
+    //var card_cn = cardsDb.get(grpid).cid;
+
+    str +=
+      (card.quantity == 9999 ? 1 : card.quantity) + " " + card_name + "\r\n";
+  });
+
+  str += "\r\n";
+
+  deck.sideboard = removeDuplicates(deck.sideboard);
+  deck.sideboard.forEach(function(card) {
+    var grpid = card.id;
+    var card_name = cardsDb.get(grpid).name;
+    //var card_set = cardsDb.get(grpid).set;
+    //var card_cn = cardsDb.get(grpid).cid;
+
+    str +=
+      (card.quantity == 9999 ? 1 : card.quantity) + " " + card_name + "\r\n";
+  });
+
+  return str;
+}
+
+//
+function convert_deck_from_v3(deck) {
+  return JSON.parse(JSON.stringify(deck), (key, value) => {
+    if (key === "mainDeck" || key === "sideboard") {
+      let ret = [];
+      for (let i = 0; i < value.length; i += 2) {
+        ret.push({ id: value[i], quantity: value[i + 1] });
+      }
+      return ret;
+    }
+    return value;
+  });
+}
+
+//
 function get_frame_class(frame) {
   if (frame.length == 0) {
     return "tile_c";
@@ -1589,6 +1872,10 @@ function daysPast(_date) {
       (firstDate.getTime() - secondDate.getTime()) / (24 * 60 * 60 * 1000)
     )
   );
+}
+
+function niceDateFormat(date) {
+  return `<relative-time datetime="${date.toISOString()}">${date.toString()}</relative-time>`;
 }
 
 //

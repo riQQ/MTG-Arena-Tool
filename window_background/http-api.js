@@ -27,7 +27,7 @@ const serverAddress = "mtgatool.com";
 
 function beginSSE() {
   var source = new EventSource(
-    "https://" + serverAddress + "/api/poll.php?token=" + tokenAuth
+    "https://" + serverAddress + "/api/pull?token=" + tokenAuth
   );
   source.onmessage = function(e) {
     ipc_send("ipc_log", ">> " + e.data);
@@ -42,7 +42,7 @@ function beginSSE() {
     console.log("> ", parsed);
 
     if (parsed) {
-      parsed.notifications.forEach(str => {
+      parsed.forEach(str => {
         console.log("heartbeat message:", str);
         if (typeof str == "string") {
           //console.log("Notification string:", str);
@@ -218,7 +218,10 @@ function httpBasic() {
             try {
               parsedResult = JSON.parse(results);
             } catch (e) {
-              //
+              ipc_send("popup", {
+                text: `Error parsing response. (${_headers.method})`,
+                time: 2000
+              });
             }
 
             if (_headers.method == "get_status") {
@@ -234,6 +237,9 @@ function httpBasic() {
                 delete ob.created_at;
               });
               ipc_send("set_status", parsedResult);
+            }
+            if (_headers.method == "get_explore") {
+              ipc_send("set_explore_decks", parsedResult);
             }
             if (_headers.method == "get_ladder_decks") {
               ipc_send("set_ladder_decks", parsedResult);
@@ -431,6 +437,7 @@ function httpSubmitCourse(course) {
     course.PlayerId = "000000000000000";
     course.PlayerName = "Anonymous";
   }
+  course.playerRank = playerData.rank.limited.rank;
   course = JSON.stringify(course);
   httpAsync.push({
     reqId: _id,
@@ -446,14 +453,25 @@ function httpSetPlayer() {
   //httpAsync.push({'reqId': _id, 'method': 'set_player', 'name': name, 'rank': rank, 'tier': tier});
 }
 
-function httpGetTopDecks(query, collection) {
+function httpGetExplore(query, collection) {
   var _id = makeId(6);
   collection = JSON.stringify(collection);
   httpAsync.unshift({
     reqId: _id,
-    method: "get_top_decks",
-    method_path: "/api/get_courses_list.php",
-    query: query,
+    method: "get_explore",
+    method_path: "/api/get_explore.php",
+    filter_wcc: query.filterWCC,
+    filter_wcu: query.filterWCU,
+    filter_wcr: query.filterWCR,
+    filter_wcm: query.filterWCM,
+    filter_owned: query.onlyOwned,
+    filter_type: query.filterType,
+    filter_event: query.filterEvent,
+    filter_sort: query.filterSort,
+    filter_sortdir: query.filterSortDir,
+    filter_mana: query.filteredMana,
+    filter_ranks: query.filteredranks,
+    filter_skip: query.filterSkip,
     collection: collection
   });
 }
@@ -475,6 +493,7 @@ function httpGetTopLadderTraditionalDecks() {
     method_path: "/top_ladder_traditional.json"
   });
 }
+
 function httpGetCourse(courseId) {
   var _id = makeId(6);
   httpAsync.unshift({
@@ -601,7 +620,7 @@ function httpTournamentDrop(tid) {
   });
 }
 
-function httpTournamentCheck(deck, opp, setCheck) {
+function httpTournamentCheck(deck, opp, setCheck, bo3 = "", playFirst = "") {
   var _id = makeId(6);
   deck = JSON.stringify(deck);
   httpAsync.unshift({
@@ -610,7 +629,9 @@ function httpTournamentCheck(deck, opp, setCheck) {
     method_path: "/api/check_match.php",
     deck: deck,
     opp: opp,
-    setcheck: setCheck
+    setcheck: setCheck,
+    bo3: bo3,
+    play_first: playFirst
   });
 }
 
@@ -656,7 +677,7 @@ module.exports = {
   httpAuth,
   httpSubmitCourse,
   httpSetPlayer,
-  httpGetTopDecks,
+  httpGetExplore,
   httpGetTopLadderDecks,
   httpGetTopLadderTraditionalDecks,
   httpGetCourse,

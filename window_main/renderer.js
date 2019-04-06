@@ -26,21 +26,24 @@ global
 const electron = require("electron");
 const remote = require("electron").remote;
 
+require('time-elements');
+
 const open_home_tab = require("./home").open_home_tab;
 const open_tournament = require("./home").open_tournament;
 const set_tou_state = require("./home").set_tou_state;
 const openDeck = require("./deck_details").openDeck;
 const open_decks_tab = require("./decks").open_decks_tab;
 const open_history_tab = require("./history").open_history_tab;
-const open_explore_tab = require("./explore").open_explore_tab;
-const update_explore_filters = require("./explore").update_explore_filters;
-const set_explore_mode = require("./explore").set_explore_mode;
+const openExploreTab = require("./explore").openExploreTab;
+const setExploreDecks = require("./explore").setExploreDecks;
+const updateExploreCheckbox = require("./explore").updateExploreCheckbox;
 const openCollectionTab = require("./collection").openCollectionTab;
 const openEventsTab = require("./events").openEventsTab;
 const expandEvent = require("./events").expandEvent;
 
 const open_economy_tab = require("./economy").open_economy_tab;
 const set_economy_history = require("./economy").set_economy_history;
+
 
 var orderedCardTypes = ["cre", "lan", "ins", "sor", "enc", "art", "pla"];
 var orderedCardTypesDesc = [
@@ -104,6 +107,7 @@ let season_starts = new Date();
 let season_ends = new Date();
 let rewards_daily_ends = new Date();
 let rewards_weekly_ends = new Date();
+let activeEvents = [];
 
 let deck_tags = {};
 let tags_colors = {};
@@ -222,6 +226,7 @@ ipc.on("set_db", function(event, arg) {
   setsList = arg.sets;
   eventsList = arg.events;
   eventsToFormat = arg.events_format;
+  rankedEvents = arg.ranked_events;
   delete arg.sets;
   delete arg.events;
   delete arg.events_format;
@@ -378,6 +383,18 @@ ipc.on("set_events", function(event, arg) {
   openEventsTab(0);
 });
 
+//
+ipc.on("set_active_events", (event, arg) => {
+  if (arg != null) {
+    try {
+      activeEvents = JSON.parse(arg);
+    } catch (e) {
+      console.log("Error parsing JSON:", arg);
+      return false;
+    }
+  }
+});
+
 ipc.on("set_economy", function(event, arg) {
   if (arg != null) {
     try {
@@ -480,6 +497,7 @@ ipc.on("set_status", function(event, arg) {
 //
 ipc.on("set_home", function(event, arg) {
   document.body.style.cursor = "auto";
+  hideLoadingBars();
   deck_tags = arg.tags;
 
   Object.keys(deck_tags).forEach(function(format) {
@@ -492,10 +510,18 @@ ipc.on("set_home", function(event, arg) {
   }
 });
 
+
 //
+ipc.on("set_explore_decks", function(event, arg) {
+  hideLoadingBars();
+  if (sidebarActive == 3) {
+    setExploreDecks(arg);
+  }
+});
+
+/*//
 ipc.on("set_explore", function(event, arg) {
   if (sidebarActive == 3) {
-    set_explore_mode(0);
     open_explore_tab(arg, 0);
   }
 });
@@ -512,7 +538,6 @@ ipc.on("set_ladder_traditional_decks", function(event, arg) {
 
 function set_ladder_decks(arg) {
   if (sidebarActive == 3) {
-    set_explore_mode(1);
 
     arg.decks.forEach(function(deck) {
       deck.colors = [];
@@ -523,6 +548,7 @@ function set_ladder_decks(arg) {
     open_explore_tab(arg.decks, 0);
   }
 }
+*/
 
 //
 ipc.on("open_course_deck", function(event, arg) {
@@ -534,6 +560,7 @@ ipc.on("open_course_deck", function(event, arg) {
   deck.sideboard.removeDuplicates();
   deck.getColors();
   openDeck(deck, 1);
+  hideLoadingBars();
 });
 
 //
@@ -629,6 +656,7 @@ ipc.on("initialize", function() {
   $(".top_username_id").html(playerData.name.slice(-6));
 
   sidebarActive = -1;
+  showLoadingBars();
   ipc_send("request_home", true);
   $(".top_nav").removeClass("hidden");
   $(".overflow_ux").removeClass("hidden");
@@ -777,11 +805,9 @@ function pop(str, timeout) {
   }
 }
 
-/* eslint-disable */
 function installUpdate() {
   ipc_send("renderer_update_install", 1);
 }
-/* eslint-enable */
 
 function force_open_settings() {
   sidebarActive = 6;
@@ -810,6 +836,7 @@ function force_open_about() {
 let top_compact = false;
 let resizeTimer;
 window.addEventListener("resize", event => {
+  hideLoadingBars();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     if ($(".top_nav_icons").width() < 500) {
@@ -878,6 +905,7 @@ $(document).ready(function() {
   //
   $(".top_nav_item").click(function() {
     $("#ux_0").off();
+    $("#ux_0")[0].removeEventListener("scroll", () => {}, false);
     $("#history_column").off();
     change_background("default");
     document.body.style.cursor = "auto";
@@ -895,10 +923,7 @@ $(document).ready(function() {
         if (offlineMode) {
           showOfflineSplash();
         } else {
-          $("#ux_0").html(
-            '<div class="loading_bar ux_loading"><div class="loading_color loading_w"></div><div class="loading_color loading_u"></div><div class="loading_color loading_b"></div><div class="loading_color loading_r"></div><div class="loading_color loading_g"></div></div>'
-          );
-
+          showLoadingBars();
           if (discordTag == null) {
             open_home_tab(null, true);
           } else {
@@ -923,11 +948,7 @@ $(document).ready(function() {
       }
       if ($(this).hasClass("it3")) {
         sidebarActive = 3;
-        $("#ux_0").html(
-          '<div class="loading_bar ux_loading"><div class="loading_color loading_w"></div><div class="loading_color loading_u"></div><div class="loading_color loading_b"></div><div class="loading_color loading_r"></div><div class="loading_color loading_g"></div></div>'
-        );
-        document.body.style.cursor = "progress";
-        ipc_send("request_explore", filterEvent);
+        openExploreTab();
       }
       if ($(this).hasClass("it4")) {
         sidebarActive = 4;
@@ -947,8 +968,17 @@ $(document).ready(function() {
   });
 });
 
+function showLoadingBars() {
+  $$(".main_loading")[0].style.display = "block";
+}
+
+function hideLoadingBars() {
+  $$(".main_loading")[0].style.display = "none";
+}
+
 //
 ipc.on("set_draft_link", function(event, arg) {
+  hideLoadingBars();
   document.getElementById("share_input").value = arg;
 });
 
@@ -1030,37 +1060,37 @@ function drawDeckVisual(_div, _stats, deck) {
   var types = deck.mainboard.countTypesAll();
   var typesdiv = $('<div class="types_container"></div>');
   $(
-    '<div class="type_icon_cont"><div title="Creatures"     class="type_icon type_cre"></div><span>' +
+    '<div class="type_icon_cont"><div title="Creatures" class="type_icon type_cre"></div><span>' +
       types.cre +
       "</span></div>"
   ).appendTo(typesdiv);
   $(
-    '<div class="type_icon_cont"><div title="Lands"       class="type_icon type_lan"></div><span>' +
+    '<div class="type_icon_cont"><div title="Lands" class="type_icon type_lan"></div><span>' +
       types.lan +
       "</span></div>"
   ).appendTo(typesdiv);
   $(
-    '<div class="type_icon_cont"><div title="Instants"    class="type_icon type_ins"></div><span>' +
+    '<div class="type_icon_cont"><div title="Instants" class="type_icon type_ins"></div><span>' +
       types.ins +
       "</span></div>"
   ).appendTo(typesdiv);
   $(
-    '<div class="type_icon_cont"><div title="Sorceries"     class="type_icon type_sor"></div><span>' +
+    '<div class="type_icon_cont"><div title="Sorceries" class="type_icon type_sor"></div><span>' +
       types.sor +
       "</span></div>"
   ).appendTo(typesdiv);
   $(
-    '<div class="type_icon_cont"><div title="Enchantments"  class="type_icon type_enc"></div><span>' +
+    '<div class="type_icon_cont"><div title="Enchantments" class="type_icon type_enc"></div><span>' +
       types.enc +
       "</span></div>"
   ).appendTo(typesdiv);
   $(
-    '<div class="type_icon_cont"><div title="Artifacts"     class="type_icon type_art"></div><span>' +
+    '<div class="type_icon_cont"><div title="Artifacts" class="type_icon type_art"></div><span>' +
       types.art +
       "</span></div>"
   ).appendTo(typesdiv);
   $(
-    '<div class="type_icon_cont"><div title="Planeswalkers"   class="type_icon type_pla"></div><span>' +
+    '<div class="type_icon_cont"><div title="Planeswalkers" class="type_icon type_pla"></div><span>' +
       types.pla +
       "</span></div>"
   ).appendTo(typesdiv);
@@ -2620,6 +2650,14 @@ function getWinrateClass(wr) {
   if (wr < 0.45) return "orange";
   if (wr < 0.35) return "red";
   return "white";
+}
+
+function getEventWinLossClass(wlGate) {
+  if (wlGate === undefined) return "white";
+  if (wlGate.MaxWins === wlGate.CurrentWins) return "blue";
+  if (wlGate.CurrentWins > wlGate.CurrentLosses) return "green";
+  if (wlGate.CurrentWins * 2 > wlGate.CurrentLosses) return "orange";
+  return "red";
 }
 
 //
