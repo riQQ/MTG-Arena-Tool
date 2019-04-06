@@ -230,9 +230,9 @@ class CardsList {
   /**
    * Inserts a new propierty to each card in the list.
    **/
-  addPropierty(_prop, _default = 0) {
+  addProperty(_prop, _default = 0) {
     this._list.forEach(obj => {
-      obj[_prop] = _default;
+      obj[_prop] = _default(obj);
     });
   }
 
