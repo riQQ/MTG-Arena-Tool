@@ -15,7 +15,7 @@ const CardsList = require("./cards-list.js");
 const Colors = require("./colors.js");
 
 class Deck {
-  constructor(mtgaDeck, main = false, side = false) {
+  constructor(mtgaDeck = {}, main = false, side = false) {
     if (!mtgaDeck.mainDeck) mtgaDeck.mainDeck = [];
     if (!mtgaDeck.sideboard) mtgaDeck.sideboard = [];
     if (main) mtgaDeck.mainDeck = main;
@@ -258,7 +258,7 @@ class Deck {
     ret.id = this.id;
     ret.lastUpdated = this.lastUpdated;
     ret.deckTileId = this.tile;
-    ret.colors = this.colors.get();
+    ret.colors = this.colors;
     ret.tags = this.tags;
     ret.custom = this.custom;
 
