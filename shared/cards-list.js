@@ -100,10 +100,10 @@ class CardsList {
    * Creates a n object containing how many of each type the list has
    **/
   countTypesAll() {
-    var types = { art: 0, cre: 0, enc: 0, ins: 0, lan: 0, pla: 0, sor: 0 };
+    let types = { art: 0, cre: 0, enc: 0, ins: 0, lan: 0, pla: 0, sor: 0 };
 
     this._list.forEach(function(card) {
-      var c = cardsDb.get(card.id);
+      let c = cardsDb.get(card.id);
       if (c) {
         if (c.type.includes("Land", 0))
           types.lan += card.measurable ? card.quantity : 1;
@@ -184,7 +184,7 @@ class CardsList {
   /**
    * Creates an object containing the lands color distribution of the list.
    **/
-  getLandsAmmounts() {
+  getLandsAmounts() {
     var colors = { total: 0, w: 0, u: 0, b: 0, r: 0, g: 0, c: 0 };
 
     this._list.forEach(function(card) {
@@ -265,22 +265,13 @@ class CardsList {
     var newList = [];
 
     this._list.forEach(function(card) {
-      var cname = cardsDb.get(card.id).name;
-      var added = false;
-      newList.forEach(function(c) {
-        var cn = cardsDb.get(c.id).name;
-        if (cn == cname) {
-          if (c.measurable) {
-            c.quantity += card.quantity;
-          }
-          if (c.chance) {
-            c.chance += card.chance;
-          }
-          added = true;
+      let cardObj = cardsDb.get(card.id);
+      let found = newList.find(c => cardsDb.get(c.id).name === cardObj.name);
+      if (found) {
+        if (found.measurable) {
+          found.quantity += card.quantity;
         }
-      });
-
-      if (!added) {
+      } else {
         newList.push(card);
       }
     });

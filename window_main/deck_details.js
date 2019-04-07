@@ -264,7 +264,7 @@ function deckStatsSection(deck, deck_type) {
   pieChart.appendTo(pieContainer);
 
   // Lands colors
-  let landCounts = deck.mainboard.getLandsAmmounts();
+  let landCounts = deck.mainboard.getLandsAmounts();
   pieChart = colorPieChart(landCounts, "Mana Sources");
   pieChart.appendTo(pieContainer);
 

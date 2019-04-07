@@ -31,8 +31,8 @@ class Deck {
     this.tags = mtgaDeck.tags || [mtgaDeck.format];
     this.custom = mtgaDeck.custom || false;
 
-    this.sortMainboard(compare_cards);
-    this.sortSideboard(compare_cards);
+   //this.sortMainboard(compare_cards);
+   //this.sortSideboard(compare_cards);
 
     return this;
   }
