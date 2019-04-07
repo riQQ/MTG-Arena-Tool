@@ -17,7 +17,7 @@ class CardsList {
       return {
         quantity: obj.quantity || 1,
         id: obj.id || obj,
-        mensurable: true
+        measurable: true
       };
     });
   }
@@ -45,7 +45,7 @@ class CardsList {
       this._list.push({
         quantity: quantity,
         id: grpId,
-        mensurable: true
+        measurable: true
       });
       return this._list[this._list.length-1];
     }
@@ -109,19 +109,19 @@ class CardsList {
       var c = cardsDb.get(card.id);
       if (c) {
         if (c.type.includes("Land", 0))
-          types.lan += card.mensurable ? card.quantity : 1;
+          types.lan += card.measurable ? card.quantity : 1;
         else if (c.type.includes("Creature", 0))
-          types.cre += card.mensurable ? card.quantity : 1;
+          types.cre += card.measurable ? card.quantity : 1;
         else if (c.type.includes("Artifact", 0))
-          types.art += card.mensurable ? card.quantity : 1;
+          types.art += card.measurable ? card.quantity : 1;
         else if (c.type.includes("Enchantment", 0))
-          types.enc += card.mensurable ? card.quantity : 1;
+          types.enc += card.measurable ? card.quantity : 1;
         else if (c.type.includes("Instant", 0))
-          types.ins += card.mensurable ? card.quantity : 1;
+          types.ins += card.measurable ? card.quantity : 1;
         else if (c.type.includes("Sorcery", 0))
-          types.sor += card.mensurable ? card.quantity : 1;
+          types.sor += card.measurable ? card.quantity : 1;
         else if (c.type.includes("Planeswalker", 0))
-          types.pla += card.mensurable ? card.quantity : 1;
+          types.pla += card.measurable ? card.quantity : 1;
       }
     });
 
@@ -273,7 +273,7 @@ class CardsList {
       newList.forEach(function(c) {
         var cn = cardsDb.get(c.id).name;
         if (cn == cname) {
-          if (c.mensurable) {
+          if (c.measurable) {
             c.quantity += card.quantity;
           }
           if (c.chance) {

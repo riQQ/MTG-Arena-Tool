@@ -1872,7 +1872,7 @@ function getOppDeck() {
               currentMatch.opponent.deck.mainboard.add(
                 currentMatch.gameObjs[key].grpId,
                 1
-              ).mensurable = false;
+              ).measurable = false;
             }
           }
         }

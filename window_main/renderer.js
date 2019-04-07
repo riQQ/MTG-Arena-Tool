@@ -1645,10 +1645,10 @@ function open_match(id) {
   match.oppDeck.sortMainboard(compare_cards);
   match.oppDeck.sortSideboard(compare_cards);
   match.oppDeck.mainboard.get().forEach(c => {
-    c.mensurable = false; 
+    c.measurable = false; 
   });
   match.oppDeck.sideboard.get().forEach(c => {
-    c.mensurable = false;
+    c.measurable = false;
   });
   match.oppDeck.draw(odl);
 

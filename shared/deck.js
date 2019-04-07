@@ -189,7 +189,7 @@ class Deck {
       let grpid = card.id;
       let card_name = cardsDb.get(grpid).name;
 
-      str += (card.mensurable ? card.quantity : 1) + " " + card_name + "\r\n";
+      str += (card.measurable ? card.quantity : 1) + " " + card_name + "\r\n";
     });
 
     str += "\r\n";
@@ -199,7 +199,7 @@ class Deck {
       let grpid = card.id;
       let card_name = cardsDb.get(grpid).name;
 
-      str += (card.mensurable ? card.quantity : 1) + " " + card_name + "\r\n";
+      str += (card.measurable ? card.quantity : 1) + " " + card_name + "\r\n";
     });
 
     return str;
@@ -220,7 +220,7 @@ class Deck {
       let card_name = cardObj.name;
       let card_set = cardObj.set;
       let card_cn = cardObj.cid;
-      let card_q = card.mensurable ? card.quantity : 1;
+      let card_q = card.measurable ? card.quantity : 1;
 
       let set_code = setsList[card_set].arenacode || get_set_code(card_set);
       str += `${card_q} ${card_name} (${set_code}) ${card_cn} \r\n`;
@@ -241,7 +241,7 @@ class Deck {
       let card_name = cardObj.name;
       let card_set = cardObj.set;
       let card_cn = cardObj.cid;
-      let card_q = card.mensurable ? card.quantity : 1;
+      let card_q = card.measurable ? card.quantity : 1;
 
       let set_code = setsList[card_set].arenacode || get_set_code(card_set);
       str += `${card_q} ${card_name} (${set_code}) ${card_cn} \r\n`;
