@@ -567,30 +567,17 @@ function onLabelClientToMatchServiceMessageTypeClientToGREMessage(entry, json) {
 
   if (json.payload.submitdeckresp) {
     // Get sideboard changes
-    let deckResp = json.payload.submitdeckresp;
+    let deckResp = json.payload.submitdeckresp.deck;
 
-    let tempMain = new CardsList();
-    let tempSide = new CardsList();
-    deckResp.deck.deckcards.forEach(grpId => {
-      tempMain.add(grpId, 1);
-    });
-    if (deckResp.deck.sideboardcards !== undefined) {
-      deckResp.deck.sideboardcards.forEach(grpId => {
-        tempSide.add(grpId, 1);
-      });
-    }
+    let tempMain = new CardsList(deckResp.deckcards);
+    let tempSide = new CardsList(deckResp.sideboardcards);
+    let newDeck = currentMatch.player.deck.clone();
+    newDeck.mainboard = tempMain;
+    newDeck.sideboard = tempSide;
+    newDeck.mainboard.removeDuplicates();
+    newDeck.sideboard.removeDuplicates();
+    newDeck.getColors();
 
-    var newDeck = new Deck();
-
-    Object.keys(tempMain).forEach(function(key) {
-      newDeck.mainboard.add(key, tempMain[key]);
-    });
-
-    if (deckResp.deck.sideboardcards !== undefined) {
-      Object.keys(tempSide).forEach(function(key) {
-        newDeck.sideboard.add(key, tempSide[key]);
-      });
-    }
     currentMatch.player.deck = newDeck;
     ipc_send("set_deck", currentMatch.player.deck, windowOverlay);
   }
