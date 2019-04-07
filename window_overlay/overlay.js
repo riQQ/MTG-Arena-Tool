@@ -426,7 +426,7 @@ ipc.on("set_deck", function(event, arg) {
     arg.mainboard.get().forEach(function(card) {
       var grpId = card.id;
       if (deckMode == 2) {
-        console.log(">", grpId, card.chance);
+        //console.log(">", grpId, card.chance);
         addCardTile(
           grpId,
           "a",

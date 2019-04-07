@@ -160,6 +160,7 @@ var currentMatchDefault = {
   gameObjs: {},
   turn: {},
   playerCards: {},
+  playerChances: {},
   oppCards: {},
   player: {
     seat: 1,
@@ -604,7 +605,11 @@ ipc.on("add_history_tag", function(event, arg) {
     match.tags = [arg.name];
   }
 
-  httpApi.httpSetDeckTag(arg.name, match.oppDeck.mainboard.get(), match.eventId);
+  httpApi.httpSetDeckTag(
+    arg.name,
+    match.oppDeck.mainboard.get(),
+    match.eventId
+  );
   store.set(arg.match, match);
 });
 
@@ -1426,30 +1431,60 @@ function tryZoneTransfers() {
       var affectorGrpid;
       //console.log("AnnotationType_ZoneTransfer", obj, obj.aff, gameObjs, _src, _dest, _cat);
       if (_cat == "CastSpell") {
-        actionLog(owner, obj.time, getNameBySeat(owner) + " casted " + actionLogGenerateLink(grpid));
+        actionLog(
+          owner,
+          obj.time,
+          getNameBySeat(owner) + " casted " + actionLogGenerateLink(grpid)
+        );
       } else if (_cat == "Resolve") {
-        actionLog(owner, obj.time, getNameBySeat(owner) + " resolved " + actionLogGenerateLink(grpid));
+        actionLog(
+          owner,
+          obj.time,
+          getNameBySeat(owner) + " resolved " + actionLogGenerateLink(grpid)
+        );
       } else if (_cat == "PlayLand") {
-        actionLog(owner, obj.time, getNameBySeat(owner) + " played " + actionLogGenerateLink(grpid));
+        actionLog(
+          owner,
+          obj.time,
+          getNameBySeat(owner) + " played " + actionLogGenerateLink(grpid)
+        );
       } else if (_cat == "Countered") {
         affectorGrpid = currentMatch.gameObjs[obj.affectorId].grpId;
         if (affectorGrpid == undefined) {
           removeFromList = false;
         } else {
-          actionLog(owner, obj.time, actionLogGenerateLink(affectorGrpid) + " countered " + actionLogGenerateLink(grpid));
+          actionLog(
+            owner,
+            obj.time,
+            actionLogGenerateLink(affectorGrpid) +
+              " countered " +
+              actionLogGenerateLink(grpid)
+          );
         }
       } else if (_cat == "Destroy") {
         affectorGrpid = currentMatch.gameObjs[obj.affectorId].grpId;
         if (affectorGrpid == undefined) {
           removeFromList = false;
         } else {
-          actionLog(owner, obj.time, actionLogGenerateLink(affectorGrpid) + " destroyed " + actionLogGenerateLink(grpid));
+          actionLog(
+            owner,
+            obj.time,
+            actionLogGenerateLink(affectorGrpid) +
+              " destroyed " +
+              actionLogGenerateLink(grpid)
+          );
         }
       } else if (_cat == "Draw") {
         actionLog(owner, obj.time, getNameBySeat(owner) + " drew a card");
         removeFromListAnyway = true;
       } else if (cname != "") {
-        actionLog(owner, obj.time, actionLogGenerateLink(grpid) + " moved to " +  currentMatch.zones[_dest].type);
+        actionLog(
+          owner,
+          obj.time,
+          actionLogGenerateLink(grpid) +
+            " moved to " +
+            currentMatch.zones[_dest].type
+        );
       }
       currentMatch.gameObjs[obj.aff].zoneId = _dest;
       currentMatch.gameObjs[obj.aff].zoneName = currentMatch.zones[_dest].type;
@@ -1596,7 +1631,11 @@ function createMatch(arg) {
   );
 
   if (currentMatch.eventId == "DirectGame") {
-    httpApi.httpTournamentCheck(currentDeck.getSave(), currentMatch.opponent.name, true);
+    httpApi.httpTournamentCheck(
+      currentDeck.getSave(),
+      currentMatch.opponent.name,
+      true
+    );
   }
 
   ipc_send("set_priority_timer", currentMatch.priorityTimers, windowOverlay);
@@ -1661,15 +1700,15 @@ function update_deck(force) {
     if (overlayDeckMode == 2) {
       // Odds
       let oddsDeck = currentMatch.playerCards.getSave();
-      oddsDeck.chanceCre = currentMatch.playerCards.chanceCre;
-      oddsDeck.chanceIns = currentMatch.playerCards.chanceIns;
-      oddsDeck.chanceSor = currentMatch.playerCards.chanceSor;
-      oddsDeck.chancePla = currentMatch.playerCards.chancePla;
-      oddsDeck.chanceArt = currentMatch.playerCards.chanceArt;
-      oddsDeck.chanceEnc = currentMatch.playerCards.chanceEnc;
-      oddsDeck.chanceLan = currentMatch.playerCards.chanceLan;
-      oddsDeck.deckSize = currentMatch.playerCards.deckSize;
-      oddsDeck.cardsLeft = currentMatch.playerCards.cardsLeft;
+      oddsDeck.chanceCre = currentMatch.playerChances.chanceCre;
+      oddsDeck.chanceIns = currentMatch.playerChances.chanceIns;
+      oddsDeck.chanceSor = currentMatch.playerChances.chanceSor;
+      oddsDeck.chancePla = currentMatch.playerChances.chancePla;
+      oddsDeck.chanceArt = currentMatch.playerChances.chanceArt;
+      oddsDeck.chanceEnc = currentMatch.playerChances.chanceEnc;
+      oddsDeck.chanceLan = currentMatch.playerChances.chanceLan;
+      oddsDeck.deckSize = currentMatch.playerChances.deckSize;
+      oddsDeck.cardsLeft = currentMatch.playerChances.cardsLeft;
       ipc_send("set_deck", oddsDeck, windowOverlay);
     }
     if (overlayDeckMode == 3) {
@@ -1711,31 +1750,22 @@ function forceDeckUpdate(removeUsed = true) {
       if (currentMatch.gameObjs[key] != undefined) {
         if (currentMatch.zones[currentMatch.gameObjs[key].zoneId]) {
           if (
-            currentMatch.zones[currentMatch.gameObjs[key].zoneId].type != "ZoneType_Limbo" &&
-            currentMatch.zones[currentMatch.gameObjs[key].zoneId].type != "ZoneType_Library"
+            currentMatch.zones[currentMatch.gameObjs[key].zoneId].type !=
+              "ZoneType_Limbo" &&
+            currentMatch.zones[currentMatch.gameObjs[key].zoneId].type !=
+              "ZoneType_Library"
           ) {
             if (
-              currentMatch.gameObjs[key].ownerSeatId == currentMatch.player.seat &&
+              currentMatch.gameObjs[key].ownerSeatId ==
+                currentMatch.player.seat &&
               currentMatch.gameObjs[key].type != "GameObjectType_Token" &&
               currentMatch.gameObjs[key].type != "GameObjectType_Ability"
             ) {
-              /*
-              // DEBUG
-              if (currentMatch.gameObjs[key].grpId != 3) {
-                decksize += 1;
-                cardsleft += 1;
-                currentMatch.playerCards.mainDeck.push({id: currentMatch.gameObjs[key].grpId, quantity: currentMatch.gameObjs[key].zoneId})
-              }
-              */
-
               cardsleft -= 1;
-              currentMatch.playerCards.mainboard.get().forEach(card => {
-                if (card.id == currentMatch.gameObjs[key].grpId) {
-                  //console.log(currentMatch.gameObjs[key].instanceId, cardsDb.get(currentMatch.gameObjs[key].grpId).name, currentMatch.zones[currentMatch.gameObjs[key].zoneId].type);
-                  card.quantity -= 1;
-                }
-                //if (card.quantity < 0) card.quantity = 0;
-              });
+              currentMatch.playerCards.mainboard.remove(
+                currentMatch.gameObjs[key].grpId,
+                1
+              );
             }
           }
         }
@@ -1744,18 +1774,9 @@ function forceDeckUpdate(removeUsed = true) {
   }
 
   if (debugLog || !firstPass) {
-    currentMatch.playerCards.mainboard.get().forEach(card => {
-      var c = cardsDb.get(card.id);
-      if (c) {
-        if (c.type.includes("Land", 0)) typeLan += card.quantity;
-        else if (c.type.includes("Creature", 0)) typeCre += card.quantity;
-        else if (c.type.includes("Artifact", 0)) typeArt += card.quantity;
-        else if (c.type.includes("Enchantment", 0)) typeEnc += card.quantity;
-        else if (c.type.includes("Instant", 0)) typeIns += card.quantity;
-        else if (c.type.includes("Sorcery", 0)) typeSor += card.quantity;
-        else if (c.type.includes("Planeswalker", 0)) typePla += card.quantity;
-      }
-      card.chance = Math.round(
+    let main = currentMatch.playerCards.mainboard;
+    main.addProperty("chance", card =>
+      Math.round(
         hypergeometricRange(
           1,
           Math.min(odds_sample_size, card.quantity),
@@ -1763,81 +1784,57 @@ function forceDeckUpdate(removeUsed = true) {
           odds_sample_size,
           card.quantity
         ) * 100
-      );
-    });
+      )
+    );
 
-    currentMatch.playerCards.chanceCre =
+    typeLan = Math.min(odds_sample_size, main.countType("Land"));
+    typeCre = Math.min(odds_sample_size, main.countType("Creature"));
+    typeArt = Math.min(odds_sample_size, main.countType("Artifact"));
+    typeEnc = Math.min(odds_sample_size, main.countType("Enchantment"));
+    typeIns = Math.min(odds_sample_size, main.countType("Instant"));
+    typeSor = Math.min(odds_sample_size, main.countType("Sorcery"));
+    typePla = Math.min(odds_sample_size, main.countType("Planeswalker"));
+
+    let chancesObj = {};
+    chancesObj.chanceCre =
       Math.round(
-        hypergeometricRange(
-          1,
-          Math.min(odds_sample_size, typeCre),
-          cardsleft,
-          odds_sample_size,
-          typeCre
-        ) * 1000
+        hypergeometricRange(1, typeCre, cardsleft, odds_sample_size, typeCre) *
+          1000
       ) / 10;
-    currentMatch.playerCards.chanceIns =
+    chancesObj.chanceIns =
       Math.round(
-        hypergeometricRange(
-          1,
-          Math.min(odds_sample_size, typeIns),
-          cardsleft,
-          odds_sample_size,
-          typeIns
-        ) * 1000
+        hypergeometricRange(1, typeIns, cardsleft, odds_sample_size, typeIns) *
+          1000
       ) / 10;
-    currentMatch.playerCards.chanceSor =
+    chancesObj.chanceSor =
       Math.round(
-        hypergeometricRange(
-          1,
-          Math.min(odds_sample_size, typeSor),
-          cardsleft,
-          odds_sample_size,
-          typeSor
-        ) * 1000
+        hypergeometricRange(1, typeSor, cardsleft, odds_sample_size, typeSor) *
+          1000
       ) / 10;
-    currentMatch.playerCards.chancePla =
+    chancesObj.chancePla =
       Math.round(
-        hypergeometricRange(
-          1,
-          Math.min(odds_sample_size, typePla),
-          cardsleft,
-          odds_sample_size,
-          typePla
-        ) * 1000
+        hypergeometricRange(1, typePla, cardsleft, odds_sample_size, typePla) *
+          1000
       ) / 10;
-    currentMatch.playerCards.chanceArt =
+    chancesObj.chanceArt =
       Math.round(
-        hypergeometricRange(
-          1,
-          Math.min(odds_sample_size, typeArt),
-          cardsleft,
-          odds_sample_size,
-          typeArt
-        ) * 1000
+        hypergeometricRange(1, typeArt, cardsleft, odds_sample_size, typeArt) *
+          1000
       ) / 10;
-    currentMatch.playerCards.chanceEnc =
+    chancesObj.chanceEnc =
       Math.round(
-        hypergeometricRange(
-          1,
-          Math.min(odds_sample_size, typeEnc),
-          cardsleft,
-          odds_sample_size,
-          typeEnc
-        ) * 1000
+        hypergeometricRange(1, typeEnc, cardsleft, odds_sample_size, typeEnc) *
+          1000
       ) / 10;
-    currentMatch.playerCards.chanceLan =
+    chancesObj.chanceLan =
       Math.round(
-        hypergeometricRange(
-          1,
-          Math.min(odds_sample_size, typeLan),
-          cardsleft,
-          odds_sample_size,
-          typeLan
-        ) * 1000
+        hypergeometricRange(1, typeLan, cardsleft, odds_sample_size, typeLan) *
+          1000
       ) / 10;
-    currentMatch.playerCards.deckSize = decksize;
-    currentMatch.playerCards.cardsLeft = cardsleft;
+
+    chancesObj.deckSize = decksize;
+    chancesObj.cardsLeft = cardsleft;
+    currentMatch.playerChances = chancesObj;
   }
 }
 
@@ -1872,7 +1869,10 @@ function getOppDeck() {
           });
           if (doAdd) {
             if (cardsDb.get(currentMatch.gameObjs[key].grpId) != false) {
-              currentMatch.opponent.deck.mainboard.add(currentMatch.gameObjs[key].grpId, 1).mensurable = false;
+              currentMatch.opponent.deck.mainboard.add(
+                currentMatch.gameObjs[key].grpId,
+                1
+              ).mensurable = false;
             }
           }
         }
