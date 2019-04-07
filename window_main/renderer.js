@@ -556,6 +556,8 @@ ipc.on("open_course_deck", function(event, arg) {
   arg = arg.CourseDeck;
 
   let deck = new Deck(arg);
+  deck.sortMainboard(compare_cards);
+  deck.sortSideboard(compare_cards);
   deck.mainboard.removeDuplicates();
   deck.sideboard.removeDuplicates();
   deck.getColors();
