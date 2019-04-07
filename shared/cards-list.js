@@ -41,16 +41,13 @@ class CardsList {
         }
       });
     }
-    else {
-      this._list.push({
-        quantity: quantity,
-        id: grpId,
-        measurable: true
-      });
-      return this._list[this._list.length-1];
-    }
 
-    return 0;
+    this._list.push({
+      quantity: quantity,
+      id: grpId,
+      measurable: true
+    });
+    return this._list[this._list.length-1];
   }
 
   /**
