@@ -31,6 +31,7 @@ const {
   MAIN_ECONOMY,
   MAIN_COLLECTION,
   MAIN_SETTINGS,
+  MAIN_TIMELINE,
   MAIN_UPDATE,
   SETTINGS_ABOUT,
   SETTINGS_OVERLAY,
@@ -74,6 +75,7 @@ const { openExploreTab, setExploreDecks } = require("./explore");
 const { openCollectionTab } = require("./collection");
 const { openSettingsTab, setCurrentOverlaySettings } = require("./settings");
 const { showWhatsNew } = require("./whats-new");
+const { openTimelineTab } = require("./timeline");
 
 const byId = id => document.getElementById(id);
 let sidebarActive = MAIN_LOGIN;
@@ -398,31 +400,34 @@ function openTab(tab, filters = {}, dataIndex = 0, scrollTop = 0) {
   let tabClass = "it" + tab;
   resetMainContainer();
   switch (tab) {
-    case 0:
+    case MAIN_DECKS:
       openDecksTab(filters, scrollTop);
       break;
-    case 1:
+    case MAIN_HISTORY:
       openHistoryTab(filters, dataIndex, scrollTop);
       break;
-    case 2:
+    case MAIN_EVENTS:
       openEventsTab(filters, dataIndex, scrollTop);
       break;
-    case 3:
+    case MAIN_EXPLORE:
       if (pd.offline) {
         showOfflineSplash();
       } else {
         openExploreTab();
       }
       break;
-    case 4:
+    case MAIN_ECONOMY:
       openEconomyTab(dataIndex, scrollTop);
       break;
-    case 5:
+    case MAIN_COLLECTION:
       openCollectionTab();
       break;
-    case 6:
+    case MAIN_SETTINGS:
       tabClass = "ith";
       openSettingsTab(-1, scrollTop);
+      break;
+    case MAIN_TIMELINE:
+      openTimelineTab();
       break;
     case -1:
       tabClass = "ith";
@@ -696,6 +701,8 @@ ready(function() {
             eventId: RANKED_DRAFT,
             rankedMode: true
           };
+        } else if (classList.includes("it10")) {
+          sidebarActive = MAIN_TIMELINE;
         }
         setLocalState({ lastDataIndex: 0, lastScrollTop: 0 });
         openTab(sidebarActive, filters);

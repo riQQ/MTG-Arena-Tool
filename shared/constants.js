@@ -727,6 +727,7 @@ exports.MAIN_ECONOMY = 4;
 exports.MAIN_COLLECTION = 5;
 exports.MAIN_SETTINGS = 6;
 exports.MAIN_UPDATE = 9;
+exports.MAIN_TIMELINE = 10;
 
 exports.SHORTCUT_NAMES = {
   shortcut_overlay_1: "Toggle Overlay 1",
