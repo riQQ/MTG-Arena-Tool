@@ -99,6 +99,8 @@ function openTimelineTab() {
 
   var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
   valueAxis.title.text = "Rank";
+  valueAxis.numberFormatter = new am4core.NumberFormatter();
+  valueAxis.numberFormatter.numberFormat = "";
 
   // Create series
   var series = chart.series.push(new am4charts.LineSeries());
