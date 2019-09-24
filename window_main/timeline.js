@@ -35,7 +35,7 @@ function getRankY(rank, tier, steps) {
       value = 4 * 6 * 5;
   }
 
-  return value + 6 * tier + steps;
+  return value + 6 * (4 - tier) + steps;
 }
 
 function openTimelineTab() {
@@ -47,25 +47,30 @@ function openTimelineTab() {
 
   let season = playerData.rank.constructed.seasonOrdinal;
   let chartData = playerData.seasonalRank(season, seasonType);
-  chartData = chartData.map(obj => {
-    let yPos = getRankY(obj.newClass, obj.newLevel, obj.newStep);
-    obj.date = new Date(obj.timestamp);
 
-    let match = playerData[obj.lastMatchId];
-    obj.deck = false;
-    obj.deckId = match.playerDeck.id;
-    obj.deckName = match.playerDeck.name;
-    obj.deckColors = match.playerDeck.colors;
+  chartData = _.orderBy(
+    chartData.map(obj => {
+      let yPos = getRankY(obj.newClass, obj.newLevel, obj.newStep);
+      obj.date = new Date(obj.timestamp);
 
-    if (obj.oldLevel !== obj.newLevel) {
-      obj.bullet = `../images/rank_${seasonType.toLowerCase()}/${
-        obj.newClass
-      }_${obj.newLevel}.png`;
-    } else {
-      obj.bullet = "";
-    }
-    return { ...obj, yPos };
-  });
+      let match = playerData[obj.lastMatchId];
+      obj.deck = false;
+      obj.deckId = match.playerDeck.id;
+      obj.deckName = match.playerDeck.name;
+      obj.deckColors = match.playerDeck.colors;
+
+      if (obj.oldLevel !== obj.newLevel) {
+        obj.bullet = `../images/rank_${seasonType.toLowerCase()}/${
+          obj.newClass
+        }_${obj.newLevel}.png`;
+      } else {
+        obj.bullet = "";
+      }
+      return { ...obj, yPos };
+    }),
+    ["date"],
+    ["asc"]
+  );
 
   am4core.useTheme(am4themes_dark);
   am4core.useTheme(am4themes_animated);
@@ -79,18 +84,21 @@ function openTimelineTab() {
     chart.colors.next();
   });
 
-  chartData = chartData.map(obj => {
+  chartData = chartData.map((obj, index) => {
     let color = deckColors[obj.deckId];
-    return { ...obj, color };
+    return { ...obj, color, index };
   });
 
   chart.data = chartData;
 
   // Create axes
   var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-  dateAxis.renderer.minGridDistance = 50;
+  dateAxis.skipEmptyPeriods = true;
+  dateAxis.renderer.minGridDistance = 40;
+  dateAxis.tooltipDateFormat = "HH:mm";
 
   var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+  valueAxis.title.text = "Rank";
 
   // Create series
   var series = chart.series.push(new am4charts.LineSeries());
@@ -98,11 +106,22 @@ function openTimelineTab() {
   series.tooltip.pointerOrientation = "vertical";
   series.dataFields.valueY = "yPos";
   series.dataFields.dateX = "date";
+  series.sequencedInterpolation = true;
   series.strokeWidth = 3;
   series.fillOpacity = 0.5;
   series.minBulletDistance = 1;
   series.propertyFields.stroke = "color";
   series.propertyFields.fill = "color";
+
+  // Add simple bullet
+  var bullet = series.bullets.push(new am4charts.Bullet());
+  var image = bullet.createChild(am4core.Image);
+  image.propertyFields.href = "bullet";
+  image.width = 48;
+  image.height = 48;
+  image.horizontalCenter = "middle";
+  image.verticalCenter = "middle";
+  image.filters.push(new am4core.DropShadowFilter());
 
   // Add scrollbar
   chart.scrollbarX = new am4charts.XYChartScrollbar();
@@ -116,4 +135,4 @@ function openTimelineTab() {
   mainDiv.appendChild(chartDiv);
 }
 
-module.exports = { openTimelineTab: openTimelineTab };
+module.exports = { openTimelineTab: openTimelineTab, getRankY: getRankY };
