@@ -1,3 +1,54 @@
+## <small>2.10.3 (2019-09-26)</small>
+
+* add new historic play constant ([23e2f0c](https://github.com/Manuel-777/MTG-Arena-Tool/commit/23e2f0c))
+* allow debug pre-login ([007f9e1](https://github.com/Manuel-777/MTG-Arena-Tool/commit/007f9e1))
+* background handles Log.BI like Log.Info ([259bcd0](https://github.com/Manuel-777/MTG-Arena-Tool/commit/259bcd0))
+* bugfix metadata script, disable chinese ([c490d55](https://github.com/Manuel-777/MTG-Arena-Tool/commit/c490d55))
+* bugfix practice matches ([b8e917f](https://github.com/Manuel-777/MTG-Arena-Tool/commit/b8e917f))
+* bugfix single_match_events ([d41d3e5](https://github.com/Manuel-777/MTG-Arena-Tool/commit/d41d3e5))
+* Eldraine set review ([356ca24](https://github.com/Manuel-777/MTG-Arena-Tool/commit/356ca24))
+* fix game time tracking ([774f437](https://github.com/Manuel-777/MTG-Arena-Tool/commit/774f437))
+* metadata event constants ([cc7dd24](https://github.com/Manuel-777/MTG-Arena-Tool/commit/cc7dd24))
+* more constant updates ([200e41f](https://github.com/Manuel-777/MTG-Arena-Tool/commit/200e41f))
+* more format constants ([056614b](https://github.com/Manuel-777/MTG-Arena-Tool/commit/056614b))
+* new battle pass name ([6cdd3cc](https://github.com/Manuel-777/MTG-Arena-Tool/commit/6cdd3cc))
+* refactor event metadata constants ([a463ef9](https://github.com/Manuel-777/MTG-Arena-Tool/commit/a463ef9))
+* share drafts not in server ([01b02f8](https://github.com/Manuel-777/MTG-Arena-Tool/commit/01b02f8))
+* update default database ([2eef449](https://github.com/Manuel-777/MTG-Arena-Tool/commit/2eef449))
+* update filter text ([fa53cef](https://github.com/Manuel-777/MTG-Arena-Tool/commit/fa53cef))
+* Update metadata.js ([4b84764](https://github.com/Manuel-777/MTG-Arena-Tool/commit/4b84764))
+* Update metadata.js ([a93cb53](https://github.com/Manuel-777/MTG-Arena-Tool/commit/a93cb53))
+* Update TROUBLESHOOTING.md ([2472ecd](https://github.com/Manuel-777/MTG-Arena-Tool/commit/2472ecd))
+* Update TROUBLESHOOTING.md ([960f6ea](https://github.com/Manuel-777/MTG-Arena-Tool/commit/960f6ea))
+
+
+
+## <small>2.10.2 (2019-09-22)</small>
+
+* hide overlay until player data is loaded ([62a249b](https://github.com/Manuel-777/MTG-Arena-Tool/commit/62a249b))
+* prevent default issues ([57f9d51](https://github.com/Manuel-777/MTG-Arena-Tool/commit/57f9d51))
+
+
+
+## <small>2.10.1 (2019-09-22)</small>
+
+* bugfix settings page log locale format ux ([55559d9](https://github.com/Manuel-777/MTG-Arena-Tool/commit/55559d9))
+* draft arrows navigation ([0e3f247](https://github.com/Manuel-777/MTG-Arena-Tool/commit/0e3f247))
+* events and history page use draft-details ([2fb60e7](https://github.com/Manuel-777/MTG-Arena-Tool/commit/2fb60e7))
+* initial draft-details file cloned from render-util ([9eeefcc](https://github.com/Manuel-777/MTG-Arena-Tool/commit/9eeefcc))
+* latest version ([4cf26b8](https://github.com/Manuel-777/MTG-Arena-Tool/commit/4cf26b8))
+* not update on first pass ([603ece0](https://github.com/Manuel-777/MTG-Arena-Tool/commit/603ece0))
+* onClose main window ([bec80a2](https://github.com/Manuel-777/MTG-Arena-Tool/commit/bec80a2)), closes [#584](https://github.com/Manuel-777/MTG-Arena-Tool/issues/584)
+* override close ([defeccb](https://github.com/Manuel-777/MTG-Arena-Tool/commit/defeccb))
+* read deck from GRE ([349fd3c](https://github.com/Manuel-777/MTG-Arena-Tool/commit/349fd3c))
+* remove deprecated code ([38f2bca](https://github.com/Manuel-777/MTG-Arena-Tool/commit/38f2bca))
+* update documentation links ([41b437f](https://github.com/Manuel-777/MTG-Arena-Tool/commit/41b437f))
+* Update main.js ([d7f2dcf](https://github.com/Manuel-777/MTG-Arena-Tool/commit/d7f2dcf))
+* Update main.js ([fab9427](https://github.com/Manuel-777/MTG-Arena-Tool/commit/fab9427))
+* upgrade date-fns to 2.2.1 ([0c21ab0](https://github.com/Manuel-777/MTG-Arena-Tool/commit/0c21ab0))
+
+
+
 ## 2.10.0 (2019-09-14)
 
 * add change language setting ([f106ed2](https://github.com/Manuel-777/MTG-Arena-Tool/commit/f106ed2))

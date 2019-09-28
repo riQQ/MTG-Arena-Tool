@@ -46,6 +46,7 @@ const {
   MAIN_DECKS
 } = require("../shared/constants");
 const {
+  getDateFormat,
   ipc_send,
   setData,
   unleakString,
@@ -275,7 +276,7 @@ ipc.on("unlink_discord", function(event, obj) {
 
 //
 ipc.on("request_draft_link", function(event, obj) {
-  httpApi.httpDraftShareLink(obj.id, obj.expire);
+  httpApi.httpDraftShareLink(obj.id, obj.expire, obj.draftData);
 });
 
 //
@@ -715,6 +716,7 @@ function onLogEntryFound(entry) {
     if ((firstPass && !playerData.settings.skip_firstpass) || !firstPass) {
       try {
         switch (entry.label) {
+          case "Log.BI":
           case "Log.Info":
             if (entry.arrow == "==>") {
               json = entry.json();
@@ -948,7 +950,12 @@ function onLogEntryFound(entry) {
           default:
             break;
         }
-        setData({ last_log_timestamp: entry.timestamp });
+        if (entry.timestamp) {
+          setData({
+            last_log_timestamp: entry.timestamp,
+            last_log_format: getDateFormat(entry.timestamp)
+          });
+        }
       } catch (err) {
         console.log(entry.label, entry.position, entry.json());
         console.error(err);
@@ -1598,12 +1605,15 @@ function saveCourse(json) {
 
 //
 function saveMatch(id, matchEndTime) {
-  //console.log(currentMatch.matchId, matchId);
+  //console.log(currentMatch.matchId, id);
   if (!currentMatch || !currentMatch.matchTime || currentMatch.matchId !== id) {
     return;
   }
   const existingMatch = playerData.match(id) || {};
   const match = completeMatch(existingMatch, currentMatch, matchEndTime);
+  if (!match) {
+    return;
+  }
 
   // console.log("Save match:", match);
   if (!playerData.matches_index.includes(id)) {

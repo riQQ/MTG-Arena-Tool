@@ -141,6 +141,8 @@ function startApp() {
     overlay = createOverlayWindow();
   }, 500);
 
+  globalShortcut.register("Alt+Shift+D", openDevTools);
+
   appStarted = true;
 
   mainWindow.webContents.once("dom-ready", () => {
@@ -454,8 +456,15 @@ process.on("uncaughtException", function(err) {
   //console.log('Current chunk:',  currentChunk);
 });
 
-function onClosed() {
-  mainWindow = null;
+function onBackClosed() {
+  background = null;
+  quit();
+}
+
+function onMainClosed(e) {
+  quit();
+  //hideWindow();
+  //e.preventDefault();
 }
 
 function hideWindow() {
@@ -538,7 +547,7 @@ function createBackgroundWindow() {
     }
   });
   win.loadURL(`file://${__dirname}/window_background/index.html`);
-  win.on("closed", onClosed);
+  win.on("closed", onBackClosed);
 
   return win;
 }
@@ -565,9 +574,9 @@ function createOverlayWindow() {
 
   overlay.webContents.once("dom-ready", function() {
     //We need to wait for the overlay to be initialized before we interact with it
-    const display = electron.screen.getPrimaryDisplay();
+    //const display = electron.screen.getPrimaryDisplay();
     // display.workArea does not include the taskbar
-    overlay.setBounds(display.bounds);
+    //overlay.setBounds(display.bounds);
     overlay.webContents.send("settings_updated");
     // only show overlay after its ready
     // TODO does this work with Linux transparency???
@@ -591,7 +600,7 @@ function createMainWindow() {
     }
   });
   win.loadURL(`file://${__dirname}/window_main/index.html`);
-  win.on("closed", onClosed);
+  win.on("closed", onMainClosed);
 
   let iconPath = path.join(__dirname, "icon-tray.png");
   if (process.platform == "linux") {
