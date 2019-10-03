@@ -289,7 +289,12 @@ class PlayerData {
   }
 
   handleSetData(_event, arg) {
-    Object.assign(this, arg);
+    try {
+      arg = JSON.parse(arg);
+      Object.assign(this, arg);
+    } catch (e) {
+      console.log("Unable to parse player data", e);
+    }
   }
 
   get cardsSize() {

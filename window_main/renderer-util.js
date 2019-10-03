@@ -591,9 +591,8 @@ function changeBackground(arg = "default", grpId = 0) {
       topArtist.innerHTML = "";
       mainWrapper.style.backgroundImage = "url(" + pd.settings.back_url + ")";
     } else {
-      topArtist.innerHTML = "Ghitu Lavarunner by Jesper Ejsing";
-      mainWrapper.style.backgroundImage =
-        "url(../images/Ghitu-Lavarunner-Dominaria-MtG-Art.jpg)";
+      topArtist.innerHTML = "Bedevil by Seb Seb McKinnon";
+      mainWrapper.style.backgroundImage = "url(../images/Bedevil-Art.jpg)";
     }
   } else if (_card) {
     mainWrapper.style.backgroundImage = `url(${getCardArtCrop(_card)})`;

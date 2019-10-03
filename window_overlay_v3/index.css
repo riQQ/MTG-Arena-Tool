@@ -11,12 +11,8 @@ body {
     width: 100% !important;
 }
 
-.click-on {
-    pointer-events: all;
-}
-.click-through {
-    pointer-events: none;
-}
+.click-on      {pointer-events: all}
+.click-through {pointer-events: none}
 
 .overlay_master_wrapper {
     /* Debug;
@@ -543,6 +539,7 @@ body {
     margin: auto auto auto 8px;
     border-radius: 50%;
     cursor: pointer;
+    background-image: url(../images/edit_icon.png);
 }
 
 .top_nav_wrapper {

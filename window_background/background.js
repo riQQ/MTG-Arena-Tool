@@ -285,6 +285,11 @@ ipc.on("request_log_link", function(event, obj) {
 });
 
 //
+ipc.on("request_deck_link", function(event, obj) {
+  httpApi.httpDeckShareLink(obj.deckString, obj.expire);
+});
+
+//
 ipc.on("windowBounds", (event, windowBounds) => {
   if (firstPass) return;
   setData({ windowBounds }, false);
@@ -424,6 +429,7 @@ ipc.on("edit_tag", (event, arg) => {
   const { tag, color } = arg;
   setData({ tags_colors: { ...playerData.tags_colors, [tag]: color } });
   store.set("tags_colors." + tag, color);
+  sendSettings();
 });
 
 ipc.on("delete_tag", (event, arg) => {
@@ -633,6 +639,12 @@ function syncUserData(data) {
     });
   if (debugLog || !firstPass) store.set("draft_index", draft_index);
 
+  if (data.settings.tags_colors) {
+    let newTags = data.settings.tags_colors;
+    setData({ tags_colors: { ...newTags } });
+    store.set("tags_colors", newTags);
+  }
+
   setData({ courses_index, draft_index, economy_index, matches_index });
 }
 
@@ -642,7 +654,7 @@ function syncUserData(data) {
 function syncSettings(dirtySettings = {}, refresh = debugLog || !firstPass) {
   const settings = { ...playerData.settings, ...dirtySettings };
   setData({ settings }, refresh);
-  if (refresh) ipc_send("set_settings", settings);
+  if (refresh) ipc_send("set_settings", JSON.stringify(settings));
 }
 
 // Set a new log URI
@@ -687,6 +699,12 @@ function startWatchingLog() {
     onError: err => console.error(err),
     onFinish: finishLoading
   });
+}
+
+function sendSettings() {
+  let tags_colors = playerData.tags_colors;
+  let settingsData = { tags_colors };
+  httpApi.httpSetSettings(settingsData);
 }
 
 let skipMatch = false;
@@ -1741,7 +1759,7 @@ function finishLoading() {
       ipc_send("set_arena_state", ARENA_MODE_DRAFT);
     }
 
-    ipc_send("set_settings", playerData.settings);
+    ipc_send("set_settings", JSON.stringify(playerData.settings));
     ipc_send("initialize");
     ipc_send("player_data_refresh");
 

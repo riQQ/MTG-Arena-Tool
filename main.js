@@ -362,8 +362,14 @@ function setArenaState(state) {
 }
 
 function setSettings(_settings) {
+  try {
+    settings = JSON.parse(_settings);
+  } catch (e) {
+    console.log("MAIN: Error parsing settings");
+    console.log(e);
+    return;
+  }
   console.log("MAIN:  Updating settings");
-  settings = _settings;
 
   // update keyboard shortcuts
   globalShortcut.unregisterAll();
@@ -434,7 +440,7 @@ function isEntireOverlayVisible() {
   // require us to avoid the standard isVisible() API
   // we cannot rely on x/y position values to derive visiblity because
   // multi-display setups may have negative values for x or y
-  return bounds.width > 10 && bounds.height > 10;
+  return bounds.width > 100 && bounds.height > 100;
 }
 
 function getOverlayVisible(settings) {
@@ -570,7 +576,7 @@ function createOverlayWindow() {
     }
   });
   overlay.loadURL(`file://${__dirname}/window_overlay_v3/index.html`);
-  overlay.setIgnoreMouseEvents(true, { forward: true });
+  //overlay.setIgnoreMouseEvents(true, { forward: true });
 
   overlay.webContents.once("dom-ready", function() {
     //We need to wait for the overlay to be initialized before we interact with it
@@ -617,6 +623,12 @@ function createMainWindow() {
       label: "Show",
       click: () => {
         showWindow();
+      }
+    },
+    {
+      label: "Edit Mode",
+      click: () => {
+        overlay.webContents.send("edit");
       }
     },
     {
