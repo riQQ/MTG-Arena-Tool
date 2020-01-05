@@ -31,10 +31,6 @@ import {
   DecksTableState
 } from "./components/decks/types";
 
-let filters: AggregatorFilters = Aggregator.getDefaultFilters();
-filters.onlyCurrentDecks = true;
-const tagPrompt = "Add";
-
 function getDefaultStats(): DeckStats {
   return {
     wins: 0,
@@ -48,62 +44,74 @@ function getDefaultStats(): DeckStats {
   };
 }
 
-function setFilters(selected: AggregatorFilters = {}): void {
-  const { decksTableState } = pd.settings;
-  const showArchived = decksTableState?.filters?.archivedCol !== "hideArchived";
-
-  if (selected.date) {
-    // clear all dependent filters
-    filters = {
-      ...Aggregator.getDefaultFilters(),
-      date: filters.date,
-      onlyCurrentDecks: true,
-      ...selected,
-      showArchived
-    };
-  } else {
-    // default case
-    filters = {
-      ...filters,
-      date: pd.settings.last_date_filter,
-      ...selected,
-      showArchived
-    };
-  }
+function openDeckDetails(id: string, filters: AggregatorFilters): void {
+  const deck = pd.deck(id);
+  if (!deck) return;
+  openDeck(deck, { ...filters, deckId: id });
+  anime({
+    targets: ".moving_ux",
+    left: "-100%",
+    easing: EASING_DEFAULT,
+    duration: 350
+  });
 }
 
-export function openDecksTab(newFilters: AggregatorFilters = {}): void {
-  hideLoadingBars();
-  const mainDiv = resetMainContainer() as HTMLElement;
-  mainDiv.classList.add("flex_item");
-  setFilters(newFilters);
+function addTag(deckid: string, tag: string): void {
+  const deck = pd.deck(deckid);
+  if (!deck || !tag) return;
+  if (getReadableFormat(deck.format) === tag) return;
+  if (tag === "Add") return;
+  if (deck.tags && deck.tags.includes(tag)) return;
+  ipcSend("add_tag", { deckid, tag });
+}
 
-  const wrapR = createDiv(["wrapper_column", "sidebar_column_l"]);
-  wrapR.style.width = pd.settings.right_panel_width + "px";
-  wrapR.style.flex = `0 0 ${wrapR.style.width}`;
-  const aggregator: any = new Aggregator(filters);
+function editTag(tag: string, color: string): void {
+  ipcSend("edit_tag", { tag, color });
+}
+
+function deleteTag(deckid: string, tag: string): void {
+  const deck = pd.deck(deckid);
+  if (!deck || !tag) return;
+  if (!deck.tags || !deck.tags.includes(tag)) return;
+  ipcSend("delete_tag", { deckid, tag });
+}
+
+function toggleDeckArchived(id: string): void {
+  ipcSend("toggle_deck_archived", id);
+}
+
+function saveUserState(state: DecksTableState): void {
+  ipcSend("save_user_settings", {
+    decksTableState: state,
+    decksTableMode: state.decksTableMode,
+    skip_refresh: true
+  });
+}
+
+function updateStatsPanel(
+  container: HTMLElement,
+  aggregator: Aggregator
+): void {
+  container.innerHTML = "";
   const statsPanel = new StatsPanel(
     "decks_top",
     aggregator,
     pd.settings.right_panel_width,
     true
   );
-  const decksTopWinrate = statsPanel.render();
-  decksTopWinrate.style.display = "flex";
-  decksTopWinrate.style.flexDirection = "column";
-  decksTopWinrate.style.marginTop = "16px";
-  decksTopWinrate.style.padding = "12px";
-
+  const statsPanelDiv = statsPanel.render();
+  statsPanelDiv.style.display = "flex";
+  statsPanelDiv.style.flexDirection = "column";
+  statsPanelDiv.style.marginTop = "16px";
+  statsPanelDiv.style.padding = "12px";
   const drag = createDiv(["dragger"]);
-  wrapR.appendChild(drag);
+  container.appendChild(drag);
   makeResizable(drag, statsPanel.handleResize);
-  wrapR.appendChild(decksTopWinrate);
-  const wrapL = createDiv(["wrapper_column"]);
-  wrapL.style.overflowX = "auto";
-  mainDiv.appendChild(wrapL);
-  mainDiv.appendChild(wrapR);
+  container.appendChild(statsPanelDiv);
+}
 
-  const data = pd.deckList.map(
+function getDecksData(aggregator: any): DecksData[] {
+  return pd.deckList.map(
     (deck: SerializedDeck): DecksData => {
       const id = deck.id ?? "";
       const archivedSortVal = deck.archived ? 1 : deck.custom ? 0.5 : 0;
@@ -141,60 +149,89 @@ export function openDecksTab(newFilters: AggregatorFilters = {}): void {
       };
     }
   );
+}
 
-  const { decksTableState } = pd.settings;
-  mountReactComponent(
-    <DecksTable
-      data={data}
-      filters={filters}
-      cachedState={decksTableState}
-      filterMatchesCallback={openDecksTab}
-      tableStateCallback={(state: DecksTableState): void =>
-        ipcSend("save_user_settings", {
-          decksTableState: state,
-          skip_refresh: true
-        })
+export function DecksTab({
+  aggFiltersArg
+}: {
+  aggFiltersArg: AggregatorFilters;
+}): JSX.Element {
+  const {
+    decksTableMode,
+    decksTableState,
+    last_date_filter: dateFilter,
+    right_panel_width: panelWidth
+  } = pd.settings;
+  const showArchived = decksTableState?.filters?.archivedCol !== "hideArchived";
+  const defaultAggFilters = {
+    ...Aggregator.getDefaultFilters(),
+    date: dateFilter,
+    ...aggFiltersArg,
+    showArchived
+  };
+  const [aggFilters, setAggFilters] = React.useState(
+    defaultAggFilters as AggregatorFilters
+  );
+  const data = React.useMemo(() => {
+    const aggregator = new Aggregator(aggFilters);
+    return getDecksData(aggregator);
+  }, [aggFilters]);
+
+  const sidePanelWidth = panelWidth + "px";
+  const rightPanelRef = React.useRef<HTMLDivElement>(null);
+  const filterDecksCallback = React.useCallback(
+    (deckId?: string | string[]): void => {
+      if (rightPanelRef?.current) {
+        updateStatsPanel(
+          rightPanelRef.current,
+          new Aggregator({ ...aggFilters, deckId })
+        );
       }
-      openDeckCallback={(id: string): void => openDeckCallback(id, filters)}
-      archiveDeckCallback={(id: string): void =>
-        ipcSend("toggle_deck_archived", id)
-      }
-      tagDeckCallback={addTag}
-      editTagCallback={(tag: string, color: string): void =>
-        ipcSend("edit_tag", { tag, color })
-      }
-      deleteTagCallback={deleteTag}
-    />,
-    wrapL
+    },
+    [rightPanelRef, aggFilters]
+  );
+  const openDeckCallback = React.useCallback(
+    (id: string): void => openDeckDetails(id, aggFilters),
+    [aggFilters]
+  );
+  return (
+    <>
+      <div
+        className={"wrapper_column"}
+        style={{
+          overflowX: "auto"
+        }}
+      >
+        <DecksTable
+          data={data}
+          filters={aggFilters}
+          cachedState={decksTableState}
+          cachedTableMode={decksTableMode}
+          filterMatchesCallback={setAggFilters}
+          tableStateCallback={saveUserState}
+          filterDecksCallback={filterDecksCallback}
+          openDeckCallback={openDeckCallback}
+          archiveDeckCallback={toggleDeckArchived}
+          tagDeckCallback={addTag}
+          editTagCallback={editTag}
+          deleteTagCallback={deleteTag}
+        />
+      </div>
+      <div
+        ref={rightPanelRef}
+        className={"wrapper_column sidebar_column_l"}
+        style={{
+          width: sidePanelWidth,
+          flex: `0 0 ${sidePanelWidth}`
+        }}
+      ></div>
+    </>
   );
 }
 
-function openDeckCallback(id: string, filters: AggregatorFilters): void {
-  const deck = pd.deck(id);
-  if (!deck) return;
-  openDeck(deck, { ...filters, deckId: id });
-  anime({
-    targets: ".moving_ux",
-    left: "-100%",
-    easing: EASING_DEFAULT,
-    duration: 350
-  });
-}
-
-function addTag(deckid: string, tag: string): void {
-  const deck = pd.deck(deckid);
-  if (!deck || !tag) return;
-  if (getReadableFormat(deck.format) === tag) return;
-  if (tag === tagPrompt) return;
-  if (deck.tags && deck.tags.includes(tag)) return;
-
-  ipcSend("add_tag", { deckid, tag });
-}
-
-function deleteTag(deckid: string, tag: string): void {
-  const deck = pd.deck(deckid);
-  if (!deck || !tag) return;
-  if (!deck.tags || !deck.tags.includes(tag)) return;
-
-  ipcSend("delete_tag", { deckid, tag });
+export function openDecksTab(aggFilters: AggregatorFilters = {}): void {
+  hideLoadingBars();
+  const mainDiv = resetMainContainer() as HTMLElement;
+  mainDiv.classList.add("flex_item");
+  mountReactComponent(<DecksTab aggFiltersArg={aggFilters} />, mainDiv);
 }

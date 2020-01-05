@@ -1478,10 +1478,12 @@ a:hover {
 
 .icon_search_inclusive {
     display: -webkit-inline-box;
-    width: 20px;
-    margin-right: 16px;
-    height: 20px;
     background: center no-repeat url('../images/create.png');
+    background-size: contain;
+    margin: auto 2px auto 2px;
+    background-repeat: no-repeat;
+    filter: drop-shadow(-1px 1px black);
+    vertical-align: middle;
 }
 
 .wc_search_icon {
@@ -1493,11 +1495,17 @@ a:hover {
 }
 
 .paging_container {
-    margin: 16px 24px;
+    margin: 8px;
     display: flex;
     width: 100%;
     height: 24px;
     justify-content: center;
+    align-items: center;
+}
+
+.paging_text {
+    color: var(--color-light);
+    white-space: nowrap;
 }
 
 .paging_button {
@@ -1521,6 +1529,7 @@ a:hover {
     text-align: center;
     line-height: 24px;
     border-radius: 4px;
+    border: none;
     color: var(--color-light-20);
     background-color: var(--color-mid-40);
 }
@@ -1876,9 +1885,7 @@ a:hover {
     align-self: center;
     opacity: 1;
     background-repeat: no-repeat;
-    width: 40px;
-    margin: 0 auto;
-    height: 20px;
+    margin: 0 2px;
     cursor: pointer;
     background-position: center;
     background-size: contain;
@@ -3844,27 +3851,33 @@ a:hover {
     display: flex;
     flex-wrap: wrap;
     width: -webkit-fill-available;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
 }
 
 .decks_table_search_cont {
     display: flex;
     margin: 4px auto;
     width: -webkit-fill-available;
-    justify-content: center;
-    max-width: 600px;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .decks_table_head {
     display: grid;
     color: var(--color-light);
     border-bottom: 1px solid var(--color-light);
+    background-color: var(--color-mid-20);
 }
 
 .decks_table_head_container {
     margin-top: 8px;
     display: flex;
     justify-content: center;   
+}
+
+.decks_table_body {
+    background-color: var(--color-mid-20);
 }
 
 .decks_table_body_row {
@@ -3882,6 +3895,25 @@ a:hover {
 .decks_table_body_row .inner_div {
     display: flex;
     padding: 2px;
+    margin-left: 8px;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: hidden;
+}
+
+.decks_table_deck_tile {
+    display: inline-block;
+    height: 32px;
+    width: 208px;
+    color: var(--color-light);
+    -webkit-transition: all .1s ease-out;
+    cursor: pointer;
+}
+
+.decks_table_deck_tile .inner_div {
+    display: flex;
+    padding: 2px;
+    padding-left: 10px;
     margin-left: 8px;
     justify-content: flex-start;
     align-items: center;
