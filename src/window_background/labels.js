@@ -8,9 +8,10 @@ import {
   CONSTRUCTED_EVENTS
 } from "../shared/constants";
 import db from "../shared/database";
-import CardsList from "../shared/cards-list";
+import { playerDb } from "../shared/db/LocalDatabase";
+import CardsList from "../shared/cardsList";
 import { get_deck_colors, objectClone } from "../shared/util";
-import * as greToClientInterpreter from "./gre-to-client-interpreter";
+import * as greToClientInterpreter from "./greToClientInterpreter";
 import playerData from "../shared/player-data";
 import sha1 from "js-sha1";
 import globals from "./globals";
@@ -21,17 +22,17 @@ import {
   normaliseFields,
   parseWotcTimeFallback,
   setData
-} from "./background-util";
+} from "./backgroundUtil";
 import actionLog from "./actionLog";
 import addCustomDeck from "./addCustomDeck";
 import { createDraft, createMatch, completeMatch } from "./data";
 
-var logLanguage = "English";
+let logLanguage = "English";
 
 let skipMatch = false;
 
 function clear_deck() {
-  var deck = { mainDeck: [], sideboard: [], name: "" };
+  const deck = { mainDeck: [], sideboard: [], name: "" };
   ipc_send("set_deck", deck, IPC_OVERLAY);
 }
 
@@ -41,12 +42,10 @@ function clearDraftData(draftId) {
       const draft_index = [...playerData.draft_index];
       draft_index.splice(draft_index.indexOf(draftId), 1);
       setData({ draft_index }, false);
-      if (globals.debugLog || !globals.firstPass)
-        globals.store.set("draft_index", draft_index);
+      playerDb.upsert("", "draft_index", draft_index);
     }
     setData({ [draftId]: null });
-    // Note: we must always run delete, regardless of firstpass
-    globals.store.delete(draftId);
+    playerDb.remove("", draftId);
   }
 }
 
@@ -112,12 +111,11 @@ function setDraftData(data) {
   // console.log("Set draft data:", data);
   if (!playerData.draft_index.includes(id)) {
     const draft_index = [...playerData.draft_index, id];
-    if (globals.debugLog || !globals.firstPass)
-      globals.store.set("draft_index", draft_index);
+    playerDb.upsert("", "draft_index", draft_index);
     setData({ draft_index }, false);
   }
 
-  if (globals.debugLog || !globals.firstPass) globals.store.set(id, data);
+  playerDb.upsert("", id, data);
   setData({
     [id]: data,
     cards: playerData.cards,
@@ -132,7 +130,7 @@ function endDraft(data) {
   if (globals.debugLog || !globals.firstPass)
     ipc_send("set_arena_state", ARENA_MODE_IDLE);
   if (!data) return;
-  const httpApi = require("./http-api");
+  const httpApi = require("./httpApi");
   httpApi.httpSetDraft(data);
   ipc_send("popup", { text: "Draft saved!", time: 3000 });
 }
@@ -145,7 +143,7 @@ function processMatch(json, matchBeginTime) {
     ipc_send("set_arena_state", ARENA_MODE_MATCH);
   }
 
-  var match = createMatch(json, matchBeginTime);
+  const match = createMatch(json, matchBeginTime);
 
   // set global values
 
@@ -160,8 +158,8 @@ function processMatch(json, matchBeginTime) {
   ipc_send("ipc_log", "vs " + match.opponent.name);
 
   if (match.eventId == "DirectGame" && globals.currentDeck) {
-    let str = globals.currentDeck.getSave();
-    const httpApi = require("./http-api");
+    const str = globals.currentDeck.getSave();
+    const httpApi = require("./httpApi");
     httpApi.httpTournamentCheck(str, match.opponent.name, true);
   }
 
@@ -182,12 +180,11 @@ function saveCourse(json) {
 
   if (!playerData.courses_index.includes(id)) {
     const courses_index = [...playerData.courses_index, id];
-    if (globals.debugLog || !globals.firstPass)
-      globals.store.set("courses_index", courses_index);
+    playerDb.upsert("", "courses_index", courses_index);
     setData({ courses_index }, false);
   }
 
-  if (globals.debugLog || !globals.firstPass) globals.store.set(id, eventData);
+  playerDb.upsert("", id, eventData);
   setData({ [id]: eventData });
 }
 
@@ -201,14 +198,13 @@ function saveEconomyTransaction(transaction) {
 
   if (!playerData.economy_index.includes(id)) {
     const economy_index = [...playerData.economy_index, id];
-    if (globals.debugLog || !globals.firstPass)
-      globals.store.set("economy_index", economy_index);
+    playerDb.upsert("", "economy_index", economy_index);
     setData({ economy_index }, false);
   }
 
-  if (globals.debugLog || !globals.firstPass) globals.store.set(id, txnData);
+  playerDb.upsert("", id, txnData);
   setData({ [id]: txnData });
-  const httpApi = require("./http-api");
+  const httpApi = require("./httpApi");
   httpApi.httpSetEconomy(txnData);
 }
 
@@ -234,15 +230,14 @@ function saveMatch(id, matchEndTime) {
   // console.log("Save match:", match);
   if (!playerData.matches_index.includes(id)) {
     const matches_index = [...playerData.matches_index, id];
-    if (globals.debugLog || !globals.firstPass)
-      globals.store.set("matches_index", matches_index);
+    playerDb.upsert("", "matches_index", matches_index);
     setData({ matches_index }, false);
   }
 
-  if (globals.debugLog || !globals.firstPass) globals.store.set(id, match);
+  playerDb.upsert("", id, match);
   setData({ [id]: match });
   if (globals.matchCompletedOnGameNumber === globals.gameNumberCompleted) {
-    const httpApi = require("./http-api");
+    const httpApi = require("./httpApi");
     httpApi.httpSetMatch(match);
   }
   ipc_send("popup", { text: "Match saved!", time: 3000 });
@@ -288,7 +283,7 @@ export function onLabelOutLogInfo(entry) {
   // console.log(json);
 
   if (json.params.messageName == "Client.UserDeviceSpecs") {
-    let payload = {
+    const payload = {
       isWindowed: json.params.payloadObject.isWindowed,
       monitor: json.params.payloadObject.monitorResolution,
       game: json.params.payloadObject.gameResolution
@@ -296,7 +291,7 @@ export function onLabelOutLogInfo(entry) {
     ipc_send("set_device_specs", payload);
   }
   if (json.params.messageName == "DuelScene.GameStart") {
-    let gameNumber = json.params.payloadObject.gameNumber;
+    const gameNumber = json.params.payloadObject.gameNumber;
     actionLog(-2, globals.logTime, `Game ${gameNumber} Start`);
   }
 
@@ -307,9 +302,9 @@ export function onLabelOutLogInfo(entry) {
   if (json.params.messageName == "DuelScene.GameStop") {
     globals.currentMatch.opponent.cards = globals.currentMatch.oppCardsUsed;
 
-    var payload = json.params.payloadObject;
+    const payload = json.params.payloadObject;
 
-    let loserName = getNameBySeat(payload.winningTeamId == 1 ? 2 : 1);
+    const loserName = getNameBySeat(payload.winningTeamId == 1 ? 2 : 1);
     if (payload.winningReason == "ResultReason_Concede") {
       actionLog(-1, globals.logTime, `${loserName} Conceded`);
     }
@@ -317,15 +312,15 @@ export function onLabelOutLogInfo(entry) {
       actionLog(-1, globals.logTime, `${loserName} Timed out`);
     }
 
-    let playerName = getNameBySeat(payload.winningTeamId);
+    const playerName = getNameBySeat(payload.winningTeamId);
     actionLog(-1, globals.logTime, `${playerName} Wins!`);
 
-    var mid = payload.matchId + "-" + playerData.arenaId;
-    var time = payload.secondsCount;
+    const mid = payload.matchId + "-" + playerData.arenaId;
+    const time = payload.secondsCount;
     if (mid == globals.currentMatch.matchId) {
       globals.gameNumberCompleted = payload.gameNumber;
 
-      let game = {};
+      const game = {};
       game.time = time;
       game.winner = payload.winningTeamId;
       // Just a shortcut for future aggregations
@@ -341,7 +336,7 @@ export function onLabelOutLogInfo(entry) {
         ) {
           instance = globals.idChanges[instance];
         }
-        let cardId = globals.instanceToCardIdMap[instance];
+        const cardId = globals.instanceToCardIdMap[instance];
         if (db.card(cardId)) {
           game.shuffledOrder.push(cardId);
         } else {
@@ -356,15 +351,49 @@ export function onLabelOutLogInfo(entry) {
       );
 
       if (globals.gameNumberCompleted > 1) {
-        let deckDiff = {};
-        globals.currentMatch.player.deck.mainboard.get().forEach(card => {
-          deckDiff[card.id] = card.quantity;
+        const originalDeck = globals.currentMatch.player.originalDeck.clone();
+        const newDeck = globals.currentMatch.player.deck.clone();
+
+        const sideboardChanges = {
+          added: [],
+          removed: []
+        };
+
+        const mainDiff = {};
+        newDeck.mainboard.get().forEach(card => {
+          mainDiff[card.id] = (mainDiff[card.id] || 0) + card.quantity;
         });
-        globals.currentMatch.player.originalDeck.mainboard
-          .get()
-          .forEach(card => {
-            deckDiff[card.id] = (deckDiff[card.id] || 0) - card.quantity;
-          });
+        originalDeck.mainboard.get().forEach(card => {
+          if (mainDiff[card.id]) {
+            mainDiff[card.id] -= card.quantity;
+          }
+        });
+
+        Object.keys(mainDiff).forEach(id => {
+          for (let i = 0; i < mainDiff[id]; i++) {
+            sideboardChanges.added.push(id);
+          }
+          //console.log(mainDiff[id] + " - " + db.card(id).name);
+        });
+
+        const sideDiff = {};
+        newDeck.sideboard.get().forEach(card => {
+          sideDiff[card.id] = (sideDiff[card.id] || 0) + card.quantity;
+        });
+        originalDeck.sideboard.get().forEach(card => {
+          if (sideDiff[card.id]) {
+            sideDiff[card.id] -= card.quantity;
+          }
+        });
+
+        Object.keys(sideDiff).forEach(id => {
+          for (let i = 0; i < sideDiff[id]; i++) {
+            sideboardChanges.removed.push(id);
+          }
+          //console.log(sideDiff[id] + " - " + db.card(id).name);
+        });
+
+        /*
         globals.matchGameStats.forEach((stats, i) => {
           if (i !== 0) {
             let prevChanges = stats.sideboardChanges;
@@ -376,56 +405,43 @@ export function onLabelOutLogInfo(entry) {
             );
           }
         });
-
-        let sideboardChanges = {
-          added: [],
-          removed: []
-        };
-        Object.keys(deckDiff).forEach(id => {
-          let quantity = deckDiff[id];
-          for (let i = 0; i < quantity; i++) {
-            sideboardChanges.added.push(id);
-          }
-          for (let i = 0; i > quantity; i--) {
-            sideboardChanges.removed.push(id);
-          }
-        });
+        */
 
         game.sideboardChanges = sideboardChanges;
-        game.deck = objectClone(globals.currentMatch.player.deck.getSave());
+        game.deck = newDeck.clone().getSave();
       }
 
       game.handLands = game.handsDrawn.map(
         hand => hand.filter(card => db.card(card).type.includes("Land")).length
       );
-      let handSize = 8 - game.handsDrawn.length;
+      const handSize = 8 - game.handsDrawn.length;
       let deckSize = 0;
       let landsInDeck = 0;
-      let multiCardPositions = { "2": {}, "3": {}, "4": {} };
-      let cardCounts = {};
+      const multiCardPositions = { "2": {}, "3": {}, "4": {} };
+      const cardCounts = {};
       globals.currentMatch.player.deck.mainboard.get().forEach(card => {
         cardCounts[card.id] = card.quantity;
         deckSize += card.quantity;
         if (card.quantity >= 2 && card.quantity <= 4) {
           multiCardPositions[card.quantity][card.id] = [];
         }
-        let cardObj = db.card(card.id);
+        const cardObj = db.card(card.id);
         if (cardObj && cardObj.type.includes("Land")) {
           landsInDeck += card.quantity;
         }
       });
-      let librarySize = deckSize - handSize;
-      let landsInLibrary =
+      const librarySize = deckSize - handSize;
+      const landsInLibrary =
         landsInDeck - game.handLands[game.handLands.length - 1];
       let landsSoFar = 0;
-      let libraryLands = [];
+      const libraryLands = [];
       game.shuffledOrder.forEach((cardId, i) => {
-        let cardCount = cardCounts[cardId];
+        const cardCount = cardCounts[cardId];
         if (cardCount >= 2 && cardCount <= 4) {
           multiCardPositions[cardCount][cardId].push(i + 1);
         }
         if (i >= handSize) {
-          let card = db.card(cardId);
+          const card = db.card(cardId);
           if (card && card.type.includes("Land")) {
             landsSoFar++;
           }
@@ -471,7 +487,7 @@ export function onLabelGreToClient(entry) {
 
   const message = json.greToClientEvent.greToClientMessages;
   message.forEach(function(msg) {
-    let msgId = msg.msgId;
+    const msgId = msg.msgId;
     greToClientInterpreter.GREMessage(msg, globals.logTime);
     /*
     globals.currentMatch.GREtoClient[msgId] = msg;
@@ -495,23 +511,21 @@ export function onLabelClientToMatchServiceMessageTypeClientToGREMessage(
   if (typeof payload == "string") {
     const msgType = entry.label.split("_")[1];
     payload = decodePayload(payload, msgType);
-    payload = normaliseFields(payload);
-    // console.log("Client To GRE: ", payload);
+    //console.log("Client To GRE: ", payload);
   }
 
   if (payload.submitdeckresp) {
     // Get sideboard changes
     const deckResp = payload.submitdeckresp.deck;
 
-    const tempMain = new CardsList(deckResp.deckcards);
-    const tempSide = new CardsList(deckResp.sideboardcards);
+    const tempMain = new CardsList([]);
+    deckResp.deckcardsList.map(id => tempMain.add(id));
+    const tempSide = new CardsList([]);
+    deckResp.sideboardcardsList.map(id => tempSide.add(id));
+
     const newDeck = globals.currentMatch.player.deck.clone();
     newDeck.mainboard = tempMain;
     newDeck.sideboard = tempSide;
-    newDeck.getColors();
-
-    globals.currentMatch.player.deck = newDeck;
-    console.log("> ", globals.currentMatch.player.deck);
   }
 }
 
@@ -544,8 +558,8 @@ export function onLabelInEventGetCombinedRankInfo(entry) {
   rank.limited.leaderboardPlace = json.limitedLeaderboardPlace;
   rank.limited.seasonOrdinal = json.limitedSeasonOrdinal;
 
-  var infoLength = Object.keys(json).length - 1;
-  var processedLength = [rank.limited, rank.constructed]
+  const infoLength = Object.keys(json).length - 1;
+  const processedLength = [rank.limited, rank.constructed]
     .map(o => Object.keys(o).length)
     .reduce((a, b) => a + b, 0);
   if (infoLength != processedLength) {
@@ -553,16 +567,14 @@ export function onLabelInEventGetCombinedRankInfo(entry) {
   }
 
   setData({ rank });
-  if (globals.debugLog || !globals.firstPass) {
-    globals.store.set("rank", rank);
-  }
+  playerDb.upsert("", "rank", rank);
 }
 
 export function onLabelInEventGetActiveEventsV2(entry) {
   const json = entry.json();
   if (!json) return;
 
-  let activeEvents = json.map(event => event.InternalEventName);
+  const activeEvents = json.map(event => event.InternalEventName);
   ipc_send("set_active_events", JSON.stringify(activeEvents));
 }
 
@@ -591,14 +603,12 @@ export function onLabelRankUpdated(entry) {
     updateType
   );
 
-  const httpApi = require("./http-api");
+  const httpApi = require("./httpApi");
   httpApi.httpSetSeasonal(json);
 
   setData({ rank, seasonal_rank });
-  if (globals.debugLog || !globals.firstPass) {
-    globals.store.set("rank", rank);
-    globals.store.set("seasonal_rank", seasonal_rank);
-  }
+  playerDb.upsert("", "rank", rank);
+  playerDb.upsert("", "seasonal_rank", seasonal_rank);
 }
 
 export function onLabelMythicRatingUpdated(entry) {
@@ -633,17 +643,15 @@ export function onLabelMythicRatingUpdated(entry) {
   rank.constructed.percentile = json.newMythicPercentile;
   rank.constructed.leaderboardPlace = json.newMythicLeaderboardPlacement;
 
-  let seasonal_rank = playerData.addSeasonalRank(
+  const seasonal_rank = playerData.addSeasonalRank(
     json,
     rank.constructed.seasonOrdinal,
     type
   );
 
   setData({ rank, seasonal_rank });
-  if (globals.debugLog || !globals.firstPass) {
-    globals.store.set("rank", rank);
-    globals.store.set("seasonal_rank", seasonal_rank);
-  }
+  playerDb.upsert("", "rank", rank);
+  playerDb.upsert("", "seasonal_rank", seasonal_rank);
 }
 
 export function onLabelInDeckGetDeckLists(entry, json = false) {
@@ -655,20 +663,21 @@ export function onLabelInDeckGetDeckLists(entry, json = false) {
   json.forEach(deck => {
     const deckData = { ...(playerData.deck(deck.id) || {}), ...deck };
     decks[deck.id] = deckData;
-    if (globals.debugLog || !globals.firstPass)
-      globals.store.set("decks." + deck.id, deckData);
+    playerDb.upsert("decks", deck.id, deckData);
     static_decks.push(deck.id);
   });
 
   setData({ decks, static_decks });
-  if (globals.debugLog || !globals.firstPass)
-    globals.store.set("static_decks", static_decks);
+  playerDb.upsert("", "static_decks", static_decks);
 }
 
 export function onLabelInDeckGetDeckListsV3(entry) {
   const json = entry.json();
   if (!json) return;
-  onLabelInDeckGetDeckLists(entry, json.map(d => convertDeckFromV3(d)));
+  onLabelInDeckGetDeckLists(
+    entry,
+    json.map(d => convertDeckFromV3(d))
+  );
 }
 
 export function onLabelInDeckGetPreconDecks(entry) {
@@ -696,8 +705,7 @@ export function onLabelInEventGetPlayerCoursesV2(entry) {
   });
 
   setData({ static_events });
-  if (globals.debugLog || !globals.firstPass)
-    globals.store.set("static_events", static_events);
+  playerDb.upsert("", "static_events", static_events);
 }
 
 export function onLabelInEventGetPlayerCourseV2(entry) {
@@ -715,7 +723,7 @@ export function onLabelInEventGetPlayerCourseV2(entry) {
     addCustomDeck(json.CourseDeck);
     //json.date = timestamp();
     //console.log(json.CourseDeck, json.CourseDeck.colors)
-    const httpApi = require("./http-api");
+    const httpApi = require("./httpApi");
     httpApi.httpSubmitCourse(json);
     saveCourse(json);
     select_deck(json);
@@ -803,32 +811,28 @@ export function onLabelInDeckUpdateDeckV3(entry) {
     (deltaDeck.changesMain.length || deltaDeck.changesSide.length);
 
   if (foundNewDeckChange) {
-    if (globals.debugLog || !globals.firstPass)
-      globals.store.set("deck_changes." + changeId, deltaDeck);
+    playerDb.upsert("deck_changes", changeId, deltaDeck);
     const deck_changes = { ...playerData.deck_changes, [changeId]: deltaDeck };
     const deck_changes_index = [...playerData.deck_changes_index];
     if (!deck_changes_index.includes(changeId)) {
       deck_changes_index.push(changeId);
     }
-    if (globals.debugLog || !globals.firstPass)
-      globals.store.set("deck_changes_index", deck_changes_index);
-
+    playerDb.upsert("", "deck_changes_index", deck_changes_index);
     setData({ deck_changes, deck_changes_index });
   }
 
   const deckData = { ..._deck, ...json };
   const decks = { ...playerData.decks, [json.id]: deckData };
-  if (globals.debugLog || !globals.firstPass)
-    globals.store.set("decks." + json.id, deckData);
+  playerDb.upsert("decks", json.id, deckData);
   setData({ decks });
 }
 
 // Given a shallow object of numbers and lists return a
 // new object which doesn't contain 0s or empty lists.
 function minifiedDelta(delta) {
-  let newDelta = {};
+  const newDelta = {};
   Object.keys(delta).forEach(key => {
-    let val = delta[key];
+    const val = delta[key];
     if (val === 0 || (Array.isArray(val) && !val.length)) {
       return;
     }
@@ -870,8 +874,8 @@ function inventoryAddDelta(delta) {
   economy.gold += delta.goldDelta;
 
   // Update new cards obtained.
-  let cardsNew = playerData.cardsNew;
-  let cards = playerData.cards;
+  const cardsNew = playerData.cardsNew;
+  const cards = playerData.cards;
   delta.cardsAdded.forEach(grpId => {
     // Add to inventory
     if (cards.cards[grpId] === undefined) {
@@ -997,8 +1001,7 @@ export function onLabelInPlayerInventoryGetPlayerInventory(entry) {
     boosters: json.boosters
   };
   setData({ economy });
-  if (globals.debugLog || !globals.firstPass)
-    globals.store.set("economy", economy);
+  playerDb.upsert("", "economy", economy);
 }
 
 export function onLabelInPlayerInventoryGetPlayerCardsV3(entry) {
@@ -1025,7 +1028,7 @@ export function onLabelInPlayerInventoryGetPlayerCardsV3(entry) {
     cards: json
   };
 
-  if (globals.debugLog || !globals.firstPass) globals.store.set("cards", cards);
+  playerDb.upsert("", "cards", cards);
 
   const cardsNew = {};
   Object.keys(json).forEach(function(key) {
@@ -1054,8 +1057,7 @@ export function onLabelInProgressionGetPlayerProgress(entry) {
     currentOrbCount: activeTrack.currentOrbCount
   };
   setData({ economy });
-  if (globals.debugLog || !globals.firstPass)
-    globals.store.set("economy", economy);
+  playerDb.upsert("", "economy", economy);
 }
 
 //
@@ -1094,8 +1096,7 @@ export function onLabelTrackRewardTierUpdated(entry) {
 
   // console.log(economy);
   setData({ economy });
-  if (globals.debugLog || !globals.firstPass)
-    globals.store.set("economy", economy);
+  playerDb.upsert("", "economy", economy);
 }
 
 export function onLabelInEventDeckSubmitV3(entry) {
@@ -1110,7 +1111,7 @@ export function onLabelEventMatchCreated(entry) {
   const matchBeginTime = globals.logTime || new Date();
 
   if (json.opponentRankingClass == "Mythic") {
-    const httpApi = require("./http-api");
+    const httpApi = require("./httpApi");
     httpApi.httpSetMythicRank(
       json.opponentScreenName,
       json.opponentMythicLeaderboardPlace
@@ -1126,13 +1127,13 @@ export function onLabelEventMatchCreated(entry) {
 export function onLabelOutDirectGameChallenge(entry) {
   const json = entry.json();
   if (!json) return;
-  var deck = json.params.deck;
+  let deck = json.params.deck;
   deck = JSON.parse(deck);
   select_deck(convertDeckFromV3(deck));
 
-  const httpApi = require("./http-api");
+  const httpApi = require("./httpApi");
   httpApi.httpTournamentCheck(
-    deck,
+    globals.currentDeck.getSave(),
     json.params.opponentDisplayName,
     false,
     json.params.playFirst,
@@ -1143,14 +1144,14 @@ export function onLabelOutDirectGameChallenge(entry) {
 export function onLabelOutEventAIPractice(entry) {
   const json = entry.json();
   if (!json) return;
-  var deck = json.params.deck;
+  let deck = json.params.deck;
   deck = JSON.parse(deck);
   select_deck(convertDeckFromV3(deck));
 }
 
 function getDraftSet(eventName) {
   if (!eventName) return "";
-  for (let set in db.sets) {
+  for (const set in db.sets) {
     const setCode = db.sets[set].code;
     if (eventName.includes(setCode)) {
       return set;
@@ -1268,7 +1269,7 @@ export function onLabelMatchGameRoomStateChangedEvent(entry) {
         }
       });
 
-      let arg = {
+      const arg = {
         opponentScreenName: oName,
         opponentRankingClass: "",
         opponentRankingTier: 1,
@@ -1307,7 +1308,7 @@ export function onLabelMatchGameRoomStateChangedEvent(entry) {
     globals.matchCompletedOnGameNumber =
       json.finalMatchResult.resultList.length - 1;
 
-    var matchEndTime = parseWotcTimeFallback(entry.timestamp);
+    const matchEndTime = parseWotcTimeFallback(entry.timestamp);
     saveMatch(
       json.finalMatchResult.matchId + "-" + playerData.arenaId,
       matchEndTime

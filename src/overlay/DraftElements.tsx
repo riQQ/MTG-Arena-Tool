@@ -13,7 +13,6 @@ import DeckList from "./DeckList";
 import { DbCardData } from "../shared/types/Metadata";
 
 const packSizeMap: { [key: string]: number } = PACK_SIZES;
-const manaColorMap: { [key: number]: string } = MANA;
 
 export interface DraftElementsProps {
   draft: DraftData;
@@ -98,13 +97,13 @@ export default function DraftElements(props: DraftElementsProps): JSX.Element {
   }
   if (settings.mode === OVERLAY_DRAFT) {
     visibleDeck = new Deck({ name: pickName }, pack);
-    cardsCount = visibleDeck.mainboard.count();
-    mainTitle = visibleDeck.name;
+    cardsCount = visibleDeck.getMainboard().count();
+    mainTitle = visibleDeck.getName();
     subTitle = "Cards Left: " + cardsCount + " cards";
   } else if (settings.mode === OVERLAY_DRAFT_BREW) {
     visibleDeck = new Deck({ name: "All Picks" }, draft.pickedCards);
-    cardsCount = visibleDeck.mainboard.count();
-    mainTitle = visibleDeck.name;
+    cardsCount = visibleDeck.getMainboard().count();
+    mainTitle = visibleDeck.getName();
     subTitle = "Total Picks: " + cardsCount + " cards";
   }
 
@@ -131,10 +130,7 @@ export default function DraftElements(props: DraftElementsProps): JSX.Element {
       {!!settings.title && !!visibleDeck && (
         <div className="overlay_deckcolors">
           {visibleDeck.colors.get().map((color: number) => (
-            <div
-              className={"mana_s20 mana_" + manaColorMap[color]}
-              key={color}
-            />
+            <div className={"mana_s20 mana_" + MANA[color]} key={color} />
           ))}
         </div>
       )}

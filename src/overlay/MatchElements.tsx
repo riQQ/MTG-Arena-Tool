@@ -10,13 +10,12 @@ import {
   OVERLAY_SEEN
 } from "../shared/constants";
 
-import { LogData, MatchData, OverlaySettingsData } from "./overlayUtil";
+import { LogData, OverlaySettingsData } from "./overlayUtil";
 import ActionLog from "./ActionLog";
 import Clock from "./Clock";
 import DeckList from "./DeckList";
 import { DbCardData } from "../shared/types/Metadata";
-
-const manaColorMap: { [key: number]: string } = MANA;
+import { MatchData } from "../window_background/types/currentMatch";
 
 export interface MatchElementsProps {
   actionLog: LogData[];
@@ -65,26 +64,26 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
       break;
     case OVERLAY_FULL:
       visibleDeck = match.player.deck;
-      cardsCount = visibleDeck.mainboard.count();
-      mainTitle = visibleDeck.name;
+      cardsCount = visibleDeck.getMainboard().count();
+      mainTitle = visibleDeck.getName();
       subTitle = "Full Deck: " + cardsCount + " cards";
       break;
     case OVERLAY_LEFT:
       visibleDeck = match.playerCardsLeft;
-      cardsCount = visibleDeck.mainboard.count();
-      mainTitle = visibleDeck.name;
+      cardsCount = visibleDeck.getMainboard().count();
+      mainTitle = visibleDeck.getName();
       subTitle = "Library: " + cardsCount + " cards";
       break;
     case OVERLAY_ODDS:
     case OVERLAY_MIXED:
       visibleDeck = match.playerCardsLeft;
-      cardsCount = visibleDeck.mainboard.count();
-      mainTitle = visibleDeck.name;
+      cardsCount = visibleDeck.getMainboard().count();
+      mainTitle = visibleDeck.getName();
       subTitle = `Next Draw: ${sampleSize}/${cardsCount} cards`;
       break;
     case OVERLAY_SEEN:
       visibleDeck = match.oppCards;
-      cardsCount = visibleDeck.mainboard.count();
+      cardsCount = visibleDeck.getMainboard().count();
       mainTitle = "Played by " + oppName;
       subTitle = "Total Seen: " + cardsCount + " cards";
       break;
@@ -101,10 +100,7 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
       {!!settings.title && !!visibleDeck && (
         <div className="overlay_deckcolors">
           {visibleDeck.colors.get().map((color: number) => (
-            <div
-              className={"mana_s20 mana_" + manaColorMap[color]}
-              key={color}
-            />
+            <div className={"mana_s20 mana_" + MANA[color]} key={color} />
           ))}
         </div>
       )}

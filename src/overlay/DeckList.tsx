@@ -21,9 +21,11 @@ import DeckManaCurve from "../shared/DeckManaCurve";
 import DeckTypesStats from "../shared/DeckTypesStats";
 import OwnershipStars from "../shared/OwnershipStars";
 
-import { CardData, OddsData, OverlaySettingsData } from "./overlayUtil";
+import { CardObject } from "../shared/types/Deck";
+import { OverlaySettingsData } from "./overlayUtil";
 import SampleSizePanel from "./SampleSizePanel";
 import { DbCardData } from "../shared/types/Metadata";
+import { Chances } from "../window_background/types/decks";
 
 const landsCard = {
   id: 100,
@@ -48,21 +50,21 @@ const landsCard = {
 
 function getRank(cardId: string): number {
   const cardObj = db.card(cardId);
-  return (cardObj && cardObj.rank) || 0;
+  return cardObj?.rank || 0;
 }
 
-function compareQuantity(a: CardData, b: CardData): -1 | 0 | 1 {
+function compareQuantity(a: CardObject, b: CardObject): -1 | 0 | 1 {
   if (b.quantity - a.quantity < 0) return -1;
   if (b.quantity - a.quantity > 0) return 1;
   return 0;
 }
 
-function compareDraftPicks(a: CardData, b: CardData): -1 | 0 | 1 {
+function compareDraftPicks(a: CardObject, b: CardObject): -1 | 0 | 1 {
   const aCard = db.card(a.id);
   const bCard = db.card(b.id);
-  if (!bCard) {
+  if (bCard === undefined) {
     return -1;
-  } else if (!aCard) {
+  } else if (aCard === undefined) {
     return 1;
   }
   const aColors = new Colors();
@@ -76,16 +78,13 @@ function compareDraftPicks(a: CardData, b: CardData): -1 | 0 | 1 {
   const aType = getCardTypeSort(aCard.type);
   const bType = getCardTypeSort(bCard.type);
 
-  let rankDiff = bCard.rank - aCard.rank;
-  let colorsLengthDiff = aColors.length - bColors.length;
-  let cmcDiff = aCard.cmc - bCard.cmc;
-  let typeDiff = aType - bType;
-  let localeCompare = aCard.name.localeCompare(bCard.name);
-  const compare = rankDiff ||
-    colorsLengthDiff ||
-    cmcDiff ||
-    typeDiff ||
-    localeCompare;
+  const rankDiff = bCard.rank - aCard.rank;
+  const colorsLengthDiff = aColors.length - bColors.length;
+  const cmcDiff = aCard.cmc - bCard.cmc;
+  const typeDiff = aType - bType;
+  const localeCompare = aCard.name.localeCompare(bCard.name);
+  const compare =
+    rankDiff || colorsLengthDiff || cmcDiff || typeDiff || localeCompare;
 
   if (compare < 0) {
     return -1;
@@ -102,7 +101,7 @@ export interface DeckListProps {
   highlightCardId?: string;
   settings: OverlaySettingsData;
   tileStyle: number;
-  cardOdds?: OddsData;
+  cardOdds?: Chances;
   setHoverCardCallback: (card?: DbCardData) => void;
   setOddsCallback?: (sampleSize: number) => void;
 }
@@ -130,7 +129,7 @@ export default function DeckList(props: DeckListProps): JSX.Element {
   }
 
   const mainCardTiles: JSX.Element[] = [];
-  const mainCards = deckClone.mainboard;
+  const mainCards = deckClone.getMainboard();
   mainCards.removeDuplicates();
 
   const shouldDoGroupLandsHack =
@@ -142,7 +141,7 @@ export default function DeckList(props: DeckListProps): JSX.Element {
     let landsNumber = 0;
     let landsChance = 0;
     const landsColors = new Colors();
-    mainCards.get().forEach((card: CardData) => {
+    mainCards.get().forEach((card: CardObject) => {
       const cardObj = db.card(card.id);
       if (cardObj && cardObj.type.includes("Land", 0)) {
         landsNumber += card.quantity;
@@ -187,13 +186,10 @@ export default function DeckList(props: DeckListProps): JSX.Element {
     }
 
     let fullCard = card;
-    if (card && card.id && !isCardGroupedLands) {
+    if (card?.id && !isCardGroupedLands) {
       fullCard = db.card(card.id);
     }
-    let dfcCard;
-    if (card && card.dfcId) {
-      dfcCard = db.card(card.dfcId) || undefined;
-    }
+
     if (settings.mode === OVERLAY_DRAFT) {
       mainCardTiles.push(
         <div
@@ -212,6 +208,8 @@ export default function DeckList(props: DeckListProps): JSX.Element {
       // skip land cards while doing group lands hack
       return;
     }
+
+    let dfcCard = card?.dfcId ? db.card(card.dfcId) : undefined;
     mainCardTiles.push(
       <CardTile
         style={tileStyle}
@@ -230,8 +228,8 @@ export default function DeckList(props: DeckListProps): JSX.Element {
   });
 
   const sideboardCardTiles: JSX.Element[] = [];
-  if (settings.sideboard && deckClone.sideboard.count() > 0) {
-    const sideCards = deckClone.sideboard;
+  if (settings.sideboard && deckClone.getSideboard().count() > 0) {
+    const sideCards = deckClone.getSideboard();
     sideCards.removeDuplicates();
     sideCards.get().sort(sortFunc);
     sideCards.get().forEach((card: any, index: number) => {
@@ -240,12 +238,12 @@ export default function DeckList(props: DeckListProps): JSX.Element {
           ? "0%"
           : card.quantity;
       let fullCard = card;
-      if (card && card.id) {
-        fullCard = db.card(card.id) || undefined;
+      if (card?.id) {
+        fullCard = db.card(card.id);
       }
       let dfcCard;
-      if (card && card.dfcId) {
-        dfcCard = db.card(card.dfcId) || undefined;
+      if (card?.dfcId) {
+        dfcCard = db.card(card.dfcId);
       }
       sideboardCardTiles.push(
         <CardTile
@@ -265,8 +263,6 @@ export default function DeckList(props: DeckListProps): JSX.Element {
     });
   }
 
-  const arenaDeck = deck.getSave();
-
   return (
     <div className="overlay_decklist click-on">
       <div className="decklist_title">{subTitle}</div>
@@ -275,15 +271,15 @@ export default function DeckList(props: DeckListProps): JSX.Element {
         <div className="card_tile_separator">Sideboard</div>
       )}
       {!!settings.sideboard && sideboardCardTiles}
-      {!!settings.type_counts && <DeckTypesStats deck={arenaDeck} />}
-      {!!settings.mana_curve && <DeckManaCurve deck={arenaDeck} />}
+      {!!settings.type_counts && <DeckTypesStats deck={deck} />}
+      {!!settings.mana_curve && <DeckManaCurve deck={deck} />}
       {!!settings.draw_odds &&
         (settings.mode === OVERLAY_ODDS || settings.mode === OVERLAY_MIXED) &&
         cardOdds &&
         setOddsCallback && (
           <SampleSizePanel
             cardOdds={cardOdds}
-            cardsLeft={deck.mainboard.count()}
+            cardsLeft={deck.getMainboard().count()}
             setOddsCallback={setOddsCallback}
           />
         )}

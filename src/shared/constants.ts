@@ -611,7 +611,7 @@ const Color: Record<string, string> = {
   "3": "Black",
   "4": "Red",
   "5": "Green"
-} as const
+} as const;
 
 export const ENUMS = {
   CounterType,
@@ -718,7 +718,13 @@ export const CARD_TYPES = [
   "Planeswalkers"
 ] as const;
 
-export const CARD_RARITIES = ["common", "uncommon", "rare", "mythic", "land"] as const;
+export const CARD_RARITIES = [
+  "common",
+  "uncommon",
+  "rare",
+  "mythic",
+  "land"
+] as const;
 
 export const MANA_COLORS = [
   "#E7CA8E",
@@ -729,7 +735,7 @@ export const MANA_COLORS = [
   "#E3E3E3"
 ] as const;
 
-export const MANA = {
+export const MANA: { [key: number]: string } = {
   0: "",
   1: "white",
   2: "blue",
@@ -801,3 +807,7 @@ export const DATE_LAST_DAY = "Last 24 Hours";
 export const DATE_LAST_30 = "Last 30 Days";
 export const DATE_SEASON = "Current Season";
 export const DATE_ALL_TIME = "All Time";
+
+export const DECKS_ART_MODE = "Deck Art View";
+export const DECKS_TABLE_MODE = "Table View";
+export const DECKS_TABLE_MODES = [DECKS_ART_MODE, DECKS_TABLE_MODE];

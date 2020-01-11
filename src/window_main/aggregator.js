@@ -22,7 +22,7 @@ import {
   get_deck_missing,
   getBoosterCountEstimate
 } from "../shared/util";
-import { normalApproximationInterval } from "../shared/stats-fns";
+import { normalApproximationInterval } from "../shared/statsFns";
 // Default filter values
 const DEFAULT_DECK = "All Decks";
 const DEFAULT_EVENT = "All Events";
@@ -92,7 +92,6 @@ class Aggregator {
       tag: DEFAULT_TAG,
       colors: Aggregator.getDefaultColorFilter(),
       deckId: DEFAULT_DECK,
-      onlyCurrentDecks: false,
       arch: DEFAULT_ARCH,
       oppColors: Aggregator.getDefaultColorFilter(),
       date: pd.settings.last_date_filter,
@@ -150,7 +149,7 @@ class Aggregator {
     return isAfter(new Date(_date), dateFilter);
   }
 
-  _filterDeckByColors(deck, _colors) {
+  static filterDeckByColors(deck, _colors) {
     if (!deck) return true;
 
     // Normalize deck colors into matching data format
@@ -167,27 +166,19 @@ class Aggregator {
   }
 
   filterDeck(deck) {
-    const {
-      tag,
-      colors,
-      deckId,
-      onlyCurrentDecks,
-      showArchived
-    } = this.filters;
+    const { tag, colors, deckId } = this.filters;
     if (!deck) return deckId === DEFAULT_DECK;
-    const passesDeckFilter = deckId === DEFAULT_DECK || deckId === deck.id;
+    const passesDeckFilter =
+      deckId === DEFAULT_DECK ||
+      deckId === deck.id ||
+      this.validDecks.has(deck.id);
     if (!passesDeckFilter) return false;
-
-    const currentDeck = pd.deck(deck.id);
-    const passesArchiveFilter =
-      !onlyCurrentDecks ||
-      (currentDeck && (showArchived || !currentDeck.archived));
-    if (!passesArchiveFilter) return false;
 
     const deckTags = [deck.format];
     if (deck.tags) {
       deckTags.push(...deck.tags);
     }
+    const currentDeck = pd.deck(deck.id);
     if (currentDeck) {
       deckTags.push(currentDeck.format);
       if (currentDeck.tags) {
@@ -197,7 +188,7 @@ class Aggregator {
     const passesTagFilter = tag === DEFAULT_TAG || deckTags.includes(tag);
     if (!passesTagFilter) return false;
 
-    const passesColorFilter = this._filterDeckByColors(deck, colors);
+    const passesColorFilter = Aggregator.filterDeckByColors(deck, colors);
     if (!passesColorFilter) return false;
 
     return true;
@@ -238,7 +229,7 @@ class Aggregator {
     )
       return false;
 
-    const passesOppDeckFilter = this._filterDeckByColors(
+    const passesOppDeckFilter = Aggregator.filterDeckByColors(
       match.oppDeck,
       oppColors
     );
@@ -260,6 +251,11 @@ class Aggregator {
       ...this.filters,
       ...filters
     };
+    if (this.filters.deckId instanceof Array) {
+      this.validDecks = new Set(this.filters.deckId);
+    } else {
+      this.validDecks = new Set();
+    }
     this._eventIds = [];
     this.eventLastPlayed = {};
     this._decks = [];

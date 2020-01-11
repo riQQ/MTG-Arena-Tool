@@ -1,34 +1,58 @@
 import globals from "./globals";
-import { hypergeometricRange } from "../shared/stats-fns";
+import { hypergeometricRange } from "../shared/statsFns";
+import { CardObject } from "../shared/types/Deck";
+import { Chances } from "./types/decks";
 
-const forceDeckUpdate = function(removeUsed = true) {
-  var decksize = 0;
-  var cardsleft = 0;
-  var typeCre = 0;
-  var typeIns = 0;
-  var typeSor = 0;
-  var typePla = 0;
-  var typeArt = 0;
-  var typeEnc = 0;
-  var typeLan = 0;
+function chanceType(
+  quantity: number,
+  cardsleft: number,
+  oddsSampleSize: number
+): number {
+  return (
+    Math.round(
+      hypergeometricRange(
+        1,
+        Math.min(oddsSampleSize, quantity),
+        cardsleft,
+        oddsSampleSize,
+        quantity
+      ) * 1000
+    ) / 10
+  );
+}
+
+const forceDeckUpdate = function(removeUsed = true): void {
+  let decksize = 0;
+  let cardsleft = 0;
+  let typeCre = 0;
+  let typeIns = 0;
+  let typeSor = 0;
+  let typePla = 0;
+  let typeArt = 0;
+  let typeEnc = 0;
+  let typeLan = 0;
 
   globals.currentMatch.playerCardsLeft = globals.currentMatch.player.deck.clone();
 
   if (globals.debugLog || !globals.firstPass) {
-    globals.currentMatch.playerCardsLeft.mainboard.get().forEach(card => {
-      card.total = card.quantity;
-      decksize += card.quantity;
-      cardsleft += card.quantity;
-    });
+    globals.currentMatch.playerCardsLeft
+      .getMainboard()
+      .get()
+      .forEach((card: CardObject) => {
+        //card.total = card.quantity;
+        decksize += card.quantity;
+        cardsleft += card.quantity;
+      });
 
     if (removeUsed) {
       cardsleft -= globals.currentMatch.playerCardsUsed.length;
-      globals.currentMatch.playerCardsUsed.forEach(grpId => {
-        globals.currentMatch.playerCardsLeft.mainboard.remove(grpId, 1);
+      globals.currentMatch.playerCardsUsed.forEach((grpId: number) => {
+        globals.currentMatch.playerCardsLeft.getMainboard().remove(grpId, 1);
       });
     }
-    let main = globals.currentMatch.playerCardsLeft.mainboard;
-    main.addProperty("chance", card =>
+    const main = globals.currentMatch.playerCardsLeft.getMainboard();
+    //main.addProperty("chance", card =>
+    main.addChance((card: CardObject) =>
       Math.round(
         hypergeometricRange(
           1,
@@ -48,9 +72,10 @@ const forceDeckUpdate = function(removeUsed = true) {
     typeSor = main.countType("Sorcery");
     typePla = main.countType("Planeswalker");
 
-    const chancesObj = { sampleSize: globals.odds_sample_size };
+    const chancesObj: Chances = new Chances();
+    chancesObj.sampleSize = globals.odds_sample_size;
 
-    let landsCount = main.getLandsAmounts();
+    const landsCount = main.getLandsAmounts();
     chancesObj.landW = chanceType(
       landsCount.w,
       cardsleft,
@@ -117,38 +142,12 @@ const forceDeckUpdate = function(removeUsed = true) {
     chancesObj.cardsLeft = cardsleft;
     globals.currentMatch.playerChances = chancesObj;
   } else {
-    let main = globals.currentMatch.playerCardsLeft.mainboard;
-    main.addProperty("chance", () => 1);
+    const main = globals.currentMatch.playerCardsLeft.getMainboard();
+    main.addChance(() => 1);
 
-    let chancesObj = {};
-    chancesObj.landW = 0;
-    chancesObj.landU = 0;
-    chancesObj.landB = 0;
-    chancesObj.landR = 0;
-    chancesObj.landG = 0;
-    chancesObj.chanceCre = 0;
-    chancesObj.chanceIns = 0;
-    chancesObj.chanceSor = 0;
-    chancesObj.chancePla = 0;
-    chancesObj.chanceArt = 0;
-    chancesObj.chanceEnc = 0;
-    chancesObj.chanceLan = 0;
+    const chancesObj = new Chances();
     globals.currentMatch.playerChances = chancesObj;
   }
 };
-
-function chanceType(quantity, cardsleft, odds_sample_size) {
-  return (
-    Math.round(
-      hypergeometricRange(
-        1,
-        Math.min(odds_sample_size, quantity),
-        cardsleft,
-        odds_sample_size,
-        quantity
-      ) * 1000
-    ) / 10
-  );
-}
 
 export default forceDeckUpdate;

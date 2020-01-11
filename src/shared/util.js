@@ -9,6 +9,7 @@ import pd from "./player-data";
 import { createDiv } from "./dom-fns";
 import DeckManaCurve from "./DeckManaCurve";
 import DeckTypesStats from "./DeckTypesStats";
+import Deck from "../shared/deck";
 
 export function getCardArtCrop(cardObj) {
   if (typeof cardObj !== "object") {
@@ -370,6 +371,20 @@ export function getCardsMissingCount(deck, grpid) {
   return mainMissing + sideboardMissing;
 }
 
+export function getMissingCardCounts(deck) {
+  const missingCards = {};
+  const allCardIds = new Set(
+    [...deck.mainDeck, ...deck.sideboard].map(card => card.id)
+  );
+  allCardIds.forEach(grpid => {
+    const missing = getCardsMissingCount(deck, grpid);
+    if (missing > 0) {
+      missingCards[grpid] = missing;
+    }
+  });
+  return missingCards;
+}
+
 export function getBoosterCountEstimate(neededWildcards) {
   let boosterCost = 0;
   const boosterEstimates = {
@@ -600,13 +615,13 @@ export function objectClone(originalObject) {
 
 export function deckManaCurve(deck) {
   const wrap = createDiv([]);
-  ReactDOM.render(<DeckManaCurve deck={deck} />, wrap);
+  ReactDOM.render(<DeckManaCurve deck={new Deck(deck)} />, wrap);
   return wrap;
 }
 
 export function deckTypesStats(deck) {
   const wrap = createDiv([]);
-  ReactDOM.render(<DeckTypesStats deck={deck} />, wrap);
+  ReactDOM.render(<DeckTypesStats deck={new Deck(deck)} />, wrap);
   return wrap;
 }
 
