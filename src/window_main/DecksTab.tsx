@@ -1,50 +1,38 @@
 import anime from "animejs";
-import React from "react";
 import isValid from "date-fns/isValid";
-
+import React from "react";
+import { TableState } from "react-table";
 import { EASING_DEFAULT } from "../shared/constants";
-import pd from "../shared/player-data";
 import { createDiv } from "../shared/dom-fns";
-import {
-  get_deck_missing as getDeckMissing,
-  getBoosterCountEstimate,
-  getReadableFormat
-} from "../shared/util";
+import pd from "../shared/player-data";
 import { SerializedDeck } from "../shared/types/Deck";
-
-import Aggregator, { dateMaxValid } from "./aggregator";
-import StatsPanel from "./stats-panel";
+import {
+  getBoosterCountEstimate,
+  getReadableFormat,
+  get_deck_missing as getDeckMissing
+} from "../shared/util";
+import Aggregator, {
+  AggregatorFilters,
+  AggregatorStats,
+  dateMaxValid
+} from "./aggregator";
+import DecksTable from "./components/decks/DecksTable";
+import { DecksData } from "./components/decks/types";
+import { useAggregatorAndSidePanel } from "./components/tables/hooks";
 import { openDeck } from "./deck-details";
+import mountReactComponent from "./mountReactComponent";
 import {
   hideLoadingBars,
   ipcSend,
   makeResizable,
   resetMainContainer
 } from "./renderer-util";
-import mountReactComponent from "./mountReactComponent";
+import StatsPanel from "./stats-panel";
 
-import DecksTable from "./components/decks/DecksTable";
-import {
-  DeckStats,
-  DecksData,
-  AggregatorFilters,
-  DecksTableState
-} from "./components/decks/types";
-
-function getDefaultStats(): DeckStats {
-  return {
-    wins: 0,
-    losses: 0,
-    total: 0,
-    duration: 0,
-    winrate: 0,
-    interval: 0,
-    winrateLow: 0,
-    winrateHigh: 0
-  };
-}
-
-function openDeckDetails(id: string, filters: AggregatorFilters): void {
+function openDeckDetails(
+  id: string | number,
+  filters: AggregatorFilters
+): void {
   const deck = pd.deck(id);
   if (!deck) return;
   openDeck(deck, { ...filters, deckId: id });
@@ -76,16 +64,16 @@ function deleteTag(deckid: string, tag: string): void {
   ipcSend("delete_tag", { deckid, tag });
 }
 
-function toggleDeckArchived(id: string): void {
-  ipcSend("toggle_deck_archived", id);
+function toggleDeckArchived(id: string | number): void {
+  ipcSend("toggle_deck_archived", id + "");
 }
 
-function saveUserState(state: DecksTableState): void {
-  ipcSend("save_user_settings", {
-    decksTableState: state,
-    decksTableMode: state.decksTableMode,
-    skip_refresh: true
-  });
+function saveTableState(decksTableState: TableState<DecksData>): void {
+  ipcSend("save_user_settings", { decksTableState, skipRefresh: true });
+}
+
+function saveTableMode(decksTableMode: string): void {
+  ipcSend("save_user_settings", { decksTableMode, skipRefresh: true });
 }
 
 function updateStatsPanel(
@@ -110,18 +98,17 @@ function updateStatsPanel(
   container.appendChild(statsPanelDiv);
 }
 
-function getDecksData(aggregator: any): DecksData[] {
+function getDecksData(aggregator: Aggregator): DecksData[] {
   return pd.deckList.map(
     (deck: SerializedDeck): DecksData => {
       const id = deck.id ?? "";
       const archivedSortVal = deck.archived ? 1 : deck.custom ? 0.5 : 0;
-      const colorSortVal = deck.colors ? deck.colors.join("") : "";
+      const colorSortVal = deck.colors?.join("") ?? "";
       // compute winrate metrics
-      const deckStats: DeckStats =
-        aggregator.deckStats[id] ?? getDefaultStats();
-      const avgDuration = Math.round(deckStats.duration / deckStats.total);
-      const recentStats: DeckStats =
-        aggregator.deckRecentStats[id] ?? getDefaultStats();
+      const deckStats: AggregatorStats =
+        aggregator.deckStats[id] ?? Aggregator.getDefaultStats();
+      const recentStats: AggregatorStats =
+        aggregator.deckRecentStats[id] ?? Aggregator.getDefaultStats();
       const winrate100 = Math.round(deckStats.winrate * 100);
       // compute missing card metrics
       const missingWildcards = getDeckMissing(deck);
@@ -132,9 +119,9 @@ function getDecksData(aggregator: any): DecksData[] {
       const lastTouched = dateMaxValid(lastUpdated, lastPlayed);
       return {
         ...deck,
+        format: getReadableFormat(deck.format),
         ...deckStats,
         winrate100,
-        avgDuration,
         ...missingWildcards,
         boosterCost,
         archivedSortVal,
@@ -151,68 +138,58 @@ function getDecksData(aggregator: any): DecksData[] {
   );
 }
 
+function getTotalAggEvents(): string[] {
+  const totalAgg = new Aggregator();
+  return totalAgg.events;
+}
+
 export function DecksTab({
   aggFiltersArg
 }: {
   aggFiltersArg: AggregatorFilters;
 }): JSX.Element {
-  const {
-    decksTableMode,
-    decksTableState,
-    last_date_filter: dateFilter,
-    right_panel_width: panelWidth
-  } = pd.settings;
+  const { decksTableMode, decksTableState } = pd.settings;
   const showArchived = decksTableState?.filters?.archivedCol !== "hideArchived";
-  const defaultAggFilters = {
-    ...Aggregator.getDefaultFilters(),
-    date: dateFilter,
-    ...aggFiltersArg,
-    showArchived
+  const getDataAggFilters = (data: DecksData[]): AggregatorFilters => {
+    const deckId = data.map(deck => deck.id).filter(id => id) as string[];
+    return { deckId };
   };
-  const [aggFilters, setAggFilters] = React.useState(
-    defaultAggFilters as AggregatorFilters
-  );
-  const data = React.useMemo(() => {
-    const aggregator = new Aggregator(aggFilters);
-    return getDecksData(aggregator);
-  }, [aggFilters]);
-
-  const sidePanelWidth = panelWidth + "px";
-  const rightPanelRef = React.useRef<HTMLDivElement>(null);
-  const filterDecksCallback = React.useCallback(
-    (deckId?: string | string[]): void => {
-      if (rightPanelRef?.current) {
-        updateStatsPanel(
-          rightPanelRef.current,
-          new Aggregator({ ...aggFilters, deckId })
-        );
-      }
-    },
-    [rightPanelRef, aggFilters]
-  );
+  const {
+    aggFilters,
+    data,
+    filterDataCallback,
+    rightPanelRef,
+    setAggFilters,
+    sidePanelWidth
+  } = useAggregatorAndSidePanel({
+    aggFiltersArg,
+    getData: getDecksData,
+    getDataAggFilters,
+    showArchived,
+    updateSidebarCallback: updateStatsPanel
+  });
   const openDeckCallback = React.useCallback(
-    (id: string): void => openDeckDetails(id, aggFilters),
+    (id: string | number): void => openDeckDetails(id, aggFilters),
     [aggFilters]
   );
+  const events = React.useMemo(getTotalAggEvents, []);
+
   return (
     <>
-      <div
-        className={"wrapper_column"}
-        style={{
-          overflowX: "auto"
-        }}
-      >
+      <div className={"wrapper_column"}>
         <DecksTable
           data={data}
-          filters={aggFilters}
+          aggFilters={aggFilters}
+          events={events}
           cachedState={decksTableState}
           cachedTableMode={decksTableMode}
-          filterMatchesCallback={setAggFilters}
-          tableStateCallback={saveUserState}
-          filterDecksCallback={filterDecksCallback}
+          setAggFiltersCallback={setAggFilters}
+          tableModeCallback={saveTableMode}
+          tableStateCallback={saveTableState}
+          filterDataCallback={filterDataCallback}
           openDeckCallback={openDeckCallback}
-          archiveDeckCallback={toggleDeckArchived}
-          tagDeckCallback={addTag}
+          archiveCallback={toggleDeckArchived}
+          addTagCallback={addTag}
           editTagCallback={editTag}
           deleteTagCallback={deleteTag}
         />

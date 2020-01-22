@@ -3,7 +3,7 @@ import {
   DATE_SEASON,
   MAIN_HOME,
   MAIN_DECKS,
-  MAIN_HISTORY,
+  MAIN_MATCHES,
   MAIN_EVENTS,
   MAIN_EXPLORE,
   MAIN_ECONOMY,
@@ -30,33 +30,32 @@ import {
 } from "./renderer-util";
 
 import { openDecksTab } from "./DecksTab";
-import { openHistoryTab } from "./history";
-import { openEventsTab } from "./events";
-import { openEconomyTab } from "./economy";
+import { openMatchesTab } from "./MatchesTab";
+import { openEventsTab } from "./EventsTab";
+import { openEconomyTab } from "./EconomyTab";
 import { openExploreTab } from "./explore";
-import { openCollectionTab } from "./collection";
+import { openCollectionTab } from "./collection/CollectionTab";
 import { showOfflineSplash } from "./renderer-util";
 import { openSettingsTab } from "./settings";
 import { openHomeTab, requestHome } from "./home";
 
-//
 export function openTab(
   tab: number,
   filters = {},
   dataIndex = 0,
   scrollTop = 0
-) {
+): void {
   showLoadingBars();
   resetMainContainer();
   switch (tab) {
     case MAIN_DECKS:
       openDecksTab(filters);
       break;
-    case MAIN_HISTORY:
-      openHistoryTab(filters, dataIndex, scrollTop);
+    case MAIN_MATCHES:
+      openMatchesTab(filters);
       break;
     case MAIN_EVENTS:
-      openEventsTab(filters, dataIndex, scrollTop);
+      openEventsTab(filters);
       break;
     case MAIN_EXPLORE:
       if (pd.offline) {
@@ -66,7 +65,7 @@ export function openTab(
       }
       break;
     case MAIN_ECONOMY:
-      openEconomyTab(dataIndex, scrollTop);
+      openEconomyTab();
       break;
     case MAIN_COLLECTION:
       openCollectionTab();
@@ -92,7 +91,7 @@ export function openTab(
   }
 }
 
-export function clickNav(id: number) {
+export function clickNav(id: number): void {
   changeBackground("default");
   document.body.style.cursor = "auto";
   anime({
@@ -109,7 +108,7 @@ export function clickNav(id: number) {
   let sidebarActive = id;
 
   if (id === MAIN_CONSTRUCTED) {
-    sidebarActive = MAIN_HISTORY;
+    sidebarActive = MAIN_MATCHES;
     filters = {
       ...Aggregator.getDefaultFilters(),
       date: DATE_SEASON,
@@ -118,7 +117,7 @@ export function clickNav(id: number) {
     };
   }
   if (id === MAIN_LIMITED) {
-    sidebarActive = MAIN_HISTORY;
+    sidebarActive = MAIN_MATCHES;
     filters = {
       ...Aggregator.getDefaultFilters(),
       date: DATE_SEASON,
@@ -136,7 +135,7 @@ export function clickNav(id: number) {
   });
 }
 
-export function forceOpenAbout() {
+export function forceOpenAbout(): void {
   anime({
     targets: ".moving_ux",
     left: 0,
@@ -152,7 +151,7 @@ export function forceOpenAbout() {
   updateTopBar();
 }
 
-export function forceOpenSettings(section = -1) {
+export function forceOpenSettings(section = -1): void {
   anime({
     targets: ".moving_ux",
     left: 0,

@@ -1,9 +1,13 @@
 import React from "react";
 import styled from "styled-components";
-
 import { MANA } from "../../shared/constants";
-
+import db from "../../shared/database";
+import { createDiv } from "../../shared/dom-fns";
+import { get_rank_index_16 as getRankIndex16 } from "../../shared/util";
+import mountReactComponent from "../mountReactComponent";
 import { getTagColor, showColorpicker } from "../renderer-util";
+import AutosuggestInput from "./tables/AutosuggestInput";
+import { TagCounts } from "./tables/types";
 
 export const ArtTileHeader = styled.div`
   width: 200px;
@@ -73,10 +77,24 @@ export const FlexRightContainer = styled.div`
 
 export const LabelText = styled.div`
   display: inline-block;
-  cursor: pointer;
   text-align: left;
   white-space: nowrap;
 `;
+
+export function BriefText({
+  value,
+  maxLength
+}: {
+  value?: string;
+  maxLength?: number;
+}): JSX.Element {
+  let displayName = value ?? "";
+  const cutoff = maxLength ?? 25;
+  if (displayName.length > cutoff) {
+    displayName = displayName.slice(0, cutoff - 3) + "...";
+  }
+  return <LabelText title={value}>{displayName}</LabelText>;
+}
 
 export const MetricText = styled.div`
   display: inline-block;
@@ -86,16 +104,17 @@ export const MetricText = styled.div`
   font-weight: 300;
 `;
 
-interface TagBubbleProps {
+interface TagBubbleDivProps {
   backgroundColor: string;
   fontStyle: string;
 }
 
-export const TagBubble = styled.div<TagBubbleProps>`
+export const TagBubbleDiv = styled.div<TagBubbleDivProps>`
   font-family: var(--sub-font-name);
   cursor: pointer;
   color: black;
   font-size: 13px;
+  white-space: nowrap;
   opacity: 0.8;
   margin-right: 12px;
   margin-bottom: 4px;
@@ -117,7 +136,7 @@ export const TagBubble = styled.div<TagBubbleProps>`
   }
 `;
 
-const TagBubbleWithCloseContainer = styled(TagBubble)`
+const TagBubbleWithCloseDiv = styled(TagBubbleDiv)`
   padding-right: 0;
 `;
 
@@ -148,29 +167,36 @@ export function useColorpicker(
   };
 }
 
-interface TagBubbleWithCloseProps {
-  deckid: string;
+interface TagBubbleProps {
+  parentId: string;
+  fontStyle?: string;
+  hideCloseButton?: boolean;
+  title?: string;
   tag: string;
   editTagCallback: (tag: string, color: string) => void;
-  deleteTagCallback: (deckid: string, tag: string) => void;
+  deleteTagCallback?: (deckid: string, tag: string) => void;
 }
 
-export function TagBubbleWithClose({
-  deckid,
+export function TagBubble({
+  parentId,
+  fontStyle,
+  hideCloseButton,
+  title,
   tag,
   editTagCallback,
   deleteTagCallback
-}: TagBubbleWithCloseProps): JSX.Element {
+}: TagBubbleProps): JSX.Element {
   const backgroundColor = getTagColor(tag);
   const containerRef: React.MutableRefObject<HTMLDivElement | null> = React.useRef(
     null
   );
+  const Renderer = hideCloseButton ? TagBubbleDiv : TagBubbleWithCloseDiv;
   return (
-    <TagBubbleWithCloseContainer
+    <Renderer
       backgroundColor={backgroundColor}
-      fontStyle={"normal"}
+      fontStyle={fontStyle ?? "normal"}
       ref={containerRef}
-      title={"change tag color"}
+      title={title ?? "change tag color"}
       onClick={useColorpicker(
         containerRef,
         tag,
@@ -179,16 +205,73 @@ export function TagBubbleWithClose({
       )}
     >
       {tag}
-      <div
-        className={"deck_tag_close"}
-        title={"delete tag"}
-        onClick={(e): void => {
-          e.stopPropagation();
-          deleteTagCallback(deckid, tag);
-        }}
-      />
-    </TagBubbleWithCloseContainer>
+      {deleteTagCallback && !hideCloseButton && (
+        <div
+          className={"deck_tag_close"}
+          title={"delete tag"}
+          onClick={(e): void => {
+            e.stopPropagation();
+            deleteTagCallback(parentId, tag);
+          }}
+        />
+      )}
+    </Renderer>
   );
+}
+
+export function renderTagBubble(
+  parent: Element,
+  props: TagBubbleProps
+): HTMLDivElement {
+  const container = createDiv([]);
+  container.style.alignSelf = "center";
+  mountReactComponent(<TagBubble {...props} />, container);
+  parent.appendChild(container);
+  return container;
+}
+
+interface NewTagProps {
+  parentId: string;
+  addTagCallback: (id: string, tag: string) => void;
+  tagPrompt: string;
+  tags: TagCounts;
+  title?: string;
+}
+
+export function NewTag({
+  parentId,
+  addTagCallback,
+  tagPrompt,
+  tags,
+  title
+}: NewTagProps): JSX.Element {
+  const backgroundColor = getTagColor();
+  return (
+    <TagBubbleDiv
+      backgroundColor={backgroundColor}
+      fontStyle={"italic"}
+      title={title}
+      onClick={(e): void => e.stopPropagation()}
+    >
+      <AutosuggestInput
+        id={parentId}
+        placeholder={tagPrompt}
+        submitCallback={(val: string): void => addTagCallback(parentId, val)}
+        tags={tags}
+      />
+    </TagBubbleDiv>
+  );
+}
+
+export function renderNewTag(
+  parent: Element,
+  props: NewTagProps
+): HTMLDivElement {
+  const container = createDiv([]);
+  container.style.alignSelf = "center";
+  mountReactComponent(<NewTag {...props} />, container);
+  parent.appendChild(container);
+  return container;
 }
 
 const ManaSymbolBase = styled.div.attrs<ManaSymbolProps>(props => ({
@@ -213,7 +296,7 @@ const SymbolBase = styled.div`
 `;
 
 const RaritySymbolBase = styled(SymbolBase).attrs<RaritySymbolProps>(props => ({
-  className: `wc_explore_cost wc_${props.rarity} ${props.className ?? ""}`
+  className: `rarity_filter wc_${props.rarity} ${props.className ?? ""}`
 }))``;
 
 interface RaritySymbolProps {
@@ -221,6 +304,85 @@ interface RaritySymbolProps {
 }
 
 export const RaritySymbol = styled(RaritySymbolBase)<RaritySymbolProps>``;
+
+const SetSymbolBase = styled(SymbolBase).attrs(props => ({
+  className: `set_filter ${props.className ?? ""}`
+}))``;
+
+interface SetSymbolProps extends React.HTMLAttributes<HTMLDivElement> {
+  set: string;
+}
+
+export function SetSymbol({
+  set,
+  style,
+  ...otherProps
+}: SetSymbolProps): JSX.Element {
+  const setSvg = set === "other" ? db.defaultSet?.svg : db.sets[set].svg;
+  return (
+    <SetSymbolBase
+      style={{
+        ...style,
+        backgroundImage: `url(data:image/svg+xml;base64,${setSvg})`
+      }}
+      {...otherProps}
+    />
+  );
+}
+
+function getTypeIconClass(type: string): string {
+  if (type.includes("Land", 0)) return "type_lan";
+  else if (type.includes("Creature", 0)) return "type_cre";
+  else if (type.includes("Artifact", 0)) return "type_art";
+  else if (type.includes("Enchantment", 0)) return "type_enc";
+  else if (type.includes("Instant", 0)) return "type_ins";
+  else if (type.includes("Sorcery", 0)) return "type_sor";
+  else if (type.includes("Planeswalker", 0)) return "type_pla";
+  else return "";
+}
+
+const TypeSymbolBase = styled(SymbolBase).attrs<TypeSymbolProps>(props => ({
+  className: `wc_explore_cost ${getTypeIconClass(
+    props.type
+  )} ${props.className ?? ""}`
+}))``;
+
+interface TypeSymbolProps {
+  type: string;
+}
+
+export const TypeSymbol = styled(TypeSymbolBase)<TypeSymbolProps>``;
+
+const BinarySymbolBase = styled(SymbolBase).attrs<BinarySymbolProps>(props => ({
+  className: `${props.className ?? ""} rarity_filter ${
+    props.isOn ? "ontheplay" : "onthedraw"
+  }`
+}))``;
+
+interface BinarySymbolProps {
+  isOn: boolean;
+}
+
+export const BinarySymbol = styled(BinarySymbolBase)<BinarySymbolProps>``;
+
+const RankSymbolBase = styled(SymbolBase).attrs<RankSymbolProps>(props => ({
+  className: `${props.className ?? ""} rarity_filter ranks_16`,
+  title: props.rank,
+  style: {
+    ...props.style,
+    marginRight: "2px",
+    height: "16px",
+    width: "16px",
+    backgroundSize: "initial",
+    backgroundPosition: getRankIndex16(props.rank) * -16 + "px 0px"
+  }
+}))``;
+
+interface RankSymbolProps {
+  rank: string;
+}
+
+export const RankSymbol = styled(RankSymbolBase)<RankSymbolProps>``;
 
 export const BoosterSymbol = styled(SymbolBase).attrs(props => ({
   className: `bo_explore_cost ${props.className ?? ""}`
