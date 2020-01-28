@@ -1,40 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
+import { TableData, TableHeadersProps } from "./types";
 
-export interface TableHeadersProps {
-  filtersVisible: any;
-  getTableProps: any;
-  gridTemplateColumns: any;
-  setFilter: any;
-  setFiltersVisible: any;
-  visibleHeaders: any;
-}
-
-export default function TableHeaders({
+export default function TableHeaders<D extends TableData>({
   filtersVisible,
   getTableProps,
   gridTemplateColumns,
   setFilter,
   setFiltersVisible,
+  style,
   visibleHeaders
-}: TableHeadersProps): JSX.Element {
+}: TableHeadersProps<D>): JSX.Element {
   return (
     <div
-      className="decks_table_head line_dark"
-      style={{ gridTemplateColumns }}
+      className="med_scroll react_table_head line_dark"
+      style={{ ...style, gridTemplateColumns }}
       {...getTableProps()}
     >
-      {visibleHeaders.map((column: any, ii: number) => (
+      {visibleHeaders.map((column, ii) => (
         <div
           {...column.getHeaderProps(column.getSortByToggleProps())}
           className={"hover_label"}
           style={{
-            height: "64px",
-            gridArea: `1 / ${ii + 1} / 1 / ${ii + 2}`
+            gridArea: `1 / ${ii + 1} / 1 / ${ii + 2}`,
+            cursor: column.disableSortBy ? "default" : "pointer"
           }}
           key={column.id}
         >
-          <div className={"decks_table_head_container"}>
+          <div className={"react_table_head_container"}>
             <div
               className={
                 column.isSorted

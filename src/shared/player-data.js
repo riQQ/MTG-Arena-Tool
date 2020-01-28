@@ -4,9 +4,13 @@ import parseISO from "date-fns/parseISO";
 import _ from "lodash";
 import {
   CARD_TILE_FLAT,
+  COLLECTION_CARD_MODE,
   DATE_LAST_30,
   DECKS_ART_MODE,
   DEFAULT_TILE,
+  ECONOMY_LIST_MODE,
+  EVENTS_LIST_MODE,
+  MATCHES_LIST_MODE,
   BLACK,
   BLUE,
   GREEN,
@@ -79,8 +83,16 @@ const defaultCfg = {
     right_panel_width: 400,
     last_date_filter: DATE_LAST_30,
     last_open_tab: -1,
+    economyTableState: undefined,
+    economyTableMode: ECONOMY_LIST_MODE,
+    eventsTableState: undefined,
+    eventsTableMode: EVENTS_LIST_MODE,
     decksTableState: undefined,
     decksTableMode: DECKS_ART_MODE,
+    collectionTableState: undefined,
+    collectionTableMode: COLLECTION_CARD_MODE,
+    matchesTableState: undefined,
+    matchesTableMode: MATCHES_LIST_MODE,
     card_tile_style: CARD_TILE_FLAT,
     skip_firstpass: false,
     overlay_scale: 100,
@@ -361,10 +373,6 @@ class PlayerData {
 
   get matchList() {
     return this.matches_index.filter(this.matchExists).map(this.match);
-  }
-
-  get history() {
-    return [...this.matchList, ...this.draftList];
   }
 
   get data() {

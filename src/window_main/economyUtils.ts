@@ -1,5 +1,6 @@
-import db from "../shared/database";
 import _ from "lodash";
+
+import db from "../shared/database";
 import { getReadableEvent } from "../shared/util";
 
 const questMap = {
@@ -7,7 +8,7 @@ const questMap = {
   "7658b13d-861b-4c0c-bc7b-e01efcfa64ae": "Quests/Quest_Azorius_Judge",
   "59fd1ddb-6445-4016-aeef-d401e7ac98df": "Quests/Quest_Boros_Vigor",
   "7d257bad-9007-4e1f-b00e-697737130fdb": "Quests/Quest_Boros_Reckoner",
-  "2bc8f0c7-60d8-40fc-aceb-41b8b66e7118": "Quests/Quest_Horrible_Horde",
+  "2bc8f0c7-60d8-40fc-aceb-41b8b66e7118": "Quests/Quest_Creature_Commander",
   "84bb640d-58fd-40b3-84c6-b3cb989e493a": "Quests/Quest_Creature_Comforts",
   "d901ed54-99f1-4872-a134-78a25e794ed2": "Quests/Quest_Dimir_Cutpurse",
   "14480b30-416b-4283-83cb-e8ef509bfe37": "Quests/Quest_Dimir_Guile",
@@ -77,7 +78,7 @@ function isTrackCode(s: string): s is MasteryTrackKeys {
 
 type MasteryTrackKeys = keyof typeof trackCodeMap;
 
-function getReadableTrack(trackCode: string) {
+function getReadableTrack(trackCode: string): string {
   return (
     (isTrackCode(trackCode) && trackCodeMap[trackCode]) ||
     getReadableCode(trackCode)
@@ -86,7 +87,7 @@ function getReadableTrack(trackCode: string) {
 
 // quick and dirty generic pretty formatting
 // "WhyDoesWotc.KeepChanging.Codes" => "Why Does Wotc: Keep Changing: Codes"
-function getReadableCode(code: string) {
+function getReadableCode(code: string): string {
   let result = "";
   code.split(".").forEach(group => {
     result += ": " + _.startCase(group);
@@ -100,7 +101,7 @@ function isQuestCode(s: string): s is QuestKeys {
   return s in questMap;
 }
 
-function getReadableQuest(questCode: string) {
+function getReadableQuest(questCode: string): string {
   if (isQuestCode(questCode)) {
     return questMap[questCode].slice(13).replace(/_/g, " ");
   }
@@ -108,8 +109,8 @@ function getReadableQuest(questCode: string) {
   return `#${questCode.substring(0, 6)}`;
 }
 
-export function getCollationSet(collationid: number) {
-  for (let name in db.sets) {
+export function getCollationSet(collationid: number): string {
+  for (const name in db.sets) {
     if (db.sets[name].collation === collationid) {
       return name;
     }
@@ -117,7 +118,7 @@ export function getCollationSet(collationid: number) {
   return "";
 }
 
-export function getPrettyContext(context: string, full = true) {
+export function getPrettyContext(context: string, full = true): string {
   if (context == undefined || !context) {
     return "-";
   }
@@ -188,11 +189,3 @@ export const vaultPercentFormat = {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1
 };
-
-export interface EconomyState {
-  showArchived: boolean;
-  filterEconomy: string;
-  daysago: number;
-  dayList: any[];
-  sortedChanges: any[];
-}

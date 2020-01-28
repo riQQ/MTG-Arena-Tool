@@ -11,6 +11,7 @@ import {
 } from "./types/Metadata";
 import { Season, Rank, RankClassInfo } from "./types/Season";
 import { ArenaV3Deck } from "./types/Deck";
+import { STANDARD_CUTOFF_DATE } from "./constants";
 
 const cachePath: string | null =
   app || (remote && remote.app)
@@ -237,6 +238,14 @@ class Database {
         new Date(this.sets[a].release).getTime()
     );
     return setCodes;
+  }
+
+  get standardSetCodes(): string[] {
+    return this.sortedSetCodes.filter(
+      code =>
+        this.sets[code].collation !== -1 &&
+        new Date(this.sets[code].release) > new Date(STANDARD_CUTOFF_DATE)
+    );
   }
 
   get version() {

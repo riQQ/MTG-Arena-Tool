@@ -1,19 +1,7 @@
 import React from "react";
-import { ReactSelect } from "../../shared/ReactSelect";
-import { InputContainer, PagingButton } from "./display";
-
-export interface PagingControlsProps {
-  canPreviousPage: boolean;
-  canNextPage: boolean;
-  pageOptions: any[];
-  pageCount: number;
-  gotoPage: (index: number) => void;
-  nextPage: () => void;
-  previousPage: () => void;
-  setPageSize: (index: number) => void;
-  pageIndex: number;
-  pageSize: number;
-}
+import { ReactSelect } from "../../../shared/ReactSelect";
+import { InputContainer, PagingButton } from "../display";
+import { PagingControlsProps } from "./types";
 
 export default function PagingControls({
   canPreviousPage,
@@ -24,9 +12,12 @@ export default function PagingControls({
   nextPage,
   previousPage,
   setPageSize,
+  pageLabel,
   pageIndex,
-  pageSize
+  pageSize,
+  pageSizeOptions
 }: PagingControlsProps): JSX.Element {
+  pageSizeOptions = pageSizeOptions ?? ["10", "25", "50", "100"];
   const expandButtons = pageCount < 10;
 
   let pageButtons: JSX.Element[] | JSX.Element = [];
@@ -63,6 +54,7 @@ export default function PagingControls({
             onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>): void => {
               if (e.keyCode === 13) {
                 (e.target as HTMLInputElement).blur();
+                e.stopPropagation();
               }
             }}
             style={{ width: "40px" }}
@@ -110,12 +102,14 @@ export default function PagingControls({
       <div
         className={"select_container"}
         style={{ width: "140px" }}
-        key={pageSize} // for some reason, React needs this to refresht the ReactSelect
+        key={pageSize} // for some reason, React needs this to refresh the ReactSelect
       >
         <ReactSelect
           current={String(pageSize)}
-          options={["10", "25", "50", "100"]}
-          optionFormatter={(pageSize): string => "Show " + pageSize}
+          options={pageSizeOptions}
+          optionFormatter={(pageSize): string =>
+            "Show " + pageSize + (pageLabel ? " " + pageLabel : "")
+          }
           callback={(val): void => setPageSize(Number(val))}
         />
       </div>
