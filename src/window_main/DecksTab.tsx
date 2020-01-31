@@ -19,7 +19,10 @@ import Aggregator, {
 import DecksTable from "./components/decks/DecksTable";
 import { DecksData } from "./components/decks/types";
 import { isHidingArchived } from "./components/tables/filters";
-import { useAggregatorAndSidePanel } from "./components/tables/hooks";
+import {
+  useAggregatorAndSidePanel,
+  useLastScrollTop
+} from "./components/tables/hooks";
 import { openDeck } from "./deck-details";
 import mountReactComponent from "./mountReactComponent";
 import {
@@ -174,10 +177,11 @@ export function DecksTab({
     [aggFilters]
   );
   const events = React.useMemo(getTotalAggEvents, []);
+  const [containerRef, onScroll] = useLastScrollTop();
 
   return (
     <>
-      <div className={"wrapper_column"}>
+      <div className={"wrapper_column"} ref={containerRef} onScroll={onScroll}>
         <DecksTable
           data={data}
           aggFilters={aggFilters}
