@@ -46,5 +46,5 @@ function createShareDialog(callback: (option: string) => void) {
   );
 
   openDialog(cont);
-  callback();
+  callback("");
 }
