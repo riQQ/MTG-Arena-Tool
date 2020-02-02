@@ -366,6 +366,7 @@ export function onLabelOutLogInfo(entry) {
           added: [],
           removed: []
         };
+        //console.log(originalDeck, newDeck);
 
         const mainDiff = {};
         newDeck.mainboard.get().forEach(card => {
@@ -519,10 +520,10 @@ export function onLabelClientToMatchServiceMessageTypeClientToGREMessage(
   if (typeof payload == "string") {
     const msgType = entry.label.split("_")[1];
     payload = decodePayload(payload, msgType);
-    //console.log("Client To GRE: ", payload);
   }
 
   if (payload.submitdeckresp) {
+    //console.log("Client To GRE: ", payload);
     // Get sideboard changes
     const deckResp = payload.submitdeckresp.deck;
 
@@ -534,6 +535,8 @@ export function onLabelClientToMatchServiceMessageTypeClientToGREMessage(
     const newDeck = globals.currentMatch.player.deck.clone();
     newDeck.mainboard = tempMain;
     newDeck.sideboard = tempSide;
+
+    globals.currentMatch.player.deck = newDeck;
   }
 }
 
