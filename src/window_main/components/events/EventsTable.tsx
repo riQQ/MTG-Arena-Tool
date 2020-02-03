@@ -10,6 +10,7 @@ import {
   MetricCell,
   RelativeTimeCell,
   ShortTextCell,
+  SubTextCell,
   TextCell
 } from "../tables/cells";
 import {
@@ -49,8 +50,8 @@ const columns: Column<EventTableData>[] = [
     disableFilters: false,
     filter: "fuzzyText",
     Filter: TextBoxFilter,
-    Cell: ShortTextCell,
-    gridWidth: "200px",
+    Cell: SubTextCell,
+    gridWidth: "210px",
     mayToggle: true
   },
   {
@@ -60,7 +61,7 @@ const columns: Column<EventTableData>[] = [
     filter: "fuzzyText",
     Filter: TextBoxFilter,
     Cell: ShortTextCell,
-    gridWidth: "200px",
+    gridWidth: "210px",
     mayToggle: true,
     defaultVisible: true
   },
@@ -82,8 +83,8 @@ const columns: Column<EventTableData>[] = [
     disableFilters: false,
     filter: "fuzzyText",
     Filter: TextBoxFilter,
-    Cell: ShortTextCell,
-    gridWidth: "200px",
+    Cell: SubTextCell,
+    gridWidth: "210px",
     mayToggle: true,
     defaultVisible: true
   },
