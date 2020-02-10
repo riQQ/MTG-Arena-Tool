@@ -27,14 +27,21 @@ import {
   ipcSend,
   openActionLog,
   showLoadingBars,
-  toggleVisibility
+  toggleVisibility,
+  logShareLink
 } from "./renderer-util";
 import createShareButton from "./createShareButton";
 
 const byId = id => document.getElementById(id);
 
-export { openMatch };
-function openMatch(id) {
+export function openMatch(id) {
+  anime({
+    targets: ".moving_ux",
+    left: "-100%",
+    easing: EASING_DEFAULT,
+    duration: 350
+  });
+
   const match = pd.match(id);
   if (!match) return;
   const deck = match.playerDeck;
@@ -376,32 +383,6 @@ function openMatch(id) {
       duration: 350
     });
   });
-}
-
-function logShareLink(id, shareExpire) {
-  const actionLogFile = path.join(actionLogDir, id + ".txt");
-  let log = fs.readFileSync(actionLogFile).toString("base64");
-
-  let expire = 0;
-  switch (shareExpire) {
-    case "One day":
-      expire = 0;
-      break;
-    case "One week":
-      expire = 1;
-      break;
-    case "One month":
-      expire = 2;
-      break;
-    case "Never":
-      expire = -1;
-      break;
-    default:
-      expire = 0;
-      break;
-  }
-  showLoadingBars();
-  ipcSend("request_log_link", { expire, log, id });
 }
 
 //

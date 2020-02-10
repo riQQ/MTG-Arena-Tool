@@ -32,7 +32,7 @@ import {
   RankColumnFilter,
   rankFilterFn
 } from "./filters";
-import MatchesListViewRow from "./MatchesListViewRow";
+import ListItemMatch from "../list-item/ListItemMatch";
 import MatchesTableControls from "./MatchesTableControls";
 import {
   MatchesTableControlsProps,
@@ -382,11 +382,9 @@ export default function MatchesTable({
               );
             }
             return (
-              <MatchesListViewRow
-                row={row}
-                index={index}
+              <ListItemMatch
+                match={row.original}
                 key={row.index}
-                gridTemplateColumns={gridTemplateColumns}
                 openMatchCallback={openMatchCallback}
                 {...customProps}
               />
