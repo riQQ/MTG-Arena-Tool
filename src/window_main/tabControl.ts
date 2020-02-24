@@ -11,12 +11,13 @@ import {
   MAIN_SETTINGS,
   MAIN_CONSTRUCTED,
   MAIN_LIMITED,
+  MAIN_OFFLINE,
   SETTINGS_ABOUT
 } from "../shared/constants";
 
 import { updateTopBar } from "./topNav";
 import pd from "../shared/player-data";
-import Aggregator from "./aggregator";
+import Aggregator, { AggregatorFilters } from "./aggregator";
 import anime from "animejs";
 
 import {
@@ -35,14 +36,17 @@ import { openEventsTab } from "./EventsTab";
 import { openEconomyTab } from "./EconomyTab";
 import { openExploreTab } from "./explore";
 import { openCollectionTab } from "./collection/CollectionTab";
-import { showOfflineSplash } from "./renderer-util";
 import { openSettingsTab } from "./settings";
 import { openHomeTab, requestHome } from "./home";
+import { openOfflineSplash } from "./OfflineSplash";
 
 export function openTab(tab: number, filters = {}): void {
   showLoadingBars();
   resetMainContainer();
   switch (tab) {
+    case MAIN_OFFLINE:
+      openOfflineSplash();
+      break;
     case MAIN_DECKS:
       openDecksTab(filters);
       break;
@@ -54,7 +58,7 @@ export function openTab(tab: number, filters = {}): void {
       break;
     case MAIN_EXPLORE:
       if (pd.offline) {
-        showOfflineSplash();
+        openOfflineSplash();
       } else {
         openExploreTab();
       }
@@ -70,7 +74,7 @@ export function openTab(tab: number, filters = {}): void {
       break;
     case MAIN_HOME:
       if (pd.offline) {
-        showOfflineSplash();
+        openOfflineSplash();
       } else {
         if (getLocalState().discordTag === null) {
           openHomeTab(null, true);
@@ -95,10 +99,9 @@ export function clickNav(id: number): void {
     easing: EASING_DEFAULT,
     duration: 350
   });
-  let filters = {
+  let filters: AggregatorFilters = {
     date: pd.settings.last_date_filter,
-    eventId: "All Events",
-    rankedMode: false
+    eventId: "All Events"
   };
   let sidebarActive = id;
 
@@ -107,8 +110,7 @@ export function clickNav(id: number): void {
     filters = {
       ...Aggregator.getDefaultFilters(),
       date: DATE_SEASON,
-      eventId: Aggregator.RANKED_CONST,
-      rankedMode: true
+      eventId: Aggregator.RANKED_CONST
     };
   }
   if (id === MAIN_LIMITED) {
@@ -116,8 +118,7 @@ export function clickNav(id: number): void {
     filters = {
       ...Aggregator.getDefaultFilters(),
       date: DATE_SEASON,
-      eventId: Aggregator.RANKED_DRAFT,
-      rankedMode: true
+      eventId: Aggregator.RANKED_DRAFT
     };
   }
 
@@ -130,22 +131,6 @@ export function clickNav(id: number): void {
   });
 }
 
-export function forceOpenAbout(): void {
-  anime({
-    targets: ".moving_ux",
-    left: 0,
-    easing: EASING_DEFAULT,
-    duration: 350
-  });
-
-  ipcSend("save_user_settings", {
-    last_open_tab: MAIN_SETTINGS
-  });
-
-  openSettingsTab(SETTINGS_ABOUT);
-  updateTopBar();
-}
-
 export function forceOpenSettings(section = -1): void {
   anime({
     targets: ".moving_ux",
@@ -153,11 +138,14 @@ export function forceOpenSettings(section = -1): void {
     easing: EASING_DEFAULT,
     duration: 350
   });
-
   ipcSend("save_user_settings", {
-    last_open_tab: MAIN_SETTINGS
+    last_open_tab: MAIN_SETTINGS,
+    skipRefresh: true
   });
-
   openSettingsTab(section);
   updateTopBar();
+}
+
+export function forceOpenAbout(): void {
+  forceOpenSettings(SETTINGS_ABOUT);
 }

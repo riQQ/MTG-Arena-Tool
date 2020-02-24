@@ -25,6 +25,7 @@ import "@github/time-elements";
 import {
   EASING_DEFAULT,
   HIDDEN_PW,
+  MAIN_OFFLINE,
   MAIN_LOGIN,
   MAIN_HOME,
   MAIN_EXPLORE,
@@ -60,7 +61,6 @@ import { tournamentOpen } from "./tournaments";
 import { openDeck } from "./deck-details";
 import { openSettingsTab } from "./settings";
 import { setCurrentOverlaySettings } from "./components/settings/sectionOverlay";
-import { showOfflineSplash } from "./renderer-util";
 import { setExploreDecks } from "./explore";
 
 import { openTab, forceOpenAbout, forceOpenSettings } from "./tabControl";
@@ -336,7 +336,7 @@ ipc.on("no_log", function(event, arg) {
 
 //
 ipc.on("offline", function() {
-  showOfflineSplash();
+  openTab(MAIN_OFFLINE);
 });
 
 //
