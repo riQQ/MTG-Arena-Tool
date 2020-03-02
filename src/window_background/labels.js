@@ -366,7 +366,7 @@ export function onLabelOutLogInfo(entry) {
           globals.matchGameStats
         );
         game.sideboardChanges = sideboardChanges;
-        game.deck = newDeck.clone().getSave();
+        game.deck = newDeck.clone().getSave(true);
       }
 
       game.handLands = game.handsDrawn.map(

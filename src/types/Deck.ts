@@ -14,6 +14,8 @@ export interface ArenaV3Deck extends BasicDeck {
 export interface InternalDeck extends BasicDeck {
   mainDeck: v2cardsList;
   sideboard: v2cardsList;
+  arenaMain?: anyCardsList;
+  arenaSide?: anyCardsList;
   custom?: boolean;
   tags?: string[];
   colors?: number[];

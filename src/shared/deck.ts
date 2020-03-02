@@ -28,13 +28,22 @@ class Deck {
 
   constructor(
     mtgaDeck: Partial<InternalDeck> = {},
-    main: anyCardsList = [],
-    side: anyCardsList = []
+    main?: anyCardsList,
+    side?: anyCardsList,
+    arenaMain?: anyCardsList,
+    arenaSide?: anyCardsList
   ) {
     if (!mtgaDeck.mainDeck) mtgaDeck.mainDeck = [];
     if (!mtgaDeck.sideboard) mtgaDeck.sideboard = [];
-    this.mainboard = new CardsList(main.length > 0 ? main : mtgaDeck.mainDeck);
-    this.sideboard = new CardsList(side.length > 0 ? side : mtgaDeck.sideboard);
+
+    this.mainboard = new CardsList(
+      main ?? mtgaDeck.mainDeck,
+      arenaMain ?? main ?? mtgaDeck.mainDeck
+    );
+    this.sideboard = new CardsList(
+      side ?? mtgaDeck.sideboard,
+      arenaSide ?? side ?? mtgaDeck.sideboard
+    );
     this.commandZoneGRPIds = mtgaDeck.commandZoneGRPIds ?? [];
     this.name = mtgaDeck.name ?? "";
     this.id = mtgaDeck.id ?? "";
@@ -113,6 +122,8 @@ class Deck {
   clone(): Deck {
     let main = objectClone(this.mainboard.get());
     let side = objectClone(this.sideboard.get());
+    let arenaMain = this.mainboard.getAsLogged();
+    let arenaSide = this.sideboard.getAsLogged();
 
     let obj = {
       name: this.name,
@@ -124,9 +135,7 @@ class Deck {
       commandZoneGRPIds: this.commandZoneGRPIds
     };
 
-    let ret = new Deck(objectClone(obj), main, side);
-
-    return ret;
+    return new Deck(objectClone(obj), main, side, arenaMain, arenaSide);
   }
 
   /**
@@ -274,17 +283,21 @@ class Deck {
   /**
    * Returns a copy of this deck as an object.
    */
-  getSave(): InternalDeck {
-    return objectClone(this.getSaveRaw());
+  getSave(includeAsLogged = false): InternalDeck {
+    return objectClone(this.getSaveRaw(includeAsLogged));
   }
 
   /**
    * Returns a copy of this deck as an object, but maintains variables references.
    */
-  getSaveRaw(): InternalDeck {
+  getSaveRaw(includeAsLogged = false): InternalDeck {
     return {
       mainDeck: this.mainboard.get(),
       sideboard: this.sideboard.get(),
+      ...(includeAsLogged && {
+        arenaMain: this.mainboard.getAsLogged(),
+        arenaSide: this.sideboard.getAsLogged()
+      }),
       name: this.name,
       id: this.id,
       lastUpdated: this.lastUpdated,
