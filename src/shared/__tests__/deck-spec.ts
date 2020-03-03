@@ -12,8 +12,42 @@ describe("deck", () => {
           [66091, 66089, 67224, 66091, 66091]
         ),
         new Deck({
-          mainDeck: [66091, 66089, 66091, 66091, 67224],
-          sideboard: [66091, 66089, 67224, 66091, 66091]
+          mainDeck: [
+            {
+              id: 66091,
+              quantity: 1
+            },
+            {
+              id: 66089,
+              quantity: 1
+            },
+            {
+              id: 66091,
+              quantity: 2
+            },
+            {
+              id: 67224,
+              quantity: 1
+            }
+          ],
+          sideboard: [
+            {
+              id: 66091,
+              quantity: 1
+            },
+            {
+              id: 66089,
+              quantity: 1
+            },
+            {
+              id: 67224,
+              quantity: 1
+            },
+            {
+              id: 66091,
+              quantity: 2
+            }
+          ]
         }),
         new Deck(
           {},

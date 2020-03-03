@@ -35,7 +35,7 @@ describe("cards-list", () => {
 
       it("does not merge by name", () => {
         // 66091 = Opt (Ixalan), 67224 = Opt (Dominaria)
-        expect(db.card(66091).name).toEqual(db.card(67224).name);
+        expect(db.card(66091)?.name).toEqual(db.card(67224)?.name);
         expect(new CardsList([66091, 67224]).getAsLogged()).toEqual([
           {
             id: 66091,
@@ -113,7 +113,7 @@ describe("cards-list", () => {
 
       it("does not merge by name", () => {
         // 66091 = Opt (Ixalan), 67224 = Opt (Dominaria)
-        expect(db.card(66091).name).toEqual(db.card(67224).name);
+        expect(db.card(66091)?.name).toEqual(db.card(67224)?.name);
         let list = new CardsList();
         list.add(66091, 1, true);
         list.add(67224, 2, true);
