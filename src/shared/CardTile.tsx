@@ -7,7 +7,6 @@ import {
   FACE_SPLIT_FULL,
   FACE_ADVENTURE_MAIN
 } from "./constants";
-import Deck from "./deck";
 import {
   get_wc_missing as getWildcardsMissing,
   getCardArtCrop,
@@ -16,10 +15,11 @@ import {
 } from "./util";
 import { addCardHover } from "./cardHover";
 import { DbCardData, Rarity } from "../types/Metadata";
+import { InternalDeck } from "../types/Deck";
 
 export interface CardTileProps {
   card: DbCardData;
-  deck?: Deck;
+  deck?: InternalDeck;
   dfcCard?: DbCardData;
   indent: string;
   isHighlighted: boolean;
@@ -249,7 +249,7 @@ function FlatQuantityDisplay(props: { quantity: any }): JSX.Element {
 
 interface WildcardsNeededProps {
   card: DbCardData;
-  deck: Deck;
+  deck: InternalDeck;
   isSideboard: boolean;
   listStyle: "flat" | "arena";
   ww?: number;
