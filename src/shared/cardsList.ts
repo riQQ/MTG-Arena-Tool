@@ -7,7 +7,6 @@ import {
 } from "../types/Deck";
 import Colors from "./colors";
 import db from "./database";
-import { objectClone } from "./util";
 
 interface CardTypesCount {
   art: number;
@@ -30,55 +29,35 @@ interface ColorsCount {
 }
 
 class CardsList {
-  private arenaLoggedList: v2cardsList;
-  private list: v2cardsList;
-
   /**
    * Creates a list of cards based on an array of objects with the form
    * {quantity, id}
    * If an array of IDs is given it sets each quantity to the number of adjacent
    * repetitions
    **/
-  constructor(newList: anyCardsList = [], loggedList: anyCardsList = newList) {
+  private list: v2cardsList;
+
+  constructor(newList: anyCardsList) {
+    this.list = [];
     if (isV2CardsList(newList)) {
-      this.list = newList.map((obj: CardObject) => ({
-        quantity: 1, // TODO remove group lands hack
-        id: obj, // TODO remove group lands hack
-        ...obj,
-        measurable: true
-      }));
+      this.list = newList.map((obj: CardObject) => {
+        return {
+          quantity: 1, // TODO remove group lands hack
+          id: obj, // TODO remove group lands hack
+          ...obj,
+          measurable: true
+        };
+      });
     } else {
-      this.list = [];
       newList.forEach(id => {
         this.list.push({ quantity: 1, id: id, measurable: true, chance: 0 });
       });
       this.removeDuplicates(true);
     }
-    if (isV2CardsList(loggedList)) {
-      this.arenaLoggedList = loggedList.map(({ id, quantity }: CardObject) => ({
-        id,
-        quantity
-      }));
-    } else {
-      this.arenaLoggedList = [];
-      let lastObj: CardObject | undefined = undefined;
-      for (let id of loggedList) {
-        if (lastObj === undefined || lastObj.id !== id) {
-          lastObj = { id: id, quantity: 1 };
-          this.arenaLoggedList.push(lastObj);
-        } else {
-          lastObj.quantity++;
-        }
-      }
-    }
   }
 
   get(): v2cardsList {
     return this.list;
-  }
-
-  getAsLogged(): v2cardsList {
-    return objectClone(this.arenaLoggedList);
   }
 
   /**
@@ -88,21 +67,13 @@ class CardsList {
     if (typeof quantity !== "number") {
       throw new Error("quantity must be a number");
     }
-
-    const length: number = this.arenaLoggedList.length;
-    if (length === 0 || this.arenaLoggedList[length - 1].id !== grpId) {
-      this.arenaLoggedList.push({ id: grpId, quantity: quantity });
-    } else {
-      this.arenaLoggedList[length - 1].quantity += quantity;
-    }
-
     if (merge) {
-      for (let card of this.list) {
+      this.list.forEach(card => {
         if (card.id == grpId) {
           card.quantity += quantity;
           return card;
         }
-      }
+      });
     }
 
     this.list.push({

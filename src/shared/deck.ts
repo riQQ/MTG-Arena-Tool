@@ -1,4 +1,10 @@
-import { anyCardsList, InternalDeck } from "../types/Deck";
+import {
+  anyCardsList,
+  CardObject,
+  InternalDeck,
+  isV2CardsList,
+  v2cardsList
+} from "../types/Deck";
 import { DbCardData } from "../types/Metadata";
 import CardsList from "./cardsList";
 import Colors from "./colors";
@@ -14,6 +20,8 @@ import {
 class Deck {
   private mainboard: CardsList;
   private sideboard: CardsList;
+  private readonly arenaMain: Readonly<v2cardsList>;
+  private readonly arenaSide: Readonly<v2cardsList>;
   private commandZoneGRPIds: number[];
   private name: string;
   public id: string;
@@ -28,22 +36,15 @@ class Deck {
 
   constructor(
     mtgaDeck: Partial<InternalDeck> = {},
-    main?: anyCardsList,
-    side?: anyCardsList,
-    arenaMain?: anyCardsList,
-    arenaSide?: anyCardsList
+    main: anyCardsList = mtgaDeck.mainDeck ?? [],
+    side: anyCardsList = mtgaDeck.sideboard ?? [],
+    arenaMain: Readonly<anyCardsList> = main,
+    arenaSide: Readonly<anyCardsList> = side
   ) {
-    if (!mtgaDeck.mainDeck) mtgaDeck.mainDeck = [];
-    if (!mtgaDeck.sideboard) mtgaDeck.sideboard = [];
-
-    this.mainboard = new CardsList(
-      main ?? mtgaDeck.mainDeck,
-      arenaMain ?? main ?? mtgaDeck.mainDeck
-    );
-    this.sideboard = new CardsList(
-      side ?? mtgaDeck.sideboard,
-      arenaSide ?? side ?? mtgaDeck.sideboard
-    );
+    this.mainboard = new CardsList(main);
+    this.sideboard = new CardsList(side);
+    this.arenaMain = Deck.toLoggedList(arenaMain);
+    this.arenaSide = Deck.toLoggedList(arenaSide);
     this.commandZoneGRPIds = mtgaDeck.commandZoneGRPIds ?? [];
     this.name = mtgaDeck.name ?? "";
     this.id = mtgaDeck.id ?? "";
@@ -56,6 +57,35 @@ class Deck {
     this.format = mtgaDeck.format ?? "";
     this.description = mtgaDeck.description ?? "";
     return this;
+  }
+
+  private static toLoggedList(
+    list: Readonly<anyCardsList>
+  ): Readonly<v2cardsList> {
+    if (isV2CardsList(list)) {
+      return Object.freeze(
+        list.map(({ id, quantity }: CardObject) =>
+          Object.freeze({
+            id,
+            quantity
+          })
+        )
+      );
+    } else {
+      const loggedList = [];
+      let lastObj: CardObject | undefined = undefined;
+      for (let id of list) {
+        if (lastObj === undefined || lastObj.id !== id) {
+          Object.freeze(lastObj);
+          lastObj = { id: id, quantity: 1 };
+          loggedList.push(lastObj);
+        } else {
+          lastObj.quantity++;
+        }
+      }
+      Object.freeze(lastObj);
+      return Object.freeze(loggedList);
+    }
   }
 
   /**
@@ -122,8 +152,6 @@ class Deck {
   clone(): Deck {
     let main = objectClone(this.mainboard.get());
     let side = objectClone(this.sideboard.get());
-    let arenaMain = this.mainboard.getAsLogged();
-    let arenaSide = this.sideboard.getAsLogged();
 
     let obj = {
       name: this.name,
@@ -135,7 +163,13 @@ class Deck {
       commandZoneGRPIds: this.commandZoneGRPIds
     };
 
-    return new Deck(objectClone(obj), main, side, arenaMain, arenaSide);
+    return new Deck(
+      objectClone(obj),
+      main,
+      side,
+      this.arenaMain,
+      this.arenaSide
+    );
   }
 
   /**
@@ -295,8 +329,8 @@ class Deck {
       mainDeck: this.mainboard.get(),
       sideboard: this.sideboard.get(),
       ...(includeAsLogged && {
-        arenaMain: this.mainboard.getAsLogged(),
-        arenaSide: this.sideboard.getAsLogged()
+        arenaMain: this.arenaMain,
+        arenaSide: this.arenaSide
       }),
       name: this.name,
       id: this.id,
@@ -314,7 +348,7 @@ class Deck {
 
   /**
    * Returns a unique string for this deck. (not hashed)
-   * @param checkSide weter or not to use the sideboard (default: true)
+   * @param checkSide whether or not to use the sideboard (default: true)
    */
   getUniqueString(checkSide = true) {
     this.sortMainboard(compare_cards);
