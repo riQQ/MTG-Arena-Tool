@@ -36,11 +36,17 @@ class Deck {
 
   constructor(
     mtgaDeck: Partial<InternalDeck> = {},
-    main: anyCardsList = mtgaDeck.mainDeck ?? [],
-    side: anyCardsList = mtgaDeck.sideboard ?? [],
-    arenaMain: Readonly<anyCardsList> = main,
-    arenaSide: Readonly<anyCardsList> = side
+    main?: anyCardsList,
+    side?: anyCardsList,
+    arenaMain?: Readonly<anyCardsList>,
+    arenaSide?: Readonly<anyCardsList>
   ) {
+    // Putting these as default argument values works in tests, but throws an
+    // undefined reference error in production.
+    main = main ?? mtgaDeck.mainDeck ?? [];
+    side = side ?? mtgaDeck.sideboard ?? [];
+    arenaMain = arenaMain ?? main;
+    arenaSide = arenaSide ?? side;
     this.mainboard = new CardsList(main);
     this.sideboard = new CardsList(side);
     this.arenaMain = Deck.toLoggedList(arenaMain);
