@@ -3,14 +3,16 @@ import React from "react";
 import { ipcSend } from "../../renderer-util";
 import pd from "../../../shared/PlayerData";
 import _ from "lodash";
-import { WrappedReactSelect } from "../../../shared/ReactSelect";
+import ReactSelect from "../../../shared/ReactSelect";
 import { CARD_TILE_ARENA, CARD_TILE_FLAT } from "../../../shared/constants";
 import CardTile from "../../../shared/CardTile";
 import db from "../../../shared/database";
 import Input from "../Input";
-import useColorpicker from "../../hooks/useColorPicker";
+import useColorPicker from "../../hooks/useColorPicker";
 import Slider from "../Slider";
 import { getCardImage } from "../../../shared/util";
+import { AppState } from "../../app/appState";
+import { useSelector } from "react-redux";
 
 function getCardStyleName(style: any): string {
   if (style == CARD_TILE_FLAT) return "Flat";
@@ -38,19 +40,20 @@ function setCardQuality(filter: string): void {
 const card = db.card(70344);
 
 export default function SectionVisual(): JSX.Element {
+  const settings = useSelector((state: AppState) => state.settings);
   const containerRef: React.MutableRefObject<HTMLInputElement | null> = React.useRef(
     null
   );
-  const colorPicker = useColorpicker(
-    containerRef,
-    pd.settings.back_color,
-    backColorPicker,
-    { alpha: true }
+
+  const [pickerColor, pickerDoShow, pickerElement] = useColorPicker(
+    settings.back_color,
+    undefined,
+    backColorPicker
   );
 
   // Hover card size slider
   const [hoverCardSize, setHoverCardSize] = React.useState(
-    pd.settings.cards_size_hover_card
+    settings.cards_size_hover_card
   );
 
   const hoverCardSizeDebouce = React.useCallback(
@@ -69,7 +72,7 @@ export default function SectionVisual(): JSX.Element {
 
   // Collection card size slider
   const [collectionCardSize, setCollectionCardSize] = React.useState(
-    pd.settings.cards_size
+    settings.cards_size
   );
 
   const collectionCardSizeDebouce = React.useCallback(
@@ -88,61 +91,58 @@ export default function SectionVisual(): JSX.Element {
 
   return (
     <>
-      <Input
-        label="Background URL:"
-        value={pd.settings.back_url !== "default" ? pd.settings.back_url : ""}
-        placeholder="https://example.com/photo.png"
-        callback={changeBackgroundImage}
-      />
+      <div className="centered_setting_container">
+        <label>Background URL:</label>
+        <Input
+          value={settings.back_url !== "default" ? settings.back_url : ""}
+          placeholder="https://example.com/photo.png"
+          callback={changeBackgroundImage}
+        />
+      </div>
 
-      <label className="but_container_label">
+      <label className="centered_setting_container">
         <span style={{ marginRight: "32px" }}>Background shade:</span>
         <input
-          onClick={colorPicker}
+          onClick={pickerDoShow}
           ref={containerRef}
-          style={{ backgroundColor: pd.settings.back_color }}
+          style={{ backgroundColor: pickerColor }}
           className="color_picker"
           id="flat"
           type="text"
           defaultValue=""
         ></input>
       </label>
-
-      <label className="but_container_label">
-        List style:
-        <WrappedReactSelect
-          style={{ width: "180px", marginLeft: "32px" }}
+      {pickerElement}
+      <div className="centered_setting_container">
+        <label>List style:</label>
+        <ReactSelect
           options={[CARD_TILE_ARENA, CARD_TILE_FLAT]}
-          current={pd.settings.card_tile_style + ""}
+          current={settings.card_tile_style + ""}
           optionFormatter={getCardStyleName}
           callback={setCardStyle}
         />
-        <div style={{ width: "50%" }}>
-          {!!card && (
-            <CardTile
-              card={card}
-              indent="a"
-              isHighlighted={false}
-              isSideboard={false}
-              quantity={4}
-              showWildcards={false}
-              style={parseInt(pd.settings.card_tile_style + "")}
-            />
-          )}
-        </div>
-      </label>
-
-      <label className="but_container_label">
-        Image quality:
-        <WrappedReactSelect
-          style={{ width: "180px", marginLeft: "32px" }}
+      </div>
+      <div className="centered_setting_container">
+        {!!card && (
+          <CardTile
+            card={card}
+            indent="a"
+            isHighlighted={false}
+            isSideboard={false}
+            quantity={4}
+            showWildcards={false}
+          />
+        )}
+      </div>
+      <div className="centered_setting_container">
+        <label>Image quality:</label>
+        <ReactSelect
           options={["small", "normal", "large"]}
-          current={pd.settings.cards_quality}
+          current={settings.cards_quality}
           callback={setCardQuality}
         />
-      </label>
-
-      <div className="slidecontainer_settings">
+      </div>
+      <div className="centered_setting_container">
         <label style={{ width: "400px" }} className="card_size_container">
           {`Hover card size: ${100 + Math.round(hoverCardSize) * 15}px`}
         </label>
@@ -150,12 +150,12 @@ export default function SectionVisual(): JSX.Element {
           min={0}
           max={20}
           step={1}
-          value={pd.settings.cards_size_hover_card}
+          value={settings.cards_size_hover_card}
           onChange={hoverCardSizeHandler}
         />
       </div>
 
-      <div className="slidecontainer_settings">
+      <div className="centered_setting_container">
         <label style={{ width: "400px" }} className="card_size_container">
           {`Collection card size: ${100 +
             Math.round(collectionCardSize) * 15}px`}
@@ -164,7 +164,7 @@ export default function SectionVisual(): JSX.Element {
           min={0}
           max={20}
           step={1}
-          value={pd.settings.cards_size}
+          value={settings.cards_size}
           onChange={collectionCardSizeHandler}
         />
       </div>

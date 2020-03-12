@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import React from "react";
-import pd from "../shared/PlayerData";
-import {
-  changeBackground,
-  hideLoadingBars,
-  resetMainContainer,
-  ipcSend
-} from "./renderer-util";
+import { useSelector } from "react-redux";
+import { ipcSend } from "./renderer-util";
 
 import {
   SETTINGS_BEHAVIOUR,
@@ -19,7 +14,7 @@ import {
   SETTINGS_LOGIN
 } from "../shared/constants";
 
-import mountReactComponent from "./mountReactComponent";
+import { AppState } from "./app/appState";
 import SectionBehaviour from "./components/settings/SectionBehaviour";
 import SectionData from "./components/settings/SectionData";
 import SectionOverlay from "./components/settings/sectionOverlay";
@@ -28,7 +23,6 @@ import SectionShortcuts from "./components/settings/SectionShortcuts";
 import SectionPrivacy from "./components/settings/SectionPrivacy";
 import SectionAbout from "./components/settings/SectionAbout";
 import SectionLogin from "./components/settings/SectionLogin";
-import { useLastScrollTop } from "./components/tables/hooks";
 
 interface SettingsNavProps {
   component: () => JSX.Element;
@@ -56,16 +50,21 @@ function SettingsNav(props: SettingsNavProps): JSX.Element {
 }
 
 interface SettingsProps {
-  openSection: number;
+  openSection?: number;
 }
 
 /**
  * Settings
  * @param props openSection: number
  */
-function Settings(props: SettingsProps): JSX.Element {
-  const [currentTab, setCurrentTab] = React.useState(props.openSection);
-  const [containerRef, onScroll] = useLastScrollTop();
+export default function SettingsTab(props: SettingsProps): JSX.Element {
+  const settings = useSelector((state: AppState) => state.settings);
+  const openSection =
+    (props.openSection === -1
+      ? settings.last_settings_section
+      : props.openSection) ?? settings.last_settings_section;
+  const [currentTab, setCurrentTab] = React.useState(openSection);
+  React.useEffect(() => setCurrentTab(openSection), [openSection]);
 
   const defaultTab = {
     currentTab: currentTab,
@@ -131,7 +130,7 @@ function Settings(props: SettingsProps): JSX.Element {
 
   const CurrentSettings = tabs[currentTab].component;
   return (
-    <>
+    <div className="ux_item">
       <div className="wrapper_column sidebar_column_r">
         <SettingsNav {...tabs[SETTINGS_BEHAVIOUR]} />
         <SettingsNav {...tabs[SETTINGS_ARENA_DATA]} />
@@ -142,28 +141,10 @@ function Settings(props: SettingsProps): JSX.Element {
         <SettingsNav {...tabs[SETTINGS_ABOUT]} />
         <SettingsNav {...tabs[SETTINGS_LOGIN]} />
       </div>
-      <div
-        className="wrapper_column settings_page"
-        ref={containerRef}
-        onScroll={onScroll}
-      >
+      <div className="wrapper_column settings_page">
         <div className="settings_title">{tabs[currentTab].title}</div>
         <CurrentSettings />
       </div>
-    </>
+    </div>
   );
-}
-
-export function openSettingsTab(
-  openSection = pd.settings.last_settings_section
-): void {
-  if (openSection == -1) {
-    openSection = pd.settings.last_settings_section;
-  }
-  changeBackground("default");
-  hideLoadingBars();
-
-  const mainDiv = resetMainContainer() as HTMLElement;
-  mainDiv.classList.add("flex_item");
-  mountReactComponent(<Settings openSection={openSection} />, mainDiv);
 }

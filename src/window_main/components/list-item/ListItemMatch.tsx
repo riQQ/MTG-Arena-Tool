@@ -1,5 +1,5 @@
 import React from "react";
-
+import _ from "lodash";
 import {
   ListItem,
   Column,
@@ -25,10 +25,27 @@ export default function ListItemMatch({
   deleteTagCallback,
   tags
 }: ListItemMatchProps): JSX.Element {
-  const parentId = match.id ?? "";
+  const [tagState, setTagState] = React.useState<Array<string>>(
+    match.tags ?? []
+  );
+  React.useEffect(() => setTagState(match.tags ?? []), [match.tags]);
+  const deleteTag = React.useCallback(
+    (id: string, tag: string): void => {
+      setTagState(_.without(tagState, tag));
+      deleteTagCallback && deleteTagCallback(id, tag);
+    },
+    [deleteTagCallback, tagState]
+  );
+  const addTag = React.useCallback(
+    (id: string, tag: string): void => {
+      setTagState([...tagState, tag]);
+      addTagCallback && addTagCallback(id, tag);
+    },
+    [addTagCallback, tagState]
+  );
 
   const onRowClick = (): void => {
-    openMatchCallback(parentId);
+    openMatchCallback(match);
   };
 
   const [hover, setHover] = React.useState(false);
@@ -80,15 +97,15 @@ export default function ListItemMatch({
           <ManaCost class="mana_s20" colors={match.oppDeck.colors || []} />
           {addTagCallback && editTagCallback ? (
             <div style={{ marginLeft: "8px" }}>
-              {match.tags && match.tags.length ? (
-                match.tags.map((tag: any) => {
+              {tagState.length > 0 ? (
+                tagState.map((tag: any) => {
                   return (
                     <TagBubble
                       key={tag}
                       tag={tag}
                       parentId={match.id}
                       editTagCallback={editTagCallback}
-                      deleteTagCallback={deleteTagCallback}
+                      deleteTagCallback={deleteTag}
                     />
                   );
                 })
@@ -96,7 +113,7 @@ export default function ListItemMatch({
                 <NewTag
                   tagPrompt="Add"
                   tags={tags}
-                  addTagCallback={addTagCallback}
+                  addTagCallback={addTag}
                   parentId={match.id}
                 />
               )}

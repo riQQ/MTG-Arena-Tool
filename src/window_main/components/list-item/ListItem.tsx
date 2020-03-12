@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { getCardArtCrop } from "../../../shared/util";
 
 interface ListItemProps extends JSX.ElementChildrenAttribute {
@@ -38,18 +38,18 @@ interface HoverTileProps {
   grpId: number;
 }
 
+// This function is faster outside of the component
+function getStyle(hover: boolean, grpId: number): React.CSSProperties {
+  return {
+    backgroundImage: `url(${getCardArtCrop(grpId)})`,
+    ...getHoverStyle(hover)
+  };
+}
+
 export function HoverTile(props: HoverTileProps): JSX.Element {
   const { hover, grpId } = props;
 
-  return (
-    <div
-      className="list_item_image"
-      style={{
-        backgroundImage: `url(${getCardArtCrop(grpId)})`,
-        ...getHoverStyle(hover)
-      }}
-    ></div>
-  );
+  return <div className="list_item_image" style={getStyle(hover, grpId)}></div>;
 }
 
 interface ColumnProps extends JSX.ElementChildrenAttribute {

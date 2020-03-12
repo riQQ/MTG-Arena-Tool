@@ -2,16 +2,12 @@
 import { remote, shell } from "electron";
 import React from "react";
 import { SETTINGS_PRIVACY } from "../shared/constants";
-import mountReactComponent from "./mountReactComponent";
-import { hideLoadingBars, ipcSend, resetMainContainer } from "./renderer-util";
+import { ipcSend } from "./renderer-util";
 import { forceOpenSettings } from "./tabControl";
 
 export default function OfflineSplash(): JSX.Element {
   return (
-    <div
-      className="message_center_offline"
-      style={{ display: "flex", position: "fixed" }}
-    >
+    <div className="message_center_offline" style={{ display: "flex" }}>
       <div className="message_unlink"></div>
       <div className="message_big red">Oops, you are offline!</div>
       <div className="message_sub_16 white">To access online features:</div>
@@ -58,11 +54,4 @@ export default function OfflineSplash(): JSX.Element {
       </div>
     </div>
   );
-}
-
-export function openOfflineSplash(): void {
-  hideLoadingBars();
-  const mainDiv = resetMainContainer() as HTMLElement;
-  mainDiv.classList.add("flex_item");
-  mountReactComponent(<OfflineSplash />, mainDiv);
 }

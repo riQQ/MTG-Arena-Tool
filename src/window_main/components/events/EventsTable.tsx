@@ -1,6 +1,12 @@
+import _ from "lodash";
 import React from "react";
-import { Column } from "react-table";
+import { Column, Row } from "react-table";
 import { EVENTS_TABLE_MODE } from "../../../shared/constants";
+import pd from "../../../shared/PlayerData";
+import Aggregator, { AggregatorFilters } from "../../aggregator";
+import { ListItemEvent } from "../list-item/ListItemEvent";
+import MatchResultsStatsPanel from "../MatchResultsStatsPanel";
+import ResizableDragger from "../ResizableDragger";
 import {
   ArchivedCell,
   ArchiveHeader,
@@ -24,7 +30,6 @@ import PagingControls from "../tables/PagingControls";
 import TableHeaders from "../tables/TableHeaders";
 import { TableViewRow } from "../tables/TableViewRow";
 import { BaseTableProps } from "../tables/types";
-import { ListItemEvent } from "../list-item/ListItemEvent";
 import EventsTableControls from "./EventsTableControls";
 import { eventSearchFilterFn } from "./filters";
 import {
@@ -172,6 +177,11 @@ const columns: Column<EventTableData>[] = [
   }
 ];
 
+function getDataAggFilters(data: Row<EventTableData>[]): AggregatorFilters {
+  const matchIds = _.flatten(data.map(row => row.original.stats.matchIds));
+  return { matchIds };
+}
+
 export default function EventsTable({
   data,
   aggFilters,
@@ -181,7 +191,6 @@ export default function EventsTable({
   tableStateCallback,
   cachedState,
   cachedTableMode,
-  filterDataCallback,
   editTagCallback
 }: EventsTableProps): JSX.Element {
   const [tableMode, setTableMode] = React.useState(cachedTableMode);
@@ -198,7 +207,6 @@ export default function EventsTable({
       filters: [{ id: "archivedCol", value: "hideArchived" }],
       sortBy: [{ id: "timestamp", desc: true }]
     },
-    filterDataCallback,
     globalFilter: eventSearchFilterFn,
     setTableMode,
     tableMode,
@@ -212,7 +220,7 @@ export default function EventsTable({
     tableControlsProps
   } = useBaseReactTable(tableProps);
   useAggregatorArchiveFilter(table, aggFilters, setAggFiltersCallback);
-  const { getTableBodyProps, page, prepareRow } = table;
+  const { getTableBodyProps, page, prepareRow, rows } = table;
   const eventsTableControlsProps: EventsTableControlsProps = {
     aggFilters,
     events,
@@ -220,51 +228,73 @@ export default function EventsTable({
     ...tableControlsProps
   };
   const isTableMode = tableMode === EVENTS_TABLE_MODE;
+  const { right_panel_width: panelWidth } = pd.settings;
+  const sidePanelWidth = panelWidth + "px";
   return (
-    <div className="react_table_wrap">
-      <EventsTableControls {...eventsTableControlsProps} />
-      <div
-        className="med_scroll"
-        style={isTableMode ? { overflowX: "auto" } : undefined}
-      >
-        <TableHeaders
-          {...headersProps}
-          style={
-            isTableMode
-              ? { width: "fit-content" }
-              : { overflowX: "auto", overflowY: "hidden" }
-          }
-        />
-        <div
-          className={
-            isTableMode ? "react_table_body" : "react_table_body_no_adjust"
-          }
-          {...getTableBodyProps()}
-        >
-          {page.map((row, index) => {
-            prepareRow(row);
-            if (tableMode === EVENTS_TABLE_MODE) {
-              return (
-                <TableViewRow
-                  row={row}
-                  index={index}
-                  key={row.index}
-                  gridTemplateColumns={gridTemplateColumns}
-                />
-              );
-            }
-            return (
-              <ListItemEvent
-                row={row}
-                index={index}
-                key={row.index}
-                gridTemplateColumns={gridTemplateColumns}
-              />
-            );
-          })}
+    <>
+      <div className={"wrapper_column"}>
+        <div className="react_table_wrap">
+          <EventsTableControls {...eventsTableControlsProps} />
+          <div
+            className="med_scroll"
+            style={isTableMode ? { overflowX: "auto" } : undefined}
+          >
+            <TableHeaders
+              {...headersProps}
+              style={
+                isTableMode
+                  ? { width: "fit-content" }
+                  : { overflowX: "auto", overflowY: "hidden" }
+              }
+            />
+            <div
+              className={
+                isTableMode ? "react_table_body" : "react_table_body_no_adjust"
+              }
+              {...getTableBodyProps()}
+            >
+              {page.map((row, index) => {
+                prepareRow(row);
+                if (tableMode === EVENTS_TABLE_MODE) {
+                  return (
+                    <TableViewRow
+                      row={row}
+                      index={index}
+                      key={row.index}
+                      gridTemplateColumns={gridTemplateColumns}
+                    />
+                  );
+                }
+                return (
+                  <ListItemEvent
+                    row={row}
+                    index={index}
+                    key={row.index}
+                    gridTemplateColumns={gridTemplateColumns}
+                  />
+                );
+              })}
+            </div>
+          </div>
+          <PagingControls {...pagingProps} />
         </div>
       </div>
-      <PagingControls {...pagingProps} />
-    </div>
+      <div
+        className={"wrapper_column sidebar_column_l"}
+        style={{
+          width: sidePanelWidth,
+          flex: `0 0 ${sidePanelWidth}`
+        }}
+      >
+        <ResizableDragger />
+        <MatchResultsStatsPanel
+          prefixId={"events_top"}
+          aggregator={
+            new Aggregator({ ...aggFilters, ...getDataAggFilters(rows) })
+          }
+          showCharts
+        />
+      </div>
+    </>
   );
 }

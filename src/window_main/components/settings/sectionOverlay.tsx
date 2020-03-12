@@ -3,7 +3,7 @@ import React from "react";
 import Button from "../Button";
 import { ipcSend } from "../../renderer-util";
 import pd from "../../../shared/PlayerData";
-import Checkbox from "../Checkbox";
+import Toggle from "../Toggle";
 import Slider from "../Slider";
 import _ from "lodash";
 import {
@@ -18,8 +18,10 @@ import {
   OVERLAY_FULL,
   OVERLAY_DRAFT_MODES
 } from "../../../shared/constants";
-import { WrappedReactSelect } from "../../../shared/ReactSelect";
-import useColorpicker from "../../hooks/useColorPicker";
+import ReactSelect from "../../../shared/ReactSelect";
+import useColorPicker from "../../hooks/useColorPicker";
+import { useSelector } from "react-redux";
+import { AppState } from "../../app/appState";
 
 function toggleEditMode(): void {
   ipcSend("toggle_edit_mode");
@@ -173,35 +175,34 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
 
   return show ? (
     <>
-      <Checkbox
+      <Toggle
         text={"Enable overlay " + (current + 1)}
         value={settings.show}
         callback={(val: boolean): void =>
           saveOverlaySettings(current, val, "show")
         }
       />
-      <label className="but_container_label">
-        Mode:
-        <WrappedReactSelect
-          style={{ width: "180px", marginLeft: "32px" }}
+      <div className="centered_setting_container">
+        <label>Mode:</label>
+        <ReactSelect
           options={modeOptions}
           current={modeOptions[settings.mode]}
           callback={(filter: string): void => setOverlayMode(current, filter)}
         />
-      </label>
-      <div className="settings_note" style={{ paddingLeft: "35px" }}>
+      </div>
+      <div className="settings_note" style={{ paddingLeft: "16px" }}>
         <p>
           <i>{modeHelp[settings.mode]}</i>
         </p>
       </div>
-      <Checkbox
+      <Toggle
         text={"Always show overlay"}
         value={settings.show_always}
         callback={(val: boolean): void =>
           saveOverlaySettings(current, val, "show_always")
         }
       />
-      <div className="settings_note" style={{ paddingLeft: "35px" }}>
+      <div className="settings_note" style={{ paddingLeft: "16px" }}>
         <p>
           <i>
             Displays the overlay regardless of Arena match or draft status
@@ -211,14 +212,14 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
           </i>
         </p>
       </div>
-      <Checkbox
+      <Toggle
         text={"Show top bar"}
         value={settings.top}
         callback={(val: boolean): void =>
           saveOverlaySettings(current, val, "top")
         }
       />
-      <Checkbox
+      <Toggle
         text={"Show title"}
         value={settings.title}
         callback={(val: boolean): void =>
@@ -226,7 +227,7 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
         }
         disabled={settings.mode === OVERLAY_DRAFT}
       />
-      <Checkbox
+      <Toggle
         text={"Show deck/lists"}
         value={settings.deck}
         callback={(val: boolean): void =>
@@ -234,7 +235,7 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
         }
         disabled={settings.mode === OVERLAY_DRAFT}
       />
-      <Checkbox
+      <Toggle
         text={"Show sideboard"}
         value={settings.sideboard}
         callback={(val: boolean): void =>
@@ -246,7 +247,7 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
           )
         }
       />
-      <Checkbox
+      <Toggle
         text={"Compact lands"}
         value={settings.lands}
         callback={(val: boolean): void =>
@@ -258,7 +259,7 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
           )
         }
       />
-      <Checkbox
+      <Toggle
         text={"Show clock"}
         value={settings.clock}
         callback={(val: boolean): void =>
@@ -266,7 +267,7 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
         }
         disabled={OVERLAY_DRAFT_MODES.includes(settings.mode)}
       />
-      <Checkbox
+      <Toggle
         text={"Show odds"}
         value={settings.draw_odds}
         callback={(val: boolean): void =>
@@ -281,14 +282,14 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
           OVERLAY_DRAFT_BREW
         ].includes(settings.mode)}
       />
-      <Checkbox
+      <Toggle
         text={"Show hover cards"}
         value={settings.cards_overlay}
         callback={(val: boolean): void =>
           saveOverlaySettings(current, val, "cards_overlay")
         }
       />
-      <Checkbox
+      <Toggle
         text={"Show type counts"}
         value={settings.type_counts}
         callback={(val: boolean): void =>
@@ -296,7 +297,7 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
         }
         disabled={[OVERLAY_LOG, OVERLAY_DRAFT].includes(settings.mode)}
       />
-      <Checkbox
+      <Toggle
         text={"Show mana curve"}
         value={settings.mana_curve}
         callback={(val: boolean): void =>
@@ -304,7 +305,7 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
         }
         disabled={[OVERLAY_LOG, OVERLAY_DRAFT].includes(settings.mode)}
       />
-      <div className="slidecontainer_settings">
+      <div className="centered_setting_container">
         <label style={{ width: "400px" }} className="card_size_container">
           {`Elements transparency: ${Math.round(overlayAlpha * 100)}%`}
         </label>
@@ -317,7 +318,7 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
           onChange={overlayAlphaHandler}
         />
       </div>
-      <div className="slidecontainer_settings">
+      <div className="centered_setting_container">
         <label style={{ width: "400px" }} className="card_size_container">
           {`background transparency: ${Math.round(overlayAlphaBack * 100)}%`}
         </label>
@@ -348,31 +349,28 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
   );
 }
 
-function getOverlaySettings(index: number): any {
-  return pd.settings.overlays.filter((s: any, i: number) => i == index)[0];
-}
-
 export default function SectionOverlay(): JSX.Element {
+  const settings = useSelector((state: AppState) => state.settings);
   const [currentOverlay, setCurrentOverlay] = React.useState(
-    pd.settings.last_settings_overlay_section
+    settings.last_settings_overlay_section
   );
   const [currentOverlaySettings, setCurrentOverlaySettings] = React.useState(
-    null
+    settings.overlays[currentOverlay]
   );
   const [overlayScale, setOverlayScale] = React.useState(
-    pd.settings.overlay_scale
+    settings.overlay_scale
   );
   const [overlayVolume, setOverlayVolume] = React.useState(
-    pd.settings.sound_priority_volume
+    settings.sound_priority_volume
   );
   const containerRef: React.MutableRefObject<HTMLInputElement | null> = React.useRef(
     null
   );
-  const colorPicker = useColorpicker(
-    containerRef,
-    pd.settings.overlay_back_color,
-    backgroundColorPicker,
-    { alpha: true }
+
+  const [pickerColor, pickerDoShow, pickerElement] = useColorPicker(
+    settings.overlay_back_color,
+    undefined,
+    backgroundColorPicker
   );
 
   const overlayScaleDebouce = React.useCallback(
@@ -409,8 +407,11 @@ export default function SectionOverlay(): JSX.Element {
   };
 
   React.useEffect(() => {
-    setCurrentOverlaySettings(getOverlaySettings(currentOverlay));
-  }, [currentOverlay]);
+    const oSettings = settings.overlays.filter(
+      (s: any, i: number) => i == currentOverlay
+    )[0];
+    setCurrentOverlaySettings(oSettings);
+  }, [currentOverlay, settings.overlays]);
 
   React.useEffect(() => {}, [currentOverlaySettings]);
 
@@ -418,7 +419,7 @@ export default function SectionOverlay(): JSX.Element {
     <>
       <Button onClick={toggleEditMode} text="Edit Overlay Positions" />
 
-      <div className="slidecontainer_settings">
+      <div className="centered_setting_container">
         <label style={{ width: "400px" }} className="card_size_container">
           {`UI Scale: ${overlayScale}%`}
         </label>
@@ -426,39 +427,40 @@ export default function SectionOverlay(): JSX.Element {
           min={10}
           max={200}
           step={10}
-          value={pd.settings.overlay_scale}
+          value={settings.overlay_scale}
           onChange={overlayScaleHandler}
         />
       </div>
 
-      <label className="but_container_label">
-        <span style={{ marginRight: "32px" }}>
+      <label className="centered_setting_container">
+        <span>
           Background color <i>(0,0,0,0 to use default background)</i>:
         </span>
         <input
-          onClick={colorPicker}
+          onClick={pickerDoShow}
           ref={containerRef}
-          style={{ backgroundColor: pd.settings.overlay_back_color }}
+          style={{ backgroundColor: pickerColor }}
           className="color_picker"
           id="flat"
           type="text"
           defaultValue=""
         ></input>
       </label>
+      {pickerElement}
 
-      <Checkbox
+      <Toggle
         text="Always on top when shown"
-        value={pd.settings.overlay_ontop}
+        value={settings.overlay_ontop}
         callback={setAlwaysOnTop}
       />
 
-      <Checkbox
+      <Toggle
         text="Sound when priority changes"
-        value={pd.settings.sound_priority}
+        value={settings.sound_priority}
         callback={setSoundPriority}
       />
 
-      <div className="slidecontainer_settings">
+      <div className="centered_setting_container">
         <label style={{ width: "400px" }} className="card_size_container">
           {`Volume: ${Math.round(overlayVolume * 100)}%`}
         </label>
@@ -466,19 +468,22 @@ export default function SectionOverlay(): JSX.Element {
           min={0}
           max={1}
           step={0.05}
-          value={pd.settings.sound_priority_volume}
+          value={settings.sound_priority_volume}
           onChange={overlayVolumeHandler}
         />
       </div>
 
-      <div className="settings_note" style={{ margin: "24px 64px 0px 16px" }}>
+      <div
+        className="settings_note"
+        style={{ margin: "24px auto 0px auto", width: "fit-content" }}
+      >
         You can enable up to 5 independent overlay windows. Customize each
         overlay using the settings below.
       </div>
 
       <OverlaysTopNav current={currentOverlay} setCurrent={setCurrentOverlay} />
       <div className="overlay_section">
-        {pd.settings.overlays.map((settings: any, index: number) => {
+        {settings.overlays.map((settings: any, index: number) => {
           return (
             <OverlaySettingsSection
               show={index == currentOverlay}

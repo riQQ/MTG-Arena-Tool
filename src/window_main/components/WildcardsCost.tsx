@@ -7,7 +7,7 @@ import {
 import { CARD_RARITIES } from "../../shared/constants";
 import _ from "lodash";
 import { MissingWildcards } from "./decks/types";
-import { InternalDeck } from "../../types/Deck";
+import Deck from "../../shared/deck";
 
 const getRarityKey = (
   rarity: string
@@ -17,9 +17,7 @@ const getRarityKey = (
   return undefined;
 };
 
-export default function WildcardsCost(props: {
-  deck: InternalDeck;
-}): JSX.Element {
+export default function WildcardsCost(props: { deck: Deck }): JSX.Element {
   const { deck } = props;
   const missingWildcards = getDeckMissing(deck);
   const totalMissing =
@@ -46,7 +44,7 @@ export default function WildcardsCost(props: {
             if (missing) {
               return (
                 <div
-                  key={key}
+                  key={cardRarity + "-" + owned + "-" + missing}
                   className={"wc_explore_cost wc_" + cardRarity}
                   title={_.capitalize(cardRarity) + " wildcards needed."}
                 >

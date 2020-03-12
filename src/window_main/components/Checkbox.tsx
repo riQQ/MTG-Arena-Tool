@@ -5,10 +5,11 @@ interface CheckboxProps {
   value: boolean;
   callback: (value: boolean) => void;
   disabled?: boolean;
+  style?: React.CSSProperties;
 }
 
 export default function Checkbox(props: CheckboxProps): JSX.Element {
-  const { disabled, value, callback } = props;
+  const { disabled, value, callback, style } = props;
   const [currentValue, setCurrentValue] = React.useState(value);
 
   const click = (): void => {
@@ -19,13 +20,18 @@ export default function Checkbox(props: CheckboxProps): JSX.Element {
   };
 
   const disabledLabelStyle = {
+    ...style,
     cursor: "default",
     opacity: 0.4
   };
 
+  React.useEffect(() => {
+    setCurrentValue(props.value);
+  }, [props.value]);
+
   return (
     <label
-      style={disabled ? disabledLabelStyle : {}}
+      style={disabled ? disabledLabelStyle : { ...style }}
       onClick={click}
       className={"check_container" + (disabled ? "" : " hover_label")}
     >

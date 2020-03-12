@@ -6,13 +6,8 @@ import pd from "../shared/PlayerData";
 import EconomyTable from "./components/economy/EconomyTable";
 import { TransactionData } from "./components/economy/types";
 import { getPrettyContext } from "./economyUtils";
-import mountReactComponent from "./mountReactComponent";
-import {
-  hideLoadingBars,
-  ipcSend,
-  resetMainContainer,
-  toggleArchived
-} from "./renderer-util";
+import { ipcSend, toggleArchived } from "./renderer-util";
+
 import { InternalEconomyTransaction } from "../types/inventory";
 
 function saveTableState(economyTableState: TableState<TransactionData>): void {
@@ -85,23 +80,19 @@ function getTxnData(): TransactionData[] {
   );
 }
 
-export function EconomyTab(): JSX.Element {
+export default function EconomyTab(): JSX.Element {
   const { economyTableMode, economyTableState } = pd.settings;
   const data = React.useMemo(() => getTxnData(), []);
   return (
-    <EconomyTable
-      archiveCallback={toggleArchived}
-      cachedState={economyTableState}
-      cachedTableMode={economyTableMode}
-      data={data}
-      tableModeCallback={saveTableMode}
-      tableStateCallback={saveTableState}
-    />
+    <div className="ux_item">
+      <EconomyTable
+        archiveCallback={toggleArchived}
+        cachedState={economyTableState}
+        cachedTableMode={economyTableMode}
+        data={data}
+        tableModeCallback={saveTableMode}
+        tableStateCallback={saveTableState}
+      />
+    </div>
   );
-}
-
-export function openEconomyTab(): void {
-  hideLoadingBars();
-  const mainDiv = resetMainContainer() as HTMLElement;
-  mountReactComponent(<EconomyTab />, mainDiv);
 }

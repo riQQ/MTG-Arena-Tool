@@ -1,21 +1,19 @@
 import React from "react";
 import { Column, Filters, FilterValue } from "react-table";
 import {
+  COLLECTION_CARD_MODE,
   COLLECTION_CHART_MODE,
   COLLECTION_SETS_MODE,
   COLLECTION_TABLE_MODE,
   DRAFT_RANKS
 } from "../../../shared/constants";
 import db from "../../../shared/database";
-import { createDiv } from "../../../shared/dom-fns";
 import pd from "../../../shared/PlayerData";
 import {
   ALL_CARDS,
-  CollectionStats,
   getCollectionStats
 } from "../../collection/collectionStats";
-import createHeatMap from "../../collection/completionHeatMap";
-import { makeResizable } from "../../renderer-util";
+import ResizableDragger from "../ResizableDragger";
 import { ColorsCell, MetricCell, ShortTextCell } from "../tables/cells";
 import {
   ColorColumnFilter,
@@ -33,6 +31,7 @@ import {
   SetCell,
   TypeCell
 } from "./cells";
+import ChartView from "./ChartView";
 import { CollectionStatsPanel } from "./CollectionStatsPanel";
 import CollectionTableControls from "./CollectionTableControls";
 import {
@@ -51,31 +50,6 @@ import {
   CollectionTableControlsProps,
   CollectionTableProps
 } from "./types";
-
-const legacyModes = [COLLECTION_CHART_MODE, COLLECTION_SETS_MODE];
-
-function renderHeatMaps(container: HTMLElement, stats: CollectionStats): void {
-  const chartContainer = createDiv(["main_stats"]);
-  db.sortedSetCodes.forEach(set => {
-    const cardData = stats[set].cards;
-    if (cardData.length > 0) {
-      createHeatMap(chartContainer, cardData, set);
-    }
-  });
-  container.appendChild(chartContainer);
-}
-
-function updateLegacyViews(
-  container: HTMLElement,
-  stats: CollectionStats,
-  displayMode: string
-): void {
-  if (displayMode !== COLLECTION_CHART_MODE) {
-    return;
-  }
-  container.innerHTML = "";
-  renderHeatMaps(container, stats);
-}
 
 function isBoosterMathValid(filters: Filters<CardsData>): boolean {
   let hasCorrectBoosterFilter = false;
@@ -96,7 +70,6 @@ function isBoosterMathValid(filters: Filters<CardsData>): boolean {
 
 export default function CollectionTable({
   data,
-  cardHoverCallback,
   contextMenuCallback,
   tableModeCallback,
   tableStateCallback,
@@ -303,8 +276,6 @@ export default function CollectionTable({
     setFilter,
     toggleHideColumn
   } = table;
-
-  const legacyContainerRef = React.useRef<HTMLDivElement>(null);
   const setClickCallback = React.useCallback(
     (set: string) => {
       setTableMode(COLLECTION_CHART_MODE);
@@ -315,12 +286,6 @@ export default function CollectionTable({
   );
   const cardIds = rows.map(row => row.values.id);
   const stats = getCollectionStats(cardIds);
-  React.useEffect(() => {
-    if (legacyContainerRef?.current) {
-      updateLegacyViews(legacyContainerRef.current, stats, tableMode);
-    }
-  }, [tableMode, stats, legacyContainerRef]);
-
   const boosterMath =
     isBoosterMathValid(table.state.filters) &&
     tableMode === COLLECTION_SETS_MODE;
@@ -333,14 +298,7 @@ export default function CollectionTable({
   const isTableMode = tableMode === COLLECTION_TABLE_MODE;
   const tableBody =
     tableMode === COLLECTION_CHART_MODE ? (
-      <div
-        className={
-          isTableMode ? "react_table_body" : "react_table_body_no_adjust"
-        }
-        {...getTableBodyProps()}
-      >
-        <div ref={legacyContainerRef} />
-      </div>
+      <ChartView stats={stats} />
     ) : tableMode === COLLECTION_SETS_MODE ? (
       <SetsView
         stats={stats}
@@ -367,7 +325,6 @@ export default function CollectionTable({
               key={row.index}
               row={row}
               index={index}
-              cardHoverCallback={cardHoverCallback}
               contextMenuCallback={contextMenuCallback}
               openCardCallback={openCardCallback}
               gridTemplateColumns={gridTemplateColumns}
@@ -378,12 +335,6 @@ export default function CollectionTable({
     );
   const { right_panel_width: panelWidth } = pd.settings;
   const sidePanelWidth = panelWidth + "px";
-  const draggerRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    if (draggerRef?.current) {
-      makeResizable(draggerRef.current);
-    }
-  }, [draggerRef]);
   const clickCompletionCallback = React.useCallback((): void => {
     setTableMode(COLLECTION_SETS_MODE);
     setAllFilters((): FilterValue[] => [
@@ -409,9 +360,9 @@ export default function CollectionTable({
             />
             {tableBody}
           </div>
-          {!legacyModes.includes(tableMode) && (
-            <PagingControls {...pagingProps} />
-          )}
+          {[COLLECTION_CARD_MODE, COLLECTION_TABLE_MODE].includes(
+            tableMode
+          ) && <PagingControls {...pagingProps} />}
         </div>
       </div>
       <div
@@ -421,7 +372,7 @@ export default function CollectionTable({
           flex: `0 0 ${sidePanelWidth}`
         }}
       >
-        <div ref={draggerRef} className={"dragger"}></div>
+        <ResizableDragger />
         <CollectionStatsPanel
           stats={stats}
           countMode={countMode}

@@ -1,11 +1,11 @@
 import _ from "lodash";
 import React from "react";
-import ReactDOM from "react-dom";
-import { queryElements as $$ } from "../shared/dom-fns";
-import { clickNav } from "./tabControl";
-import pd from "../shared/PlayerData";
+import pd from "../../../shared/PlayerData";
 
-import { get_rank_index as getRankIndex, formatRank } from "../shared/util";
+import {
+  get_rank_index as getRankIndex,
+  formatRank
+} from "../../../shared/util";
 
 import {
   MAIN_HOME,
@@ -17,25 +17,35 @@ import {
   MAIN_COLLECTION,
   MAIN_CONSTRUCTED,
   MAIN_LIMITED
-} from "../shared/constants";
+} from "../../../shared/constants";
+import {
+  SET_TOP_NAV,
+  dispatchAction,
+  SET_BACKGROUND_GRPID
+} from "../../app/reducers";
+import { useDispatch, useSelector } from "react-redux";
+import { AppState } from "../../app/appState";
+import useWindowSize from "../../hooks/useWindowSize";
+import uxMove from "../../uxMove";
 
 interface TopNavItemProps {
+  dispatcher: unknown;
   currentTab: number;
   compact: boolean;
   id: number;
-  callback: (id: number) => void;
   title: string;
 }
 
 function TopNavItem(props: TopNavItemProps): JSX.Element {
-  const { currentTab, compact, id, callback, title } = props;
+  const { currentTab, compact, id, title } = props;
 
   const clickTab = React.useCallback(
     (tabId: number) => (): void => {
-      clickNav(tabId);
-      callback(tabId);
+      dispatchAction(props.dispatcher, SET_TOP_NAV, tabId);
+      dispatchAction(props.dispatcher, SET_BACKGROUND_GRPID, 0);
+      uxMove(0);
     },
-    [props.id, props.callback]
+    [props.dispatcher]
   );
 
   return compact ? (
@@ -75,24 +85,24 @@ function TopNavItem(props: TopNavItemProps): JSX.Element {
 }
 
 interface TopRankProps {
+  dispatcher: unknown;
   currentTab: number;
   id: number;
   rank: any | null;
-  callback: (id: number) => void;
   rankClass: string;
 }
 
 function TopRankIcon(props: TopRankProps): JSX.Element {
-  const { currentTab, id, rank, callback, rankClass } = props;
+  const { currentTab, id, rank, rankClass } = props;
 
   const selected = currentTab === id;
-
   const clickTab = React.useCallback(
     tabId => (): void => {
-      clickNav(tabId);
-      callback(tabId);
+      dispatchAction(props.dispatcher, SET_TOP_NAV, tabId);
+      dispatchAction(props.dispatcher, SET_BACKGROUND_GRPID, 0);
+      uxMove(0);
     },
-    [props.id, props.callback]
+    [props.dispatcher]
   );
 
   if (rank == null) {
@@ -122,13 +132,10 @@ function TopRankIcon(props: TopRankProps): JSX.Element {
   );
 }
 
-interface PatreonProps {
-  patreon: boolean;
-  patreonTier: number;
-}
-
-function PatreonBadge(props: PatreonProps): JSX.Element {
-  const { patreonTier } = props;
+function PatreonBadge(): JSX.Element {
+  const patreonTier = useSelector(
+    (state: AppState) => state.patreon.patreonTier
+  );
 
   let title = "Patreon Basic Tier";
   if (patreonTier === 1) title = "Patreon Standard Tier";
@@ -143,15 +150,18 @@ function PatreonBadge(props: PatreonProps): JSX.Element {
   return <div title={title} style={style} className="top_patreon"></div>;
 }
 
-function TopNav(): JSX.Element {
+export function TopNav(): JSX.Element {
   const [compact, setCompact] = React.useState(false);
-  const [currentTab, setCurrentTab] = React.useState(pd.settings.last_open_tab);
+  const patreon = useSelector((state: AppState) => state.patreon.patreon);
+  const currentTab = useSelector((state: AppState) => state.topNav);
   const topNavIconsRef: any = React.useRef(null);
+  const dispatcher = useDispatch();
+  const windowSize = useWindowSize();
 
   const defaultTab = {
+    dispatcher: dispatcher,
     compact: compact,
-    currentTab: currentTab,
-    callback: setCurrentTab
+    currentTab: currentTab
   };
 
   const homeTab = { ...defaultTab, id: MAIN_HOME, title: "" };
@@ -167,7 +177,7 @@ function TopNav(): JSX.Element {
   };
 
   const contructedNav = {
-    callback: setCurrentTab,
+    dispatcher: dispatcher,
     currentTab: currentTab,
     id: MAIN_CONSTRUCTED,
     rank: pd.rank ? pd.rank.constructed : null,
@@ -175,7 +185,7 @@ function TopNav(): JSX.Element {
   };
 
   const limitedNav = {
-    callback: setCurrentTab,
+    dispatcher: dispatcher,
     currentTab: currentTab,
     id: MAIN_LIMITED,
     rank: pd.rank ? pd.rank.limited : null,
@@ -190,12 +200,7 @@ function TopNav(): JSX.Element {
     } else if (compact) {
       setCompact(false);
     }
-  });
-
-  const patreon = {
-    patreon: pd.patreon,
-    patreonTier: pd.patreon_tier
-  };
+  }, [windowSize, compact]);
 
   const userName = pd.name.slice(0, -6);
   const userNumerical = pd.name.slice(-6);
@@ -215,7 +220,7 @@ function TopNav(): JSX.Element {
         <div className="top_userdata_container">
           <TopRankIcon {...contructedNav} />
           <TopRankIcon {...limitedNav} />
-          {pd.patreon ? <PatreonBadge {...patreon} /> : null}
+          {patreon ? <PatreonBadge /> : null}
           <div className="top_username" title={"Arena username"}>
             {userName}
           </div>
@@ -226,18 +231,4 @@ function TopNav(): JSX.Element {
       </div>
     </div>
   );
-}
-
-export default function createTopNav(parent: Element): boolean {
-  ReactDOM.render(<TopNav />, parent);
-  return true;
-}
-
-export function updateTopBar(): void {
-  const topNavDiv = $$(".top_nav_container")[0];
-  createTopNav(topNavDiv);
-
-  if (pd.offline || !pd.settings.send_data) {
-    $$(".unlink")[0].style.display = "block";
-  }
 }

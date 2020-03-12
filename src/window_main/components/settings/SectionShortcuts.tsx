@@ -1,67 +1,18 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import React, { KeyboardEvent } from "react";
+import React, { useState, useCallback } from "react";
 import { remote } from "electron";
-import { ipcSend, openDialog, closeDialog } from "../../renderer-util";
-import pd from "../../../shared/PlayerData";
+import { ipcSend } from "../../renderer-util";
 import { SHORTCUT_NAMES } from "../../../shared/constants";
-import Checkbox from "../Checkbox";
+import Toggle from "../Toggle";
 import Button from "../Button";
-import { createDiv, queryElements as $$ } from "../../../shared/dom-fns";
+import EditKey from "../popups/EditKey";
+import { useSelector } from "react-redux";
+import { AppState } from "../../app/appState";
 
 function setKeyboardShortcuts(checked: boolean): void {
   ipcSend("save_user_settings", {
     enable_keyboard_shortcuts: checked,
     skipRefesh: true
-  });
-}
-
-function openKeyCombinationDialog(name: string): void {
-  const cont = createDiv(["dialog_content"]);
-  cont.style.width = "320px";
-  cont.style.height = "120px";
-
-  remote.globalShortcut.unregisterAll();
-
-  const desc = createDiv(["keycomb_desc"], "Press any key");
-  const okButton = createDiv(["button_simple"], "Ok");
-
-  function reportKeyEvent(zEvent: KeyboardEvent): void {
-    const keyDesc = $$(".keycomb_desc")[0];
-    const keys = [];
-
-    if (zEvent.ctrlKey) keys.push("Control");
-    if (zEvent.shiftKey) keys.push("Shift");
-    if (zEvent.altKey) keys.push("Alt");
-    if (zEvent.metaKey) keys.push("Meta");
-
-    if (!["Control", "Shift", "Alt", "Meta"].includes(zEvent.key))
-      keys.push(zEvent.key);
-
-    const reportStr = keys.join("+");
-    keyDesc.innerHTML = reportStr;
-
-    zEvent.stopPropagation();
-    zEvent.preventDefault();
-  }
-
-  okButton.addEventListener("click", function() {
-    ((pd.settings as unknown) as Record<string, string>)[name] = $$(
-      ".keycomb_desc"
-    )[0].innerHTML;
-
-    ipcSend("save_user_settings", {
-      ...pd.settings
-    });
-
-    document.removeEventListener("keydown", reportKeyEvent as any);
-    closeDialog();
-  });
-
-  document.addEventListener("keydown", reportKeyEvent as any);
-  cont.appendChild(desc);
-  cont.appendChild(okButton);
-  openDialog(cont, () => {
-    document.removeEventListener("keydown", reportKeyEvent as any);
   });
 }
 
@@ -72,7 +23,26 @@ function ShortcutsRow({
   code: string;
   index: number;
 }): JSX.Element {
+  const settings = useSelector((state: AppState) => state.settings);
+  const [openDialog, setOpenDialog] = useState(false);
   const ld = index % 2 ? "line_dark" : "line_light";
+
+  function openKeyCombinationDialog(): void {
+    remote.globalShortcut.unregisterAll();
+    setOpenDialog(true);
+  }
+
+  const closeKeyCombDialog = useCallback(
+    (key: string): void => {
+      setOpenDialog(false);
+      ((settings as unknown) as Record<string, string>)[code] = key;
+      ipcSend("save_user_settings", {
+        ...settings
+      });
+    },
+    [code, settings]
+  );
+
   return (
     <>
       <div
@@ -85,7 +55,7 @@ function ShortcutsRow({
         className={ld + " shortcuts_line"}
         style={{ gridArea: `${index + 2} / 2 / auto / 3` }}
       >
-        {((pd.settings as unknown) as Record<string, string>)[code]}
+        {((settings as unknown) as Record<string, string>)[code]}
       </div>
       <div
         className={ld + " shortcuts_line"}
@@ -94,21 +64,23 @@ function ShortcutsRow({
         <Button
           text="Edit"
           className={"button_simple button_edit"}
-          onClick={(): void => {
-            openKeyCombinationDialog(code);
-          }}
+          onClick={openKeyCombinationDialog}
         />
       </div>
+      {openDialog ? <EditKey closeCallback={closeKeyCombDialog} /> : <></>}
     </>
   );
 }
 
 export default function SectionShortcuts(): JSX.Element {
+  const enableKeyboardShortcuts = useSelector(
+    (state: AppState) => state.settings.enable_keyboard_shortcuts
+  );
   return (
     <>
-      <Checkbox
+      <Toggle
         text="Enable keyboard shortcuts"
-        value={pd.settings.enable_keyboard_shortcuts}
+        value={enableKeyboardShortcuts}
         callback={setKeyboardShortcuts}
       />
       <div className="settings_note" style={{ margin: "24px 16px 16px" }}>

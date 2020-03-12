@@ -1,52 +1,32 @@
-import anime from "animejs";
 import isValid from "date-fns/isValid";
 import React from "react";
+import { useDispatch } from "react-redux";
 import { TableState } from "react-table";
-import { EASING_DEFAULT } from "../shared/constants";
-import { createDiv } from "../shared/dom-fns";
+import { SUB_DECK } from "../shared/constants";
+import Deck from "../shared/deck";
 import pd from "../shared/PlayerData";
-import { InternalDeck } from "../types/Deck";
 import {
   getBoosterCountEstimate,
   getReadableFormat,
   get_deck_missing as getDeckMissing
 } from "../shared/util";
+import { InternalDeck } from "../types/Deck";
 import Aggregator, {
   AggregatorFilters,
   AggregatorStats,
   dateMaxValid
 } from "./aggregator";
+import {
+  dispatchAction,
+  SET_BACKGROUND_GRPID,
+  SET_SUB_NAV
+} from "./app/reducers";
 import DecksTable from "./components/decks/DecksTable";
 import { DecksData } from "./components/decks/types";
 import { isHidingArchived } from "./components/tables/filters";
-import {
-  useAggregatorAndSidePanel,
-  useLastScrollTop
-} from "./components/tables/hooks";
-import { openDeck } from "./deck-details";
-import mountReactComponent from "./mountReactComponent";
-import {
-  hideLoadingBars,
-  ipcSend,
-  makeResizable,
-  resetMainContainer
-} from "./renderer-util";
-import StatsPanel from "./stats-panel";
-
-function openDeckDetails(
-  id: string | number,
-  filters: AggregatorFilters
-): void {
-  const deck = pd.deck(id + "");
-  if (!deck) return;
-  openDeck(deck, { ...filters, deckId: id });
-  anime({
-    targets: ".moving_ux",
-    left: "-100%",
-    easing: EASING_DEFAULT,
-    duration: 350
-  });
-}
+import { useAggregatorData } from "./components/tables/hooks";
+import { ipcSend } from "./renderer-util";
+import uxMove from "./uxMove";
 
 function addTag(deckid: string, tag: string): void {
   const deck = pd.deck(deckid);
@@ -80,28 +60,6 @@ function saveTableMode(decksTableMode: string): void {
   ipcSend("save_user_settings", { decksTableMode, skipRefresh: true });
 }
 
-function updateStatsPanel(
-  container: HTMLElement,
-  aggregator: Aggregator
-): void {
-  container.innerHTML = "";
-  const statsPanel = new StatsPanel(
-    "decks_top",
-    aggregator,
-    pd.settings.right_panel_width,
-    true
-  );
-  const statsPanelDiv = statsPanel.render();
-  statsPanelDiv.style.display = "flex";
-  statsPanelDiv.style.flexDirection = "column";
-  statsPanelDiv.style.marginTop = "16px";
-  statsPanelDiv.style.padding = "12px";
-  const drag = createDiv(["dragger"]);
-  container.appendChild(drag);
-  makeResizable(drag, statsPanel.handleResize);
-  container.appendChild(statsPanelDiv);
-}
-
 function getDecksData(aggregator: Aggregator): DecksData[] {
   return pd.deckList.map(
     (deck: InternalDeck): DecksData => {
@@ -116,7 +74,7 @@ function getDecksData(aggregator: Aggregator): DecksData[] {
         aggregator.deckRecentStats[id] ?? Aggregator.getDefaultStats();
       const winrate100 = Math.round(deckStats.winrate * 100);
       // compute missing card metrics
-      const missingWildcards = getDeckMissing(deck);
+      const missingWildcards = getDeckMissing(new Deck(deck));
       const boosterCost = getBoosterCountEstimate(missingWildcards);
       // compute last touch metrics
       const lastUpdated = new Date(deck.lastUpdated ?? NaN);
@@ -149,73 +107,49 @@ function getTotalAggEvents(): string[] {
   return totalAgg.events;
 }
 
-export function DecksTab({
+export default function DecksTab({
   aggFiltersArg
 }: {
-  aggFiltersArg: AggregatorFilters;
+  aggFiltersArg?: AggregatorFilters;
 }): JSX.Element {
+  const dispatcher = useDispatch();
   const { decksTableMode, decksTableState } = pd.settings;
   const showArchived = !isHidingArchived(decksTableState);
-  const getDataAggFilters = (data: DecksData[]): AggregatorFilters => {
-    const deckId = data.map(deck => deck.id).filter(id => id) as string[];
-    return { deckId };
-  };
-  const {
-    aggFilters,
-    data,
-    filterDataCallback,
-    rightPanelRef,
-    setAggFilters,
-    sidePanelWidth
-  } = useAggregatorAndSidePanel({
+  const { aggFilters, data, setAggFilters } = useAggregatorData({
     aggFiltersArg,
     getData: getDecksData,
-    getDataAggFilters,
-    showArchived,
-    updateSidebarCallback: updateStatsPanel
+    showArchived
   });
   const openDeckCallback = React.useCallback(
-    (id: string | number): void => openDeckDetails(id, aggFilters),
-    [aggFilters]
+    (deck: InternalDeck): void => {
+      uxMove(-100);
+      dispatchAction(dispatcher, SET_BACKGROUND_GRPID, deck.deckTileId);
+      dispatchAction(dispatcher, SET_SUB_NAV, {
+        type: SUB_DECK,
+        id: deck.id,
+        data: null
+      });
+    },
+    [dispatcher]
   );
   const events = React.useMemo(getTotalAggEvents, []);
-  const [containerRef, onScroll] = useLastScrollTop();
-
   return (
-    <>
-      <div className={"wrapper_column"} ref={containerRef} onScroll={onScroll}>
-        <DecksTable
-          data={data}
-          aggFilters={aggFilters}
-          events={events}
-          cachedState={decksTableState}
-          cachedTableMode={decksTableMode}
-          setAggFiltersCallback={setAggFilters}
-          tableModeCallback={saveTableMode}
-          tableStateCallback={saveTableState}
-          filterDataCallback={filterDataCallback}
-          openDeckCallback={openDeckCallback}
-          archiveCallback={toggleDeckArchived}
-          addTagCallback={addTag}
-          editTagCallback={editTag}
-          deleteTagCallback={deleteTag}
-        />
-      </div>
-      <div
-        ref={rightPanelRef}
-        className={"wrapper_column sidebar_column_l"}
-        style={{
-          width: sidePanelWidth,
-          flex: `0 0 ${sidePanelWidth}`
-        }}
-      ></div>
-    </>
+    <div className="ux_item">
+      <DecksTable
+        data={data}
+        aggFilters={aggFilters}
+        events={events}
+        cachedState={decksTableState}
+        cachedTableMode={decksTableMode}
+        setAggFiltersCallback={setAggFilters}
+        tableModeCallback={saveTableMode}
+        tableStateCallback={saveTableState}
+        openDeckCallback={openDeckCallback}
+        archiveCallback={toggleDeckArchived}
+        addTagCallback={addTag}
+        editTagCallback={editTag}
+        deleteTagCallback={deleteTag}
+      />
+    </div>
   );
-}
-
-export function openDecksTab(aggFilters: AggregatorFilters = {}): void {
-  hideLoadingBars();
-  const mainDiv = resetMainContainer() as HTMLElement;
-  mainDiv.classList.add("flex_item");
-  mountReactComponent(<DecksTab aggFiltersArg={aggFilters} />, mainDiv);
 }

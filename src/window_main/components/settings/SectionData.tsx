@@ -2,13 +2,15 @@
 import React from "react";
 import { remote, shell } from "electron";
 const { dialog } = remote;
-import Checkbox from "../Checkbox";
+import Toggle from "../Toggle";
 import Input from "../Input";
 import pd from "../../../shared/PlayerData";
 import { ipcSend } from "../../renderer-util";
-import { WrappedReactSelect } from "../../../shared/ReactSelect";
+import ReactSelect from "../../../shared/ReactSelect";
 import { parse, isValid } from "date-fns";
 import Button from "../Button";
+import { useSelector } from "react-redux";
+import { AppState } from "../../app/appState";
 
 const LANGUAGES = [
   "en",
@@ -63,37 +65,6 @@ function firstPassCallback(checked: boolean): void {
   });
 }
 
-function arenaLogClick(logUriInput: HTMLInputElement): void {
-  // ignore clicks inside actual input field
-  if (document.activeElement === logUriInput) return;
-  const paths = dialog.showOpenDialog(remote.getCurrentWindow(), {
-    title: "Arena Log Location",
-    defaultPath: pd.settings.logUri,
-    buttonLabel: "Select",
-    filters: [
-      { name: "Text", extensions: ["txt", "text"] },
-      { name: "All Files", extensions: ["*"] }
-    ],
-    properties: ["openFile"]
-  });
-  if (paths && paths.length && paths[0]) {
-    logUriInput.focus();
-    logUriInput.value = paths[0];
-    logUriInput.blur();
-  }
-}
-
-function arenaLogCallback(value: string): void {
-  if (value === pd.settings.logUri) return;
-  if (
-    confirm("Changing the Arena log location requires a restart, are you sure?")
-  ) {
-    ipcSend("set_log", value);
-  } else {
-    value = pd.settings.logUri;
-  }
-}
-
 function localeCallback(value: string): void {
   if (value !== pd.settings.log_locale_format) {
     ipcSend("save_app_settings_norefresh", {
@@ -124,19 +95,43 @@ function backportClick(): void {
 }
 
 export default function SectionData(): JSX.Element {
-  const arenaLogRef = React.useRef<HTMLInputElement>(null);
+  const settings = useSelector((state: AppState) => state.settings);
 
-  const arenaLogClickHandle = (): void => {
-    if (arenaLogRef.current) {
-      arenaLogClick(arenaLogRef.current);
+  const arenaLogCallback = React.useCallback(
+    (value: string): void => {
+      if (value === settings.logUri) return;
+      if (
+        confirm(
+          "Changing the Arena log location requires a restart, are you sure?"
+        )
+      ) {
+        ipcSend("set_log", value);
+      }
+    },
+    [settings.logUri]
+  );
+
+  const openPathDialog = React.useCallback(() => {
+    const paths = dialog.showOpenDialog(remote.getCurrentWindow(), {
+      title: "Arena Log Location",
+      defaultPath: settings.logUri,
+      buttonLabel: "Select",
+      filters: [
+        { name: "Text", extensions: ["txt", "text"] },
+        { name: "All Files", extensions: ["*"] }
+      ],
+      properties: ["openFile"]
+    });
+    if (paths && paths.length && paths[0]) {
+      arenaLogCallback(paths[0]);
     }
-  };
+  }, [arenaLogCallback, settings.logUri]);
 
   let parsedOutput = <>auto-detection</>;
-  if (pd.settings.log_locale_format) {
+  if (settings.log_locale_format) {
     const testDate = parse(
       pd.last_log_timestamp,
-      pd.settings.log_locale_format,
+      settings.log_locale_format,
       new Date()
     );
     if (isValid(testDate) && !isNaN(testDate.getTime())) {
@@ -157,16 +152,15 @@ export default function SectionData(): JSX.Element {
 
   return (
     <>
-      <label className="but_container_label">
-        Arena Data
-        <WrappedReactSelect
-          style={{ width: "180px", marginLeft: "32px" }}
+      <div className="centered_setting_container">
+        <label>Arena Data </label>
+        <ReactSelect
           options={LANGUAGES}
-          current={pd.settings.metadata_lang}
+          current={settings.metadata_lang}
           optionFormatter={getLanguageName}
           callback={setCardsLanguage}
-        />
-      </label>
+        />{" "}
+      </div>
       <div className="settings_note">
         <i>
           <p>
@@ -176,20 +170,26 @@ export default function SectionData(): JSX.Element {
           <p>Card names when exporting will also be changed.</p>
         </i>
       </div>
-      <label className="but_container_label" onClick={arenaLogClickHandle}>
-        Arena Log:
-        <div className="open_button" />
-        <Input
-          ref={arenaLogRef}
-          contStyle={{ width: "70%" }}
-          callback={arenaLogCallback}
-          placeholder={pd.settings.logUri}
-          value={pd.settings.logUri}
-        />
-      </label>
-      <Checkbox
+      <div className="centered_setting_container">
+        <label>Arena Log:</label>
+        <div
+          style={{
+            display: "flex",
+            width: "-webkit-fill-available",
+            justifyContent: "flex-end"
+          }}
+        >
+          <div className="open_button" onClick={openPathDialog} />
+          <Input
+            callback={arenaLogCallback}
+            placeholder={settings.logUri}
+            value={settings.logUri}
+          />
+        </div>
+      </div>
+      <Toggle
         text="Read entire Arena log during launch"
-        value={!pd.settings.skip_firstpass}
+        value={!settings.skip_firstpass}
         callback={firstPassCallback}
       />
       <div style={{ paddingLeft: "35px" }} className="settings_note">
@@ -208,14 +208,14 @@ export default function SectionData(): JSX.Element {
           </p>
         </i>
       </div>
-      <label className="but_container_label">
-        Log Timestamp Format:
+      <div className="centered_setting_container">
+        <label>Log Timestamp Format:</label>
         <Input
           callback={localeCallback}
           placeholder={"default (auto)"}
-          value={pd.settings.log_locale_format}
+          value={settings.log_locale_format}
         />
-      </label>
+      </div>
       <div className="settings_note">
         <p>Parsed output: {parsedOutput}</p>
         <i>

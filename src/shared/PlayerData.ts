@@ -26,12 +26,13 @@ import {
   OVERLAY_LOG,
   OVERLAY_SEEN,
   RED,
-  WHITE
+  WHITE,
+  MAIN_HOME
 } from "./constants";
 import db from "./database";
 import { MergedSettings } from "../types/settings";
 
-const playerDataDefault = {
+export const playerDataDefault = {
   name: "",
   userName: "",
   arenaId: "",
@@ -82,11 +83,12 @@ const primaryBounds: Electron.Rectangle = remote
   ? remote.screen.getPrimaryDisplay().bounds
   : { width: 800, height: 600, x: 0, y: 0 };
 
-const defaultCfg = {
+export const defaultCfg = {
   windowBounds: { width: 800, height: 600, x: 0, y: 0 },
   cards: { cards_time: 0, cards_before: {}, cards: {} },
   cardsNew: {},
   settings: {
+    last_open_tab: MAIN_HOME,
     last_settings_section: 1,
     last_settings_overlay_section: 0,
     sound_priority: false,
@@ -105,7 +107,6 @@ const defaultCfg = {
     back_url: "",
     right_panel_width: 400,
     last_date_filter: DATE_LAST_30,
-    last_open_tab: -1,
     economyTableState: undefined,
     economyTableMode: ECONOMY_LIST_MODE,
     eventsTableState: undefined,

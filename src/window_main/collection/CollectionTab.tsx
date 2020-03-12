@@ -1,7 +1,6 @@
 import { remote } from "electron";
 import React from "react";
 import { TableState } from "react-table";
-import { addCardHover } from "../../shared/cardHover";
 import Colors from "../../shared/colors";
 import { DRAFT_RANKS } from "../../shared/constants";
 import db from "../../shared/database";
@@ -14,9 +13,10 @@ import {
 } from "../../shared/util";
 import CollectionTable from "../components/collection/CollectionTable";
 import { CardsData } from "../components/collection/types";
-import mountReactComponent from "../mountReactComponent";
-import { hideLoadingBars, ipcSend, resetMainContainer } from "../renderer-util";
+
+import { ipcSend } from "../renderer-util";
 import { CardCounts } from "../components/decks/types";
+import Deck from "../../shared/deck";
 
 const Menu = remote.Menu;
 const MenuItem = remote.MenuItem;
@@ -88,7 +88,7 @@ function getCollectionData(): CardsData[] {
   pd.deckList
     .filter(deck => deck && !deck.archived)
     .forEach(deck => {
-      const missing = getMissingCardCounts(deck);
+      const missing = getMissingCardCounts(new Deck(deck));
       Object.entries(missing).forEach(([grpid, count]) => {
         wantedCards[grpid] = Math.max(wantedCards[grpid] ?? 0, count);
       });
@@ -118,27 +118,21 @@ function getCollectionData(): CardsData[] {
     );
 }
 
-export function CollectionTab(): JSX.Element {
+export default function CollectionTab(): JSX.Element {
   const { collectionTableMode, collectionTableState } = pd.settings;
   const data = React.useMemo(() => getCollectionData(), []);
   return (
-    <CollectionTable
-      cachedState={collectionTableState}
-      cachedTableMode={collectionTableMode}
-      cardHoverCallback={addCardHover}
-      contextMenuCallback={addCardMenu}
-      data={data}
-      exportCallback={exportCards}
-      openCardCallback={openScryfallCard}
-      tableModeCallback={saveTableMode}
-      tableStateCallback={saveTableState}
-    />
+    <div className="ux_item">
+      <CollectionTable
+        cachedState={collectionTableState}
+        cachedTableMode={collectionTableMode}
+        contextMenuCallback={addCardMenu}
+        data={data}
+        exportCallback={exportCards}
+        openCardCallback={openScryfallCard}
+        tableModeCallback={saveTableMode}
+        tableStateCallback={saveTableState}
+      />
+    </div>
   );
-}
-
-export function openCollectionTab(): void {
-  hideLoadingBars();
-  const mainDiv = resetMainContainer() as HTMLElement;
-  mainDiv.classList.add("flex_item");
-  mountReactComponent(<CollectionTab />, mainDiv);
 }

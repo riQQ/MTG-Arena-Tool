@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import formatDistanceStrict from "date-fns/formatDistanceStrict";
 import { shell } from "electron";
-import React from "react";
-import ReactDOM from "react-dom";
 import { MatchPlayer } from "../types/currentMatch";
 import { CardObject, InternalDeck, v2cardsList } from "../types/Deck";
 import { InternalPlayer } from "../types/match";
@@ -24,9 +22,6 @@ import {
 } from "./constants";
 import db from "./database";
 import Deck from "./deck";
-import DeckManaCurve from "./DeckManaCurve";
-import DeckTypesStats from "./DeckTypesStats";
-import { createDiv } from "./dom-fns";
 import pd from "./PlayerData";
 
 const NO_IMG_URL = "../images/notfound.png";
@@ -38,14 +33,20 @@ export function getCardImage(
   if (card === undefined) {
     return NO_IMG_URL;
   }
-  const cardObj = typeof card == "number" ? db.card(card) : card;
+  const cardObj =
+    typeof card == "string"
+      ? db.card(parseInt(card))
+      : typeof card == "number"
+      ? db.card(card)
+      : card;
   try {
     const url = cardObj?.images[quality];
     if (url === undefined || url === "") throw "Undefined url";
     return "https://img.scryfall.com/cards" + cardObj?.images[quality];
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.log("Cant find card image: ", cardObj);
+    // console.error(e);
+    console.log("Cant find card image: ", cardObj, typeof cardObj);
     return NO_IMG_URL;
   }
 }
@@ -312,18 +313,24 @@ export function get_deck_colors(deck: InternalDeck): number[] {
 }
 
 export function get_wc_missing(
-  deck: InternalDeck,
+  deck: Deck,
   grpid: number,
   isSideboard?: boolean
 ): number {
   let mainQuantity = 0;
-  const mainMatches = deck.mainDeck.filter(card => card.id == grpid);
+  const mainMatches = deck
+    .getMainboard()
+    .get()
+    .filter(card => card.id == grpid);
   if (mainMatches.length) {
     mainQuantity = mainMatches[0].quantity;
   }
 
   let sideboardQuantity = 0;
-  const sideboardMatches = deck.sideboard.filter(card => card.id == grpid);
+  const sideboardMatches = deck
+    .getSideboard()
+    .get()
+    .filter(card => card.id == grpid);
   if (sideboardMatches.length) {
     sideboardQuantity = sideboardMatches[0].quantity;
   }
@@ -361,19 +368,19 @@ export function get_wc_missing(
   return Math.max(0, needed - copiesLeft);
 }
 
-export function getCardsMissingCount(
-  deck: InternalDeck,
-  grpid: number
-): number {
+export function getCardsMissingCount(deck: Deck, grpid: number): number {
   const mainMissing = get_wc_missing(deck, grpid, false);
   const sideboardMissing = get_wc_missing(deck, grpid, true);
   return mainMissing + sideboardMissing;
 }
 
-export function get_deck_missing(deck: InternalDeck): MissingWildcards {
+export function get_deck_missing(deck: Deck): MissingWildcards {
   const missing = { rare: 0, common: 0, uncommon: 0, mythic: 0 };
   const alreadySeenIds = new Set(); // prevents double counting cards across main/sideboard
-  const entireDeck = [...deck.mainDeck, ...deck.sideboard];
+  const entireDeck = [
+    ...deck.getMainboard().get(),
+    ...deck.getSideboard().get()
+  ];
 
   entireDeck.forEach(card => {
     const grpid = card.id;
@@ -391,10 +398,12 @@ export function get_deck_missing(deck: InternalDeck): MissingWildcards {
   return missing;
 }
 
-export function getMissingCardCounts(deck: InternalDeck): CardCounts {
+export function getMissingCardCounts(deck: Deck): CardCounts {
   const missingCards: CardCounts = {};
   const allCardIds = new Set(
-    [...deck.mainDeck, ...deck.sideboard].map(card => card.id)
+    [...deck.getMainboard().get(), ...deck.getSideboard().get()].map(
+      card => card.id
+    )
   );
   allCardIds.forEach(grpid => {
     const missing = getCardsMissingCount(deck, grpid);
@@ -640,18 +649,6 @@ export function add(a: number, b: number): number {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function objectClone(originalObject: unknown): any {
   return JSON.parse(JSON.stringify(originalObject));
-}
-
-export function deckManaCurve(deck: InternalDeck): HTMLDivElement {
-  const wrap = createDiv([]);
-  ReactDOM.render(<DeckManaCurve deck={new Deck(deck)} />, wrap);
-  return wrap;
-}
-
-export function deckTypesStats(deck: InternalDeck): HTMLDivElement {
-  const wrap = createDiv([]);
-  ReactDOM.render(<DeckTypesStats deck={new Deck(deck)} />, wrap);
-  return wrap;
 }
 
 // pass in playerData.constructed / limited / historic objects
