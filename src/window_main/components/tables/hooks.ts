@@ -1,9 +1,6 @@
 import _ from "lodash";
 import React from "react";
 import {
-  IdType,
-  Row,
-  SortByFn,
   TableInstance,
   TableState,
   useFilters,
@@ -51,20 +48,6 @@ export function useMultiSelectFilter<D>(
     [filterValue, onFilterChanged]
   );
   return [filterValue, onClickMultiFilter];
-}
-
-export function useEnumSort<D extends TableData>(
-  enums: readonly string[]
-): SortByFn<D> {
-  return React.useCallback(
-    (rowA: Row<D>, rowB: Row<D>, columnId: IdType<D>): 0 | 1 | -1 => {
-      const indexDiff =
-        enums.indexOf(rowA.values[columnId]) -
-        enums.indexOf(rowB.values[columnId]);
-      return indexDiff < 0 ? -1 : indexDiff > 0 ? 1 : 0;
-    },
-    [enums]
-  );
 }
 
 export function useBlurOnEnter(): [
@@ -208,10 +191,8 @@ export function useBaseReactTable<D extends TableData>({
     usePagination
   );
   const {
-    allColumns,
     headers,
     getTableProps,
-    rows,
     toggleSortBy,
     toggleHideColumn,
     setAllFilters,
@@ -228,6 +209,8 @@ export function useBaseReactTable<D extends TableData>({
     setPageSize,
     state
   } = table;
+  // It seems allComumns can be undefined on some cycles of the table hook
+  const allColumns = table.allColumns || [];
   const { filters, pageIndex, pageSize } = state;
 
   React.useEffect(() => {

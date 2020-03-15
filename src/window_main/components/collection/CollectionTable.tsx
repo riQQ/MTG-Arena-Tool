@@ -1,5 +1,5 @@
-import React from "react";
-import { Column, Filters, FilterValue } from "react-table";
+import React, { useMemo } from "react";
+import { Column, Filters, FilterValue, IdType, Row } from "react-table";
 import {
   COLLECTION_CARD_MODE,
   COLLECTION_CHART_MODE,
@@ -20,7 +20,7 @@ import {
   NumberRangeColumnFilter,
   TextBoxFilter
 } from "../tables/filters";
-import { useBaseReactTable, useEnumSort } from "../tables/hooks";
+import { useBaseReactTable } from "../tables/hooks";
 import PagingControls from "../tables/PagingControls";
 import TableHeaders from "../tables/TableHeaders";
 import { BaseTableProps } from "../tables/types";
@@ -50,6 +50,8 @@ import {
   CollectionTableControlsProps,
   CollectionTableProps
 } from "./types";
+import { useSelector } from "react-redux";
+import { AppState } from "../../app/appState";
 
 function isBoosterMathValid(filters: Filters<CardsData>): boolean {
   let hasCorrectBoosterFilter = false;
@@ -84,160 +86,205 @@ export default function CollectionTable({
   const [mythicDraftFactor, setMythicDraftFactor] = React.useState(0.14);
   const [boosterWinFactor, setBoosterWinFactor] = React.useState(1.2);
   const [futureBoosters, setFutureBoosters] = React.useState(0);
+  const cardSize = useSelector((state: AppState) => state.settings.cards_size);
+  const sortedSetCodes = useMemo(() => db.sortedSetCodes, []);
   React.useEffect(() => tableModeCallback(tableMode), [
     tableMode,
     tableModeCallback
   ]);
+
   const customFilterTypes = {
     inBoosters: inBoostersFilterFn,
     rarity: rarityFilterFn,
     set: setFilterFn
   };
-  const columns: Column<CardsData>[] = [
-    { id: "grpId", accessor: "id" },
-    { accessor: "id" },
-    { accessor: "dfc" },
-    { accessor: "dfcId" },
-    {
-      Header: "Name",
-      accessor: "name",
-      disableFilters: false,
-      filter: "fuzzyText",
-      Filter: TextBoxFilter,
-      Cell: ShortTextCell,
-      gridWidth: "210px",
-      defaultVisible: true
+
+  // Memoize the sort functions only once
+  const setSortType = React.useCallback(
+    (
+      rowA: Row<CardsData>,
+      rowB: Row<CardsData>,
+      columnId: IdType<CardsData>
+    ): 0 | 1 | -1 => {
+      const indexDiff =
+        sortedSetCodes.indexOf(rowA.values[columnId]) -
+        sortedSetCodes.indexOf(rowB.values[columnId]);
+      return indexDiff < 0 ? -1 : indexDiff > 0 ? 1 : 0;
     },
-    { accessor: "colors" },
-    {
-      Header: "Colors",
-      disableFilters: false,
-      accessor: "colorSortVal",
-      Filter: ColorColumnFilter,
-      filter: "colors",
-      Cell: ColorsCell,
-      gridWidth: "150px",
-      mayToggle: true,
-      defaultVisible: true
+    []
+  );
+
+  const rankSortType = React.useCallback(
+    (
+      rowA: Row<CardsData>,
+      rowB: Row<CardsData>,
+      columnId: IdType<CardsData>
+    ): 0 | 1 | -1 => {
+      const indexDiff =
+        DRAFT_RANKS.indexOf(rowA.values[columnId]) -
+        DRAFT_RANKS.indexOf(rowB.values[columnId]);
+      return indexDiff < 0 ? -1 : indexDiff > 0 ? 1 : 0;
     },
-    {
-      Header: "CMC",
-      accessor: "cmc",
-      Cell: MetricCell,
-      disableFilters: false,
-      Filter: NumberRangeColumnFilter,
-      filter: "between",
-      mayToggle: true,
-      defaultVisible: true
+    []
+  );
+
+  const raritySortType = React.useCallback(
+    (
+      rowA: Row<CardsData>,
+      rowB: Row<CardsData>,
+      columnId: IdType<CardsData>
+    ): 0 | 1 | -1 => {
+      const orderedRarity = ["land", "common", "uncommon", "rare", "mythic"];
+      const indexDiff =
+        orderedRarity.indexOf(rowA.values[columnId]) -
+        orderedRarity.indexOf(rowB.values[columnId]);
+      return indexDiff < 0 ? -1 : indexDiff > 0 ? 1 : 0;
     },
-    {
-      Header: "Type",
-      accessor: "type",
-      disableFilters: false,
-      filter: "fuzzyText",
-      Filter: TextBoxFilter,
-      Cell: TypeCell,
-      gridWidth: "230px",
-      mayToggle: true
-    },
-    {
-      Header: "Set",
-      accessor: "set",
-      disableFilters: false,
-      filter: "set",
-      Filter: SetColumnFilter,
-      sortType: useEnumSort<CardsData>(db.sortedSetCodes),
-      sortInverted: true,
-      sortDescFirst: true,
-      Cell: SetCell,
-      gridWidth: "230px",
-      mayToggle: true,
-      defaultVisible: true
-    },
-    {
-      Header: "Rarity",
-      disableFilters: false,
-      accessor: "rarity",
-      Filter: RarityColumnFilter,
-      filter: "rarity",
-      sortType: useEnumSort<CardsData>([
-        "land", // needs custom order, does not use constants.CARD_RARITIES
-        "common",
-        "uncommon",
-        "rare",
-        "mythic"
-      ]),
-      sortDescFirst: true,
-      Cell: RarityCell,
-      mayToggle: true,
-      defaultVisible: true
-    },
-    {
-      Header: "Owned",
-      accessor: "owned",
-      Cell: MetricCell,
-      disableFilters: false,
-      Filter: NumberRangeColumnFilter,
-      filter: "between",
-      mayToggle: true,
-      defaultVisible: true
-    },
-    {
-      Header: "Acquired",
-      accessor: "acquired",
-      Cell: MetricCell,
-      disableFilters: false,
-      Filter: NumberRangeColumnFilter,
-      filter: "between",
-      mayToggle: true
-    },
-    {
-      Header: "Wanted",
-      accessor: "wanted",
-      Cell: MetricCell,
-      disableFilters: false,
-      Filter: NumberRangeColumnFilter,
-      filter: "between",
-      mayToggle: true
-    },
-    {
-      Header: "Artist",
-      accessor: "artist",
-      disableFilters: false,
-      filter: "fuzzyText",
-      Filter: TextBoxFilter,
-      Cell: ShortTextCell,
-      gridWidth: "200px",
-      mayToggle: true
-    },
-    { accessor: "collectible" },
-    { accessor: "craftable" },
-    {
-      Header: InBoostersHeader,
-      accessor: "booster",
-      disableFilters: false,
-      filter: "inBoosters",
-      Filter: InBoostersColumnFilter,
-      Cell: InBoostersCell,
-      gridWidth: "100px",
-      mayToggle: true
-    },
-    {
-      Header: "Rank",
-      accessor: "rankSortVal",
-      disableFilters: false,
-      filter: "fuzzyText",
-      Filter: TextBoxFilter,
-      sortType: useEnumSort<CardsData>(DRAFT_RANKS),
-      sortDescFirst: true,
-      gridWidth: "100px",
-      mayToggle: true
-    },
-    { accessor: "rank" },
-    { accessor: "rank_controversy" },
-    { accessor: "images" },
-    { accessor: "reprints" }
-  ];
+    []
+  );
+
+  const columns: Column<CardsData>[] = useMemo(
+    () => [
+      { id: "grpId", accessor: "id" },
+      { accessor: "id" },
+      { accessor: "dfc" },
+      { accessor: "dfcId" },
+      {
+        Header: "Name",
+        accessor: "name",
+        disableFilters: false,
+        filter: "fuzzyText",
+        Filter: TextBoxFilter,
+        Cell: ShortTextCell,
+        gridWidth: "210px",
+        defaultVisible: true
+      },
+      { accessor: "colors" },
+      {
+        Header: "Colors",
+        disableFilters: false,
+        accessor: "colorSortVal",
+        Filter: ColorColumnFilter,
+        filter: "colors",
+        Cell: ColorsCell,
+        gridWidth: "150px",
+        mayToggle: true,
+        defaultVisible: true
+      },
+      {
+        Header: "CMC",
+        accessor: "cmc",
+        Cell: MetricCell,
+        disableFilters: false,
+        Filter: NumberRangeColumnFilter,
+        filter: "between",
+        mayToggle: true,
+        defaultVisible: true
+      },
+      {
+        Header: "Type",
+        accessor: "type",
+        disableFilters: false,
+        filter: "fuzzyText",
+        Filter: TextBoxFilter,
+        Cell: TypeCell,
+        gridWidth: "230px",
+        mayToggle: true
+      },
+      {
+        Header: "Set",
+        accessor: "set",
+        disableFilters: false,
+        filter: "set",
+        Filter: SetColumnFilter,
+        sortType: setSortType,
+        sortInverted: true,
+        sortDescFirst: true,
+        Cell: SetCell,
+        gridWidth: "230px",
+        mayToggle: true,
+        defaultVisible: true
+      },
+      {
+        Header: "Rarity",
+        disableFilters: false,
+        accessor: "rarity",
+        Filter: RarityColumnFilter,
+        filter: "rarity",
+        sortType: raritySortType,
+        sortDescFirst: true,
+        Cell: RarityCell,
+        mayToggle: true,
+        defaultVisible: true
+      },
+      {
+        Header: "Owned",
+        accessor: "owned",
+        Cell: MetricCell,
+        disableFilters: false,
+        Filter: NumberRangeColumnFilter,
+        filter: "between",
+        mayToggle: true,
+        defaultVisible: true
+      },
+      {
+        Header: "Acquired",
+        accessor: "acquired",
+        Cell: MetricCell,
+        disableFilters: false,
+        Filter: NumberRangeColumnFilter,
+        filter: "between",
+        mayToggle: true
+      },
+      {
+        Header: "Wanted",
+        accessor: "wanted",
+        Cell: MetricCell,
+        disableFilters: false,
+        Filter: NumberRangeColumnFilter,
+        filter: "between",
+        mayToggle: true
+      },
+      {
+        Header: "Artist",
+        accessor: "artist",
+        disableFilters: false,
+        filter: "fuzzyText",
+        Filter: TextBoxFilter,
+        Cell: ShortTextCell,
+        gridWidth: "200px",
+        mayToggle: true
+      },
+      { accessor: "collectible" },
+      { accessor: "craftable" },
+      {
+        Header: InBoostersHeader,
+        accessor: "booster",
+        disableFilters: false,
+        filter: "inBoosters",
+        Filter: InBoostersColumnFilter,
+        Cell: InBoostersCell,
+        gridWidth: "100px",
+        mayToggle: true
+      },
+      {
+        Header: "Rank",
+        accessor: "rankSortVal",
+        disableFilters: false,
+        filter: "fuzzyText",
+        Filter: TextBoxFilter,
+        sortType: rankSortType,
+        sortDescFirst: true,
+        gridWidth: "100px",
+        mayToggle: true
+      },
+      { accessor: "rank" },
+      { accessor: "rank_controversy" },
+      { accessor: "images" },
+      { accessor: "reprints" }
+    ],
+    [rankSortType, raritySortType, setSortType]
+  );
   const tableProps: BaseTableProps<CardsData> = {
     cachedState,
     columns,
@@ -249,7 +296,7 @@ export default function CollectionTable({
           id: "booster",
           value: {
             true: true,
-            false: false
+            false: true
           }
         }
       ],
@@ -312,6 +359,16 @@ export default function CollectionTable({
       />
     ) : (
       <div
+        style={
+          isTableMode
+            ? {}
+            : {
+                display: "grid",
+                gridTemplateColumns: `repeat(auto-fit, minmax(${100 +
+                  cardSize * 15 +
+                  12}px, 1fr))`
+              }
+        }
         className={
           isTableMode ? "react_table_body" : "react_table_body_no_adjust"
         }
