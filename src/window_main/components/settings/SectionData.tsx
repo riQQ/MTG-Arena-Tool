@@ -2,15 +2,15 @@
 import React from "react";
 import { remote, shell } from "electron";
 const { dialog } = remote;
-import Toggle from "../Toggle";
-import Input from "../Input";
+import Toggle from "../misc/Toggle";
+import Input from "../misc/Input";
 import pd from "../../../shared/PlayerData";
 import { ipcSend } from "../../renderer-util";
 import ReactSelect from "../../../shared/ReactSelect";
 import { parse, isValid } from "date-fns";
-import Button from "../Button";
+import Button from "../misc/Button";
 import { useSelector } from "react-redux";
-import { AppState } from "../../app/appState";
+import { AppState } from "../../../shared/redux/appState";
 
 const LANGUAGES = [
   "en",

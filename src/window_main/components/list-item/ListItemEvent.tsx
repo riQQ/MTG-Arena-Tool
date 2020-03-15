@@ -1,7 +1,7 @@
 import React from "react";
 import { TableViewRowProps } from "../tables/types";
 import { EventTableData } from "../events/types";
-import ManaCost from "../ManaCost";
+import ManaCost from "../misc/ManaCost";
 import db from "../../../shared/database";
 import pd from "../../../shared/PlayerData";
 
@@ -18,14 +18,14 @@ import ListItemDraft from "./ListItemDraft";
 import { DEFAULT_TILE, SUB_MATCH, SUB_DRAFT } from "../../../shared/constants";
 import { getEventWinLossClass, toggleArchived } from "../../renderer-util";
 import { DbCardData } from "../../../types/Metadata";
-import RoundCard from "../RoundCard";
+import RoundCard from "../misc/RoundCard";
 import { compareDesc } from "date-fns";
 import { useDispatch } from "react-redux";
 import {
   dispatchAction,
   SET_SUB_NAV,
   SET_BACKGROUND_GRPID
-} from "../../app/reducers";
+} from "../../../shared/redux/reducers";
 import { InternalMatch } from "../../../types/match";
 import uxMove from "../../uxMove";
 

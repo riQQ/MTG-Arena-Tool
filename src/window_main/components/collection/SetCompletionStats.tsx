@@ -6,14 +6,14 @@ import {
   estimateBoosterRares,
   SetStats,
   chanceNotWildCard
-} from "../../collection/collectionStats";
+} from "./collectionStats";
 import {
   BoosterSymbol,
   MetricText,
   RaritySymbol,
   TicketSymbol,
   CalendarSymbol
-} from "../display";
+} from "../misc/display";
 import { OwnershipSymbol } from "../../../shared/OwnershipStars";
 
 export function SetCompletionStats({

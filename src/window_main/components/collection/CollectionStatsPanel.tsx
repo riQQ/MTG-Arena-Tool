@@ -8,15 +8,15 @@ import {
   CollectionStats,
   FULL_SETS,
   SINGLETONS
-} from "../../collection/collectionStats";
+} from "./collectionStats";
 import { formatNumber } from "../../renderer-util";
 import {
   BoosterSymbol,
   CalendarSymbol,
   MediumTextButton,
   RaritySymbol
-} from "../display";
-import Input from "../Input";
+} from "../misc/display";
+import Input from "../misc/Input";
 import CompletionProgressBar, {
   SetCompletionBar
 } from "./CompletionProgressBar";

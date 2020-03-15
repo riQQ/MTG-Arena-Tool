@@ -1,21 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import fs from "fs";
 import path from "path";
 import { InternalMatch, InternalPlayer } from "../../../types/match";
 import pd from "../../../shared/PlayerData";
-import ShareButton from "../ShareButton";
-import ManaCost from "../ManaCost";
+import ShareButton from "../misc/ShareButton";
+import ManaCost from "../misc/ManaCost";
 import Deck from "../../../shared/deck";
 import { actionLogDir, ipcSend } from "../../renderer-util";
-import Button from "../Button";
-import DeckList from "../DeckList";
-import RankIcon from "../RankIcon";
+import Button from "../misc/Button";
+import DeckList from "../misc/DeckList";
+import RankIcon from "../misc/RankIcon";
 import db from "../../../shared/database";
-import CardList from "../CardList";
+import CardList from "../misc/CardList";
 import CardsList from "../../../shared/cardsList";
 import ActionLog from "./ActionLog";
 import uxMove from "../../uxMove";
-import { dispatchAction, SET_BACKGROUND_GRPID } from "../../app/reducers";
+import {
+  dispatchAction,
+  SET_BACKGROUND_GRPID
+} from "../../../shared/redux/reducers";
 import { useDispatch } from "react-redux";
 
 interface MatchViewProps {

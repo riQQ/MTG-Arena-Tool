@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import React from "react";
-import Toggle from "../Toggle";
+import Toggle from "../misc/Toggle";
 import { ipcSend } from "../../renderer-util";
-import Button from "../Button";
+import Button from "../misc/Button";
 import { useSelector } from "react-redux";
-import { AppState } from "../../app/appState";
+import { AppState } from "../../../shared/redux/appState";
 
 function clickAnonExplore(value: boolean): void {
   ipcSend("save_user_settings", { anon_explore: value });

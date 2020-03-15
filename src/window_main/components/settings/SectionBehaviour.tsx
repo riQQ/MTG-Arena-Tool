@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import React from "react";
-import Toggle from "../Toggle";
-import Input from "../Input";
+import Toggle from "../misc/Toggle";
+import Input from "../misc/Input";
 import { ipcSend } from "../../renderer-util";
 import { useSelector } from "react-redux";
-import { AppState } from "../../app/appState";
+import { AppState } from "../../../shared/redux/appState";
 
 function clickBetaChannel(value: boolean): void {
   ipcSend("save_app_settings_norefresh", {

@@ -3,11 +3,11 @@ import React, { useState, useCallback } from "react";
 import { remote } from "electron";
 import { ipcSend } from "../../renderer-util";
 import { SHORTCUT_NAMES } from "../../../shared/constants";
-import Toggle from "../Toggle";
-import Button from "../Button";
+import Toggle from "../misc/Toggle";
+import Button from "../misc/Button";
 import EditKey from "../popups/EditKey";
 import { useSelector } from "react-redux";
-import { AppState } from "../../app/appState";
+import { AppState } from "../../../shared/redux/appState";
 
 function setKeyboardShortcuts(checked: boolean): void {
   ipcSend("save_user_settings", {

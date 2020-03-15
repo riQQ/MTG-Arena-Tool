@@ -9,11 +9,8 @@ import {
 } from "../../../shared/constants";
 import db from "../../../shared/database";
 import pd from "../../../shared/PlayerData";
-import {
-  ALL_CARDS,
-  getCollectionStats
-} from "../../collection/collectionStats";
-import ResizableDragger from "../ResizableDragger";
+import { ALL_CARDS, getCollectionStats } from "./collectionStats";
+import ResizableDragger from "../misc/ResizableDragger";
 import { ColorsCell, MetricCell, ShortTextCell } from "../tables/cells";
 import {
   ColorColumnFilter,
@@ -51,7 +48,7 @@ import {
   CollectionTableProps
 } from "./types";
 import { useSelector } from "react-redux";
-import { AppState } from "../../app/appState";
+import { AppState } from "../../../shared/redux/appState";
 
 function isBoosterMathValid(filters: Filters<CardsData>): boolean {
   let hasCorrectBoosterFilter = false;
@@ -111,7 +108,7 @@ export default function CollectionTable({
         sortedSetCodes.indexOf(rowB.values[columnId]);
       return indexDiff < 0 ? -1 : indexDiff > 0 ? 1 : 0;
     },
-    []
+    [sortedSetCodes]
   );
 
   const rankSortType = React.useCallback(
