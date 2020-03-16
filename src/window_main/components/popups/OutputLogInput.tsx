@@ -2,6 +2,7 @@ import React, { useState, useCallback, ChangeEvent, useEffect } from "react";
 import { remote } from "electron";
 const { dialog } = remote;
 import pd from "../../../shared/PlayerData";
+import Button from "../misc/Button";
 
 interface OutputLogInputProps {
   closeCallback?: (log: string) => void;
@@ -88,6 +89,7 @@ export default function OutputLogInput(
             onClick={openPathDialog}
           />
         </div>
+        <Button text="Ok" onClick={handleClose} />
       </div>
     </div>
   );
