@@ -219,7 +219,9 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
           newFilters.splice(index, 0, "%%Archived");
         }
       });
-      newFilters.splice(0, 0, "%%Active");
+      if (prevFilters.filterType === "Events") {
+        newFilters.splice(0, 0, "%%Active");
+      }
       setEventFilters(newFilters);
       return newFilters;
     },
