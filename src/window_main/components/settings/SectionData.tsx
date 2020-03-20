@@ -60,7 +60,7 @@ function setCardsLanguage(filter: string): void {
 
 function firstPassCallback(checked: boolean): void {
   ipcSend("save_user_settings", {
-    skip_firstpass: checked,
+    skip_firstpass: !checked,
     skipRefresh: true
   });
 }
