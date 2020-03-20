@@ -1,4 +1,5 @@
 import { combineReducers } from "redux";
+import { createSlice } from "@reduxjs/toolkit";
 import { defaultState } from "./appState";
 import { WildcardsChange } from "../../window_main/tabs/HomeTab";
 import { MergedSettings } from "../../types/settings";
@@ -8,12 +9,7 @@ export const SET_BACKGROUND_GRPID = "SET_BACKGROUND_GRPID";
 export const SET_BACKGROUND_COLOR = "SET_BACKGROUND_COLOR";
 export const SET_SETTINGS = "SET_SETTINGS";
 export const SET_TOP_ARTIST = "SET_TOP_ARTIST";
-export const SET_HOVER_IN = "SET_HOVER_IN";
-export const SET_HOVER_OUT = "SET_HOVER_OUT";
-export const SET_HOVER_SIZE = "SET_HOVER_SIZE";
 export const SET_OFFLINE = "SET_OFFLINE";
-export const SET_LOADING = "SET_LOADING";
-export const SET_TOP_NAV = "SET_TOP_NAV";
 export const SET_SUB_NAV = "SET_SUB_NAV";
 export const SET_LOGIN_STATE = "SET_LOGIN_STATE";
 export const SET_LOGIN_FORM = "SET_LOGIN_FORM";
@@ -24,15 +20,11 @@ export const SET_CAN_LOGIN = "SET_CAN_LOGIN";
 export const SET_HOME_DATA = "SET_HOME_DATA";
 export const SET_POPUP = "SET_POPUP";
 export const SET_PATREON = "SET_PATREON";
-export const SET_EXPLORE_DATA = "SET_EXPLORE_DATA";
-export const SET_EXPLORE_FILTERS = "SET_EXPLORE_FILTERS";
-export const SET_EXPLORE_FILTERS_SKIP = "SET_EXPLORE_FILTERS_SKIP";
 export const SET_UPDATE_STATE = "SET_UPDATE_STATE";
 export const SET_NO_LOG = "SET_NO_LOG";
 export const SET_SHARE_DIALOG = "SET_SHARE_DIALOG";
 export const SET_SHARE_DIALOG_URL = "SET_SHARE_DIALOG_URL";
 export const SET_SHARE_DIALOG_OPEN = "SET_SHARE_DIALOG_OPEN";
-export const SET_ACTIVE_EVENTS = "SET_ACTIVE_EVENTS";
 export const SET_ANY = "SET_ANY";
 
 export const LOGIN_AUTH = 1;
@@ -96,31 +88,22 @@ export interface HoverState {
   size: number;
 }
 
-const hover = (
-  state: HoverState = defaultState.hover,
-  action: Action
-): HoverState => {
-  switch (action.type) {
-    case SET_HOVER_IN:
-      return {
-        ...state,
-        grpId: action.value,
-        opacity: 1
-      };
-    case SET_HOVER_OUT:
-      return {
-        ...state,
-        opacity: 0
-      };
-    case SET_HOVER_SIZE:
-      return {
-        ...state,
-        size: action.value
-      };
-    default:
-      return state;
+export const hoverSlice = createSlice({
+  name: "hover",
+  initialState: defaultState.hover,
+  reducers: {
+    setHoverIn: (state, action): void => {
+      state.grpId = action.payload;
+      state.opacity = 1;
+    },
+    setHoverOut: (state): void => {
+      state.opacity = 0;
+    },
+    setHoverSize: (state, action): void => {
+      state.size = action.payload;
+    }
   }
-};
+});
 
 const offline = (
   state: boolean = defaultState.offline,
@@ -134,29 +117,21 @@ const offline = (
   }
 };
 
-const loading = (
-  state: boolean = defaultState.loading,
-  action: Action
-): boolean => {
-  switch (action.type) {
-    case SET_LOADING:
-      return action.value;
-    default:
-      return state;
+export const loadingSlice = createSlice({
+  name: "loading",
+  initialState: defaultState.loading,
+  reducers: {
+    setLoading: (state, action): boolean => action.payload
   }
-};
+});
 
-const topNav = (
-  state: number = defaultState.topNav,
-  action: Action
-): number => {
-  switch (action.type) {
-    case SET_TOP_NAV:
-      return action.value;
-    default:
-      return state;
+export const topNavSlice = createSlice({
+  name: "topNav",
+  initialState: defaultState.topNav,
+  reducers: {
+    setTopNav: (state, action): number => action.payload
   }
-};
+});
 
 export interface SubNavState {
   type: number;
@@ -273,36 +248,40 @@ const patreon = (
   }
 };
 
-const explore = (
-  state: any = defaultState.exploreData,
-  action: Action
-): any => {
-  switch (action.type) {
-    case SET_EXPLORE_DATA:
-      if (action.value.skip == 0) return action.value;
-      else
-        return {
-          ...action.value,
-          result: [...state.result, ...action.value.result]
-        };
-    default:
-      return state;
+export const exploreSlice = createSlice({
+  name: "explore",
+  initialState: defaultState.explore,
+  reducers: {
+    setExploreData: (state, action): void => {
+      const isSameResultType =
+        state.data.results_type === action.payload.results_type;
+      const isSubsequentResult = action.payload.skip > state.data.skip;
+      if (isSameResultType && isSubsequentResult) {
+        // when possible, extend prevous data
+        const result = state.data.result.concat(action.payload.result);
+        const resultsNumber =
+          state.data.results_number + action.payload.results_number;
+        action.payload.result = result;
+        action.payload.results_number = resultsNumber;
+        state.data = action.payload;
+      } else if (action.payload.results_number === 0) {
+        // query has no future results
+        state.data.results_number = -1;
+      } else {
+        state.data = action.payload;
+      }
+    },
+    setExploreFilters: (state, action): void => {
+      state.filters = action.payload;
+    },
+    setExploreFiltersSkip: (state, action): void => {
+      state.filters.filterSkip = action.payload;
+    },
+    setActiveEvents: (state, action): void => {
+      state.activeEvents.push(...action.payload);
+    }
   }
-};
-
-const exploreFilters = (
-  state: any = defaultState.exploreFilters,
-  action: Action
-): any => {
-  switch (action.type) {
-    case SET_EXPLORE_FILTERS:
-      return action.value;
-    case SET_EXPLORE_FILTERS_SKIP:
-      return { ...state, filterSkip: action.value };
-    default:
-      return state;
-  }
-};
+});
 
 const updateState = (
   state: string = defaultState.updateState,
@@ -351,39 +330,25 @@ const shareDialog = (
   }
 };
 
-const activeEvents = (
-  state: string[] = defaultState.activeEvents,
-  action: Action
-): string[] => {
-  switch (action.type) {
-    case SET_ACTIVE_EVENTS:
-      return { ...state, ...action.value };
-    default:
-      return state;
-  }
-};
-
 export default combineReducers({
   backgroundGrpId: backgroundGrpId,
   settings: settings,
   topArtist: topArtist,
-  hover: hover,
+  hover: hoverSlice.reducer,
   offline: offline,
-  loading: loading,
+  loading: loadingSlice.reducer,
   loginState: loginState,
-  topNav: topNav,
+  topNav: topNavSlice.reducer,
   subNav: subNav,
   loginForm: loginForm,
   canLogin: canLogin,
   homeData: homeData,
   popup: popup,
   patreon: patreon,
-  exploreData: explore,
-  exploreFilters: exploreFilters,
+  explore: exploreSlice.reducer,
   updateState: updateState,
   noLog: noLog,
-  shareDialog: shareDialog,
-  activeEvents: activeEvents
+  shareDialog: shareDialog
 });
 
 export function dispatchAction(

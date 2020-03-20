@@ -3,10 +3,10 @@ import { ipcSend } from "../rendererUtil";
 import { useDispatch, useSelector } from "react-redux";
 import {
   dispatchAction,
-  SET_LOADING,
-  SET_EXPLORE_FILTERS,
+  exploreSlice,
+  SET_BACKGROUND_GRPID,
   SET_SUB_NAV,
-  SET_BACKGROUND_GRPID
+  loadingSlice
 } from "../../shared/redux/reducers";
 import ReactSelect from "../../shared/ReactSelect";
 import Button from "../components/misc/Button";
@@ -25,7 +25,7 @@ export interface ExploreQuery {
   filterWCM: string;
   onlyOwned: boolean;
   filterType: string;
-  filterEvent: string | null;
+  filterEvent: string;
   filterSort: string;
   filterSortDir: -1 | 1;
   filteredMana: number[];
@@ -36,19 +36,24 @@ export interface ExploreQuery {
 export default function ExploreTab(): JSX.Element {
   const dispatcher = useDispatch();
   const loading = useSelector((state: AppState) => state.loading);
-  const exploreData = useSelector((state: AppState) => state.exploreData);
-  const exploreFilters = useSelector((state: AppState) => state.exploreFilters);
+  const exploreData = useSelector((state: AppState) => state.explore.data);
+  const exploreFilters = useSelector(
+    (state: AppState) => state.explore.filters
+  );
 
   const [queryFilters, setQueryFilters] = useState(exploreFilters);
   useEffect(() => setQueryFilters(exploreFilters), [exploreFilters]);
+  const { setExploreFilters } = exploreSlice.actions;
 
   const queryExplore = useCallback(
     (filters: ExploreQuery) => {
+      const { setLoading } = loadingSlice.actions;
+
       ipcSend("request_explore", filters);
-      dispatchAction(dispatcher, SET_LOADING, true);
-      dispatchAction(dispatcher, SET_EXPLORE_FILTERS, filters);
+      dispatcher(setLoading(true));
+      dispatcher(setExploreFilters(filters));
     },
-    [dispatcher]
+    [dispatcher, setExploreFilters]
   );
 
   const newQuery = useCallback(() => {
@@ -84,10 +89,10 @@ export default function ExploreTab(): JSX.Element {
   );
 
   useEffect(() => {
-    if (!loading && !exploreData.result) {
+    if (!loading && exploreData.results_number === 0) {
       newQuery(); // no data and no query in flight, autolaunch
     }
-  }, [exploreData, loading, newQuery]);
+  }, [exploreData.results_number, loading, newQuery]);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const onScroll = React.useCallback(() => {
@@ -96,11 +101,15 @@ export default function ExploreTab(): JSX.Element {
       const desiredHeight = Math.round(
         container.scrollTop + container.offsetHeight
       );
-      if (desiredHeight >= container.scrollHeight && !loading) {
+      if (
+        desiredHeight >= container.scrollHeight &&
+        !loading &&
+        exploreData.results_number !== -1
+      ) {
         scrollQuery();
       }
     }
-  }, [loading, scrollQuery]);
+  }, [exploreData.results_number, loading, scrollQuery]);
 
   return (
     <div ref={containerRef} onScroll={onScroll} className="ux_item">
@@ -150,10 +159,13 @@ interface ExploreFiltersProps {
 
 function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
   const { doSearch } = props;
-  const filters = useSelector((state: AppState) => state.exploreFilters);
-  const activeEvents = useSelector((state: AppState) => state.activeEvents);
+  const filters = useSelector((state: AppState) => state.explore.filters);
+  const activeEvents = useSelector(
+    (state: AppState) => state.explore.activeEvents
+  );
   const [eventFilters, setEventFilters] = useState(["Ladder"]);
   const dispatcher = useDispatch();
+  const { setExploreFilters } = exploreSlice.actions;
 
   const typeFilter = ["Events", "Ranked Constructed", "Ranked Draft"];
   const sortFilters = ["By Date", "By Wins", "By Winrate", "By Player"];
@@ -161,9 +173,9 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
 
   const updateFilters = useCallback(
     (filters: ExploreQuery): void => {
-      dispatchAction(dispatcher, SET_EXPLORE_FILTERS, filters);
+      dispatcher(setExploreFilters(filters));
     },
-    [dispatcher]
+    [dispatcher, setExploreFilters]
   );
 
   const setManaFilter = useCallback(
@@ -188,15 +200,12 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
 
   const getFilterEvents = useCallback(
     (prevFilters: ExploreQuery = filters): string[] => {
-      // activeEvents is not really iterable? probably because
-      // of how its read from the logs initially.
-      const active = Object.values(activeEvents) || activeEvents;
       let newFilters: string[] = [];
       let sep = true;
       if (prevFilters.filterType === "Events") {
         sep = false;
         newFilters = db.eventIds
-          .concat(active)
+          .concat(activeEvents)
           .filter(item => item && !db.single_match_events.includes(item));
 
         newFilters = [...new Set(newFilters)];
@@ -211,7 +220,7 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
         return 0;
       });
       newFilters.forEach((item, index: number) => {
-        if (active.includes(item)) {
+        if (activeEvents.includes(item)) {
           newFilters.splice(newFilters.indexOf(item), 1);
           newFilters.unshift(item);
         } else if (!sep) {
@@ -248,7 +257,7 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
         <ReactSelect
           options={eventFilters}
           key={filters.filterType}
-          current={eventFilters[1]}
+          current={filters.filterEvent}
           optionFormatter={getEventPrettyName}
           callback={(filter: string): void =>
             updateFilters({ ...filters, filterEvent: filter })
