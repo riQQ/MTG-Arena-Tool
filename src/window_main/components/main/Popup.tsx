@@ -1,13 +1,15 @@
 import React from "react";
 import { timestamp } from "../../../shared/util";
-import { AppState } from "../../../shared/redux/appState";
+import { AppState } from "../../../shared/redux/reducers";
 import { useSelector } from "react-redux";
 
 export default function Popup(): JSX.Element {
   const [opacity, setOpacity] = React.useState(0);
-  const time = useSelector((state: AppState) => state.popup.time);
-  const text = useSelector((state: AppState) => state.popup.text);
-  const duration = useSelector((state: AppState) => state.popup.duration);
+  const time = useSelector((state: AppState) => state.renderer.popup.time);
+  const text = useSelector((state: AppState) => state.renderer.popup.text);
+  const duration = useSelector(
+    (state: AppState) => state.renderer.popup.duration
+  );
 
   React.useEffect(() => {
     const diff = time - timestamp();

@@ -136,11 +136,14 @@ export default function OverlayWindowlet(
   const backgroundColor = settings.overlay_back_color;
 
   const bgStyle: React.CSSProperties = {
+    left: "0px",
+    right: "0px",
     opacity: overlaySettings.alpha_back.toString()
   };
 
   // This needs its own setting, like a checkbox or something
-  const solidBg: boolean = backgroundColor !== "rgba(0,0,0,0)";
+  const solidBg: boolean =
+    backgroundColor !== "rgba(0,0,0,0)" && backgroundColor !== "transparent";
   if (!solidBg) {
     bgStyle.backgroundImage = backgroundImage;
   } else {

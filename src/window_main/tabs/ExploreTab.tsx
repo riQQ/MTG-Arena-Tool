@@ -1,41 +1,24 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ipcSend } from "../rendererUtil";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  dispatchAction,
-  exploreSlice,
-  SET_BACKGROUND_GRPID,
-  SET_SUB_NAV,
-  loadingSlice
-} from "../../shared/redux/reducers";
-import ReactSelect from "../../shared/ReactSelect";
-import Button from "../components/misc/Button";
+import { COLORS_LONG, RANKS, SUB_DECK } from "../../shared/constants";
 import db from "../../shared/database";
+import ReactSelect from "../../shared/ReactSelect";
+import {
+  AppState,
+  ExploreQuery,
+  exploreSlice,
+  rendererSlice
+} from "../../shared/redux/reducers";
+import { ListItemExplore } from "../components/list-item/ListItemExplore";
+import Button from "../components/misc/Button";
 import Checkbox from "../components/misc/Checkbox";
 import Input from "../components/misc/Input";
-import { COLORS_LONG, RANKS, SUB_DECK } from "../../shared/constants";
-import { AppState } from "../../shared/redux/appState";
-import { ListItemExplore } from "../components/list-item/ListItemExplore";
+import { ipcSend } from "../rendererUtil";
 import uxMove from "../uxMove";
-
-export interface ExploreQuery {
-  filterWCC: string;
-  filterWCU: string;
-  filterWCR: string;
-  filterWCM: string;
-  onlyOwned: boolean;
-  filterType: string;
-  filterEvent: string;
-  filterSort: string;
-  filterSortDir: -1 | 1;
-  filteredMana: number[];
-  filteredRanks: string[];
-  filterSkip: number;
-}
 
 export default function ExploreTab(): JSX.Element {
   const dispatcher = useDispatch();
-  const loading = useSelector((state: AppState) => state.loading);
+  const loading = useSelector((state: AppState) => state.renderer.loading);
   const exploreData = useSelector((state: AppState) => state.explore.data);
   const exploreFilters = useSelector(
     (state: AppState) => state.explore.filters
@@ -47,7 +30,7 @@ export default function ExploreTab(): JSX.Element {
 
   const queryExplore = useCallback(
     (filters: ExploreQuery) => {
-      const { setLoading } = loadingSlice.actions;
+      const { setLoading } = rendererSlice.actions;
 
       ipcSend("request_explore", filters);
       dispatcher(setLoading(true));
@@ -78,12 +61,15 @@ export default function ExploreTab(): JSX.Element {
         name: row.name,
         id: row._id
       };
-      dispatchAction(dispatcher, SET_BACKGROUND_GRPID, row.tile);
-      dispatchAction(dispatcher, SET_SUB_NAV, {
-        type: SUB_DECK,
-        id: row._id + "_",
-        data: deck
-      });
+      const { setBackgroundGrpId, setSubNav } = rendererSlice.actions;
+      dispatcher(setBackgroundGrpId(row.tile));
+      dispatcher(
+        setSubNav({
+          type: SUB_DECK,
+          id: row._id + "_",
+          data: deck
+        })
+      );
     },
     [dispatcher]
   );

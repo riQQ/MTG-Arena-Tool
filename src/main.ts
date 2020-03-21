@@ -419,8 +419,11 @@ function setSettings(settingsArg: any): void {
   mainWindow?.webContents.send("settings_updated");
 
   // Send settings update
-  overlay?.setAlwaysOnTop(settingsData.overlay_ontop, "floating");
-  overlay?.webContents.send("settings_updated");
+  overlay?.setAlwaysOnTop(settingsData.overlay_ontop, "pop-up-menu");
+  if (settingsData.overlay_ontop && overlay && !overlay.isAlwaysOnTop()) {
+    overlay.moveTop();
+  }
+  overlay?.webContents.send("set_settings", settingsArg);
 
   updateOverlayVisibility();
 }
@@ -628,7 +631,6 @@ function createOverlayWindow(): BrowserWindow {
     width: bounds.width,
     height: bounds.height,
     frame: false,
-    show: false,
     resizable: false,
     skipTaskbar: true,
     focusable: false,
