@@ -35,7 +35,6 @@ export interface BaseTableProps<D extends TableData> {
   customProps?: { [key: string]: any };
   data: D[];
   defaultState?: Partial<TableState<D>>;
-  filterDataCallback?: (data: D[]) => void;
   globalFilter:
     | string
     | ((
@@ -66,7 +65,7 @@ export interface PagingControlsProps {
 
 export interface TableControlsProps<D extends TableData> {
   filters: Filters<D>;
-  flatColumns: ColumnInstance<D>[];
+  allColumns: ColumnInstance<D>[];
   getTableProps: (propGetter?: TablePropGetter<D>) => TableProps;
   globalFilter: FilterValue;
   pagingProps: PagingControlsProps;

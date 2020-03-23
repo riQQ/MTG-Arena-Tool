@@ -3,8 +3,8 @@ import addDays from "date-fns/addDays";
 import startOfDay from "date-fns/startOfDay";
 
 import LocalTime from "../../../shared/time-components/LocalTime";
-import { formatNumber, formatPercent } from "../../renderer-util";
-import { vaultPercentFormat } from "../../economyUtils";
+import { formatNumber, formatPercent } from "../../rendererUtil";
+import { vaultPercentFormat } from "./economyUtils";
 import EconomyValueRecord from "./EconomyValueRecord";
 
 function localDayDateFormat(date: Date): JSX.Element {

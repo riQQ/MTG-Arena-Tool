@@ -2,7 +2,7 @@ import React from "react";
 import { Cell } from "react-table";
 import { CSSTransition } from "react-transition-group";
 import { getCardArtCrop } from "../../../shared/util";
-import { ArtTile, MetricText } from "../display";
+import { ArtTile, MetricText } from "../misc/display";
 import { DecksData, DecksTableRowProps } from "./types";
 
 function DeckArt({ url }: { url: string }): JSX.Element {
@@ -45,9 +45,8 @@ export default function DecksArtViewRow({
   openDeckCallback
 }: DecksTableRowProps): JSX.Element {
   const deck = row.original;
-  const parentId = deck.id ?? "";
   const onRowClick = (): void => {
-    openDeckCallback(parentId);
+    openDeckCallback(deck);
   };
   const [hover, setHover] = React.useState(false);
   const mouseEnter = React.useCallback(() => {

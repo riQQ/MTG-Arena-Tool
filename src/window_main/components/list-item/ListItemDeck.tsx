@@ -1,15 +1,15 @@
 import React from "react";
-
+import _ from "lodash";
 import { DecksTableRowProps } from "../decks/types";
-import ManaCost from "../ManaCost";
+import ManaCost from "../misc/ManaCost";
 import {
   formatPercent,
   formatWinrateInterval,
   getWinrateClass
-} from "../../renderer-util";
+} from "../../rendererUtil";
 import format from "date-fns/format";
-import { NewTag, TagBubble } from "../display";
-import WildcardsCost from "../WildcardsCost";
+import { NewTag, TagBubble } from "../misc/display";
+import WildcardsCost from "../misc/WildcardsCost";
 import {
   ListItem,
   Column,
@@ -18,6 +18,7 @@ import {
   FlexBottom,
   ArchiveButton
 } from "./ListItem";
+import Deck from "../../../shared/deck";
 
 export function ListItemDeck({
   row,
@@ -29,10 +30,30 @@ export function ListItemDeck({
   deleteTagCallback
 }: DecksTableRowProps): JSX.Element {
   const deck = row.original;
+  const deckObj = new Deck(deck);
   const parentId = deck.id ?? "";
 
+  const [tagState, setTagState] = React.useState<Array<string>>(
+    deck.tags ?? []
+  );
+  React.useEffect(() => setTagState(deck.tags ?? []), [deck.tags]);
+  const deleteTag = React.useCallback(
+    (deckid: string, tag: string): void => {
+      setTagState(_.without(tagState, tag));
+      deleteTagCallback(deckid, tag);
+    },
+    [deleteTagCallback, tagState]
+  );
+  const addTag = React.useCallback(
+    (deckid: string, tag: string): void => {
+      setTagState([...tagState, tag]);
+      addTagCallback(deckid, tag);
+    },
+    [addTagCallback, tagState]
+  );
+
   const onRowClick = (): void => {
-    openDeckCallback(parentId);
+    openDeckCallback(deck);
   };
 
   const [hover, setHover] = React.useState(false);
@@ -63,10 +84,7 @@ export function ListItemDeck({
   if (deck.total > 0) {
     if (deck.total >= 20) {
       winrateInterval = formatPercent(deck.interval);
-      winrateTooltip = formatWinrateInterval(
-        formatPercent(deck.winrateLow),
-        formatPercent(deck.winrateHigh)
-      );
+      winrateTooltip = formatWinrateInterval(deck.winrateLow, deck.winrateHigh);
     }
     if (deck.lastEditTotal > 0) {
       winrateEditTooltip = `${formatPercent(
@@ -83,7 +101,7 @@ export function ListItemDeck({
   };
   const newTagProps = {
     parentId,
-    addTagCallback,
+    addTagCallback: addTag,
     tagPrompt: "Add",
     tags,
     title: "Add custom deck tag"
@@ -106,12 +124,12 @@ export function ListItemDeck({
       <Column class="list_item_center">
         <FlexTop innerClass="deck_tags_container">
           <TagBubble {...formatProps} />
-          {deck.tags?.map((tag: string) => {
+          {tagState.map((tag: string) => {
             const tagProps = {
               parentId,
               tag,
               editTagCallback,
-              deleteTagCallback
+              deleteTagCallback: deleteTag
             };
             return <TagBubble key={tag} {...tagProps} />;
           })}
@@ -153,7 +171,7 @@ export function ListItemDeck({
             </FlexBottom>
           </>
         ) : (
-          <WildcardsCost deck={deck} />
+          <WildcardsCost deck={deckObj} />
         )}
       </Column>
       {!!deck.custom && (

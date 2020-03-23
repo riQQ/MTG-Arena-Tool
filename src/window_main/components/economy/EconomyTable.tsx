@@ -1,8 +1,8 @@
 import startOfDay from "date-fns/startOfDay";
 import React from "react";
-import { Column, useExpanded, useGroupBy } from "react-table";
+import { Column, useExpanded, useGroupBy, useSortBy } from "react-table";
 import { EVENTS_TABLE_MODE } from "../../../shared/constants";
-import { vaultPercentFormat } from "../../economyUtils";
+import { vaultPercentFormat } from "./economyUtils";
 import {
   AggregatedContextCell,
   ArchivedCell,
@@ -18,7 +18,7 @@ import {
   NumberRangeColumnFilter,
   TextBoxFilter
 } from "../tables/filters";
-import { useBaseReactTable, useLastScrollTop } from "../tables/hooks";
+import { useBaseReactTable } from "../tables/hooks";
 import PagingControls from "../tables/PagingControls";
 import TableHeaders from "../tables/TableHeaders";
 import { BaseTableProps } from "../tables/types";
@@ -303,7 +303,7 @@ export default function EconomyTable({
     cachedState,
     columns,
     customProps: { archiveCallback, countLabel: "transactions" },
-    customHooks: [useGroupBy, useExpanded],
+    customHooks: [useGroupBy, useSortBy, useExpanded],
     data,
     defaultState: {
       filters: [{ id: "archivedCol", value: "hideArchived" }],
@@ -335,48 +335,49 @@ export default function EconomyTable({
     ...tableControlsProps
   };
   const isTableMode = tableMode === EVENTS_TABLE_MODE;
-  const [containerRef, onScroll] = useLastScrollTop();
   return (
-    <div className="react_table_wrap" ref={containerRef} onScroll={onScroll}>
-      <EconomyTableControls {...economyTableControlsProps} />
-      <div
-        className="med_scroll"
-        style={isTableMode ? { overflowX: "auto" } : undefined}
-      >
-        <TableHeaders
-          {...headersProps}
-          style={
-            isTableMode
-              ? { width: "fit-content" }
-              : { overflowX: "auto", overflowY: "hidden" }
-          }
-        />
+    <div className="wrapper_column">
+      <div className="react_table_wrap">
+        <EconomyTableControls {...economyTableControlsProps} />
         <div
-          className={
-            isTableMode ? "react_table_body" : "react_table_body_no_adjust"
-          }
-          {...getTableBodyProps()}
+          className="med_scroll"
+          style={isTableMode ? { overflowX: "auto" } : undefined}
         >
-          {page.map((groupRow, groupIndex) => {
-            prepareRow(groupRow);
-            const economyRowProps = {
-              row: groupRow,
-              gridTemplateColumns,
-              tableMode,
-              prepareRow,
-              isExpanded
-            };
-            return (
-              <EconomyTableRow
-                key={groupIndex}
-                index={groupIndex}
-                {...economyRowProps}
-              />
-            );
-          })}
+          <TableHeaders
+            {...headersProps}
+            style={
+              isTableMode
+                ? { width: "fit-content" }
+                : { overflowX: "auto", overflowY: "hidden" }
+            }
+          />
+          <div
+            className={
+              isTableMode ? "react_table_body" : "react_table_body_no_adjust"
+            }
+            {...getTableBodyProps()}
+          >
+            {page.map((groupRow, groupIndex) => {
+              prepareRow(groupRow);
+              const economyRowProps = {
+                row: groupRow,
+                gridTemplateColumns,
+                tableMode,
+                prepareRow,
+                isExpanded
+              };
+              return (
+                <EconomyTableRow
+                  key={groupIndex}
+                  index={groupIndex}
+                  {...economyRowProps}
+                />
+              );
+            })}
+          </div>
         </div>
+        <PagingControls {...pagingProps} />
       </div>
-      <PagingControls {...pagingProps} />
     </div>
   );
 }

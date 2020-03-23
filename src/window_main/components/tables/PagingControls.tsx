@@ -1,6 +1,6 @@
 import React from "react";
-import { ReactSelect } from "../../../shared/ReactSelect";
-import { InputContainer, PagingButton } from "../display";
+import ReactSelect from "../../../shared/ReactSelect";
+import { InputContainer, PagingButton } from "../misc/display";
 import { PagingControlsProps } from "./types";
 
 export default function PagingControls({
@@ -99,20 +99,15 @@ export default function PagingControls({
           {">>"}
         </PagingButton>
       )}
-      <div
-        className={"select_container"}
+      <ReactSelect
+        current={String(pageSize)}
+        options={pageSizeOptions}
+        optionFormatter={(pageSize): string =>
+          "Show " + pageSize + (pageLabel ? " " + pageLabel : "")
+        }
+        callback={(val): void => setPageSize(Number(val))}
         style={{ width: "140px" }}
-        key={pageSize} // for some reason, React needs this to refresh the ReactSelect
-      >
-        <ReactSelect
-          current={String(pageSize)}
-          options={pageSizeOptions}
-          optionFormatter={(pageSize): string =>
-            "Show " + pageSize + (pageLabel ? " " + pageLabel : "")
-          }
-          callback={(val): void => setPageSize(Number(val))}
-        />
-      </div>
+      />
     </div>
   );
 }

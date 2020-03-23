@@ -658,9 +658,17 @@ export const FORMATS: Record<string, string> = {
 // TODO use a label handler for PlayerInventory.GetFormats instead of this manual constant
 export const STANDARD_CUTOFF_DATE = "2018-10-04"; // day before GRN release
 
-export const COLORS_ALL = ["w", "u", "b", "r", "g", "c"] as const;
+export const COLORS_ALL = ["w", "u", "b", "r", "g", "c", "m"] as const;
 export const COLORS_BRIEF = ["w", "u", "b", "r", "g"] as const;
-export const COLORS_LONG = ["white", "blue", "black", "red", "green"] as const;
+export const COLORS_LONG = [
+  "white",
+  "blue",
+  "black",
+  "red",
+  "green",
+  "colorless",
+  "multi"
+] as const;
 export const RANKS = [
   "Bronze",
   "Silver",
@@ -771,6 +779,7 @@ export const CARD_TILE_ARENA = 0;
 export const CARD_TILE_FLAT = 1;
 export const EASING_DEFAULT = "cubicBezier(0.570, 0.165, 0.210, 0.990)";
 
+export const MAIN_OFFLINE = -3;
 export const MAIN_LOGIN = -2;
 export const MAIN_HOME = -1;
 export const MAIN_DECKS = 0;
@@ -783,6 +792,10 @@ export const MAIN_SETTINGS = 6;
 export const MAIN_UPDATE = 9;
 export const MAIN_CONSTRUCTED = 10;
 export const MAIN_LIMITED = 11;
+
+export const SUB_DECK = 1;
+export const SUB_MATCH = 2;
+export const SUB_DRAFT = 3;
 
 export const SHORTCUT_NAMES: Record<string, string> = {
   shortcut_overlay_1: "Toggle Overlay 1",

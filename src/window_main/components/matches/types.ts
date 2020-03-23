@@ -1,20 +1,9 @@
 import { TableState } from "react-table";
-import { ExtendedMatchData } from "../../../window_background/data";
+import { InternalMatch } from "../../../types/match";
 import { AggregatorFilters } from "../../aggregator";
-import {
-  TableControlsProps,
-  TableData,
-  TableViewRowProps,
-  TagCounts
-} from "../tables/types";
+import { TableControlsProps, TableData, TagCounts } from "../tables/types";
 
-export interface SerializedMatch extends ExtendedMatchData {
-  archived?: boolean;
-  set: string;
-  type: "match";
-}
-
-export interface MatchTableData extends SerializedMatch, TableData {
+export interface MatchTableData extends InternalMatch, TableData {
   archivedSortVal: number;
   custom: boolean;
   colors: number[];
@@ -54,8 +43,7 @@ export interface MatchesTableProps {
   deleteTagCallback: (id: string, tag: string) => void;
   editTagCallback: (tag: string, color: string) => void;
   events: string[];
-  filterDataCallback: (data: MatchTableData[]) => void;
-  openMatchCallback: (matchId: string | number) => void;
+  openMatchCallback: (match: InternalMatch) => void;
   setAggFiltersCallback: (filters: AggregatorFilters) => void;
   tableModeCallback: (tableMode: string) => void;
   tableStateCallback: (state: TableState<MatchTableData>) => void;
@@ -71,8 +59,8 @@ export interface MatchesTableControlsProps
 
 export interface ListItemMatchProps {
   tags: TagCounts;
-  match: SerializedMatch;
-  openMatchCallback: (matchId: string | number) => void;
+  match: InternalMatch;
+  openMatchCallback: (match: InternalMatch) => void;
   addTagCallback?: (id: string, tag: string) => void;
   editTagCallback?: (tag: string, color: string) => void;
   deleteTagCallback?: (id: string, tag: string) => void;

@@ -12,7 +12,7 @@ import { playerDb } from "../shared/db/LocalDatabase";
 import CardsList from "../shared/cardsList";
 import { get_deck_colors, objectClone } from "../shared/util";
 import * as greToClientInterpreter from "./greToClientInterpreter";
-import playerData from "../shared/player-data";
+import playerData from "../shared/PlayerData";
 import sha1 from "js-sha1";
 import globals from "./globals";
 import getNameBySeat from "./getNameBySeat";
@@ -161,7 +161,6 @@ function processMatch(json, matchBeginTime) {
   if (match.eventId == "DirectGame" && globals.currentDeck) {
     const str = globals.currentDeck.getSave();
     const httpApi = require("./httpApi");
-    httpApi.httpTournamentCheck(str, match.opponent.name, true);
   }
 
   return match;
@@ -366,7 +365,7 @@ export function onLabelOutLogInfo(entry) {
           globals.matchGameStats
         );
         game.sideboardChanges = sideboardChanges;
-        game.deck = newDeck.clone().getSave();
+        game.deck = newDeck.clone().getSave(true);
       }
 
       game.handLands = game.handsDrawn.map(
@@ -470,22 +469,24 @@ export function onLabelClientToMatchServiceMessageTypeClientToGREMessage(
     const msgType = entry.label.split("_")[1];
     payload = decodePayload(payload, msgType);
   }
+  // The sideboarding log message has changed format multiple times, sometimes
+  // going back to an earlier format. normaliseFields, together with the
+  // conditional decodePayload call, allows the same code to handle each known
+  // format in case Arena changes it again.
+  payload = normaliseFields(payload);
 
   if (payload.submitdeckresp) {
     //console.log("Client To GRE: ", payload);
     // Get sideboard changes
     const deckResp = payload.submitdeckresp.deck;
 
-    const tempMain = new CardsList([]);
-    deckResp.deckcardsList.map(id => tempMain.add(id));
-    const tempSide = new CardsList([]);
-    deckResp.sideboardcardsList.map(id => tempSide.add(id));
+    const currentDeck = globals.currentMatch.player.deck.getSave();
 
-    const newDeck = globals.currentMatch.player.deck.clone();
-    newDeck.mainboard = tempMain;
-    newDeck.sideboard = tempSide;
-
-    globals.currentMatch.player.deck = newDeck;
+    globals.currentMatch.player.deck = new Deck(
+      currentDeck,
+      deckResp.deckcards,
+      deckResp.sideboardcards
+    );
   }
 }
 
@@ -1090,15 +1091,6 @@ export function onLabelOutDirectGameChallenge(entry) {
   let deck = json.params.deck;
   deck = JSON.parse(deck);
   select_deck(convertDeckFromV3(deck));
-
-  const httpApi = require("./httpApi");
-  httpApi.httpTournamentCheck(
-    globals.currentDeck.getSave(),
-    json.params.opponentDisplayName,
-    false,
-    json.params.playFirst,
-    json.params.bo3
-  );
 }
 
 export function onLabelOutEventAIPractice(entry) {

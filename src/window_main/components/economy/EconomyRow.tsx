@@ -2,29 +2,30 @@
 import React from "react";
 
 import db from "../../../shared/database";
-import pd from "../../../shared/player-data";
+import pd from "../../../shared/PlayerData";
 import {
   collectionSortRarity,
   getCardImage,
   openScryfallCard,
   getCardArtCrop
 } from "../../../shared/util";
-import { addCardHover } from "../../../shared/cardHover";
 import LocalTime from "../../../shared/time-components/LocalTime";
-import { DbCardData } from "../../../shared/types/Metadata";
+import { DbCardData } from "../../../types/Metadata";
 
 import {
   formatNumber,
   formatPercent,
   toggleArchived
-} from "../../renderer-util";
+} from "../../rendererUtil";
 import {
   getCollationSet,
   getPrettyContext,
-  vaultPercentFormat
-} from "../../economyUtils";
+  vaultPercentFormat,
+  getReadableCode
+} from "./economyUtils";
 
 import EconomyValueRecord, { EconomyIcon } from "./EconomyValueRecord";
+import useHoverCard from "../../hooks/useHoverCard";
 
 function EconomyRowDate(date: Date): JSX.Element {
   return (
@@ -53,7 +54,7 @@ function BoosterDelta(props: BoosterDeltaProps): JSX.Element {
     <EconomyValueRecord
       iconClassName={"set_logo_med"}
       iconUrl={imagePath}
-      title={set}
+      title={set + " Boosters"}
       deltaContent={"x" + Math.abs(booster.count)}
     />
   );
@@ -277,7 +278,7 @@ function InventoryCardList(props: InventoryCardListProps): JSX.Element {
   const uniqueCardList = countDupesArray(cardsList);
   const cardCounts = Object.entries(uniqueCardList);
   cardCounts.sort((a: [string, number], b: [string, number]): number =>
-    collectionSortRarity(a[0], b[0])
+    collectionSortRarity(parseInt(a[0]), parseInt(b[0]))
   );
   return (
     <>
@@ -360,6 +361,7 @@ function FlexRight(props: FlexRightProps): JSX.Element {
         db.cardFromArt(obj.artId)
       )
     : undefined;
+  const vanityCodes: string[] | undefined = change.delta.vanityItemsAdded;
 
   const xpGainedNumber = change.xpGained && parseInt(change.xpGained);
   return (
@@ -402,6 +404,22 @@ function FlexRight(props: FlexRightProps): JSX.Element {
           deltaContent={formatNumber(xpGainedNumber)}
         />
       )}
+      {Math.abs(change.delta.draftTokensDelta) > 0 && (
+        <EconomyValueRecord
+          iconClassName={"economy_ticket_med"}
+          title={"Traditional Draft Entry Tokens"}
+          smallLabel
+          deltaContent={formatNumber(change.delta.draftTokensDelta)}
+        />
+      )}
+      {Math.abs(change.delta.sealedTokensDelta) > 0 && (
+        <EconomyValueRecord
+          iconClassName={"economy_ticket_med"}
+          title={"Sealed Entry Tokens"}
+          smallLabel
+          deltaContent={formatNumber(change.delta.sealedTokensDelta)}
+        />
+      )}
       {checkBoosterAdded &&
         change.delta.boosterDelta &&
         change.delta.boosterDelta.map((booster: any) => (
@@ -425,6 +443,16 @@ function FlexRight(props: FlexRightProps): JSX.Element {
             url={`url("${getCardArtCrop(card)}")`}
           />
         ))}
+      {vanityCodes &&
+        vanityCodes.map(code => (
+          <EconomyValueRecord
+            key={economyId + "_" + code}
+            iconClassName={"economy_vanity"}
+            title={code}
+            smallLabel
+            deltaContent={getReadableCode(code)}
+          />
+        ))}
     </div>
   );
 }
@@ -437,25 +465,21 @@ interface InventoryCardProps {
 
 function InventoryCard(props: InventoryCardProps): JSX.Element {
   const { card, isAetherized, quantity } = props;
-  const inventoryCardRef = React.useRef<HTMLDivElement>(null);
   const onCardClick = React.useCallback(() => {
     const lookupCard = db.card(card?.dfcId) ?? card;
     openScryfallCard(lookupCard);
   }, [card]);
   // inventoryCard.style.width = "39px";
 
-  React.useEffect(() => {
-    if (inventoryCardRef) {
-      addCardHover(inventoryCardRef.current as HTMLElement, card);
-    }
-  });
+  const [hoverIn, hoverOut] = useHoverCard(card?.id || 0);
 
   const tooltip = isAetherized
     ? computeAetherizedTooltip(card, quantity)
     : card?.name ?? "";
   return (
     <div
-      ref={inventoryCardRef}
+      onMouseEnter={hoverIn}
+      onMouseLeave={hoverOut}
       className={"inventory_card small"}
       onClick={onCardClick}
     >

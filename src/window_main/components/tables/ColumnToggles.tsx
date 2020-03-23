@@ -1,6 +1,6 @@
 import React from "react";
 import { ColumnInstance } from "react-table";
-import { CheckboxContainer } from "../display";
+import { CheckboxContainer } from "../misc/display";
 import { TableData } from "./types";
 
 export default function ColumnToggles<D extends TableData>({
@@ -16,7 +16,7 @@ export default function ColumnToggles<D extends TableData>({
         toggleableColumns.map(column => (
           <CheckboxContainer key={column.id}>
             {column.render("Header")}
-            <input type="checkbox" {...column.getToggleHiddenProps({})} />
+            <input type="checkbox" {...column.getToggleHiddenProps()} />
             <span className={"checkmark"} />
           </CheckboxContainer>
         ))}

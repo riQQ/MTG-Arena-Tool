@@ -1,20 +1,16 @@
 import _ from "lodash";
 import React from "react";
 import {
-  Row,
-  SortByFn,
   TableInstance,
   TableState,
   useFilters,
   useGlobalFilter,
   usePagination,
   useSortBy,
-  useTable,
-  IdType
+  useTable
 } from "react-table";
-import pd from "../../../shared/player-data";
+import pd from "../../../shared/PlayerData";
 import Aggregator, { AggregatorFilters } from "../../aggregator";
-import { getLocalState, setLocalState } from "../../renderer-util";
 import {
   archivedFilterFn,
   colorsFilterFn,
@@ -54,115 +50,65 @@ export function useMultiSelectFilter<D>(
   return [filterValue, onClickMultiFilter];
 }
 
-export function useEnumSort<D extends TableData>(
-  enums: readonly string[]
-): SortByFn<D> {
-  return React.useCallback(
-    (rowA: Row<D>, rowB: Row<D>, columnId: IdType<D>): 0 | 1 | -1 => {
-      const indexDiff =
-        enums.indexOf(rowA.values[columnId]) -
-        enums.indexOf(rowB.values[columnId]);
-      return indexDiff < 0 ? -1 : indexDiff > 0 ? 1 : 0;
-    },
-    [enums]
-  );
-}
-
-export function useLegacyRenderer(
-  renderEventRow: (container: HTMLDivElement, ...rendererArgs: any[]) => any,
-  ...rendererArgs: any[]
-): React.RefObject<HTMLDivElement> {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    if (containerRef?.current) {
-      containerRef.current.innerHTML = "";
-      renderEventRow(containerRef.current, ...rendererArgs);
-    }
-  }, [containerRef, renderEventRow, rendererArgs]);
-  return containerRef;
-}
-
-export function useLastScrollTop(): [
-  React.RefObject<HTMLDivElement>,
-  () => void
+export function useBlurOnEnter(): [
+  React.RefObject<HTMLInputElement>,
+  (e: React.KeyboardEvent<HTMLInputElement>) => void
 ] {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    if (containerRef?.current) {
-      const { lastScrollTop } = getLocalState();
-      if (lastScrollTop) {
-        containerRef.current.scrollTop = lastScrollTop;
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const onKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>): void => {
+      if (inputRef?.current) {
+        if (e.keyCode === 13) {
+          inputRef.current.blur();
+        }
       }
-    }
-  }, [containerRef]);
-  const onScroll = React.useCallback(() => {
-    if (containerRef?.current) {
-      setLocalState({ lastScrollTop: containerRef.current.scrollTop });
-    }
-  }, []);
-  return [containerRef, onScroll];
+    },
+    [inputRef]
+  );
+  return [inputRef, onKeyDown];
 }
 
-export function useAggregatorAndSidePanel<D extends TableData>({
-  aggFiltersArg,
-  getData,
-  getDataAggFilters,
-  showArchived,
-  updateSidebarCallback
-}: {
-  aggFiltersArg: AggregatorFilters;
-  getData: (aggregator: Aggregator) => D[];
-  getDataAggFilters: (data: D[]) => AggregatorFilters;
-  showArchived: boolean;
-  updateSidebarCallback: (
-    container: HTMLElement,
-    aggregator: Aggregator
-  ) => void;
-}): {
-  aggFilters: AggregatorFilters;
-  data: D[];
-  filterDataCallback: (data: D[]) => void;
-  rightPanelRef: React.RefObject<HTMLDivElement>;
-  setAggFilters: (aggFilters: AggregatorFilters) => void;
-  sidePanelWidth: string;
-} {
-  const {
-    last_date_filter: dateFilter,
-    right_panel_width: panelWidth
-  } = pd.settings;
-  const defaultAggFilters = {
+function getDefaultAggFilters(
+  showArchived: boolean,
+  aggFiltersArg?: AggregatorFilters
+): AggregatorFilters {
+  const { last_date_filter: dateFilter } = pd.settings;
+  return {
     ...Aggregator.getDefaultFilters(),
     date: dateFilter,
+    eventId: Aggregator.DEFAULT_EVENT,
     ...aggFiltersArg,
     showArchived
   };
-  const [aggFilters, setAggFilters] = React.useState(
-    defaultAggFilters as AggregatorFilters
-  );
+}
+
+export function useAggregatorData<D extends TableData>({
+  aggFiltersArg,
+  getData,
+  showArchived
+}: {
+  aggFiltersArg?: AggregatorFilters;
+  getData: (aggregator: Aggregator) => D[];
+  showArchived: boolean;
+}): {
+  aggFilters: AggregatorFilters;
+  data: D[];
+  setAggFilters: (aggFilters: AggregatorFilters) => void;
+} {
+  const defaultAggFilters = getDefaultAggFilters(showArchived, aggFiltersArg);
+  const [aggFilters, setAggFilters] = React.useState(defaultAggFilters);
+  React.useEffect(() => {
+    const defaultAggFilters = getDefaultAggFilters(showArchived, aggFiltersArg);
+    setAggFilters(defaultAggFilters);
+  }, [aggFiltersArg, showArchived]);
   const data = React.useMemo(() => {
     const aggregator = new Aggregator(aggFilters);
     return getData(aggregator);
   }, [aggFilters, getData]);
-  const sidePanelWidth = panelWidth + "px";
-  const rightPanelRef = React.useRef<HTMLDivElement>(null);
-  const filterDataCallback = React.useCallback(
-    (data: D[]): void => {
-      if (rightPanelRef?.current) {
-        updateSidebarCallback(
-          rightPanelRef.current,
-          new Aggregator({ ...aggFilters, ...getDataAggFilters(data) })
-        );
-      }
-    },
-    [rightPanelRef, aggFilters, getDataAggFilters, updateSidebarCallback]
-  );
   return {
     aggFilters,
     data,
-    filterDataCallback,
-    rightPanelRef,
-    setAggFilters,
-    sidePanelWidth
+    setAggFilters
   };
 }
 
@@ -177,7 +123,6 @@ export function useBaseReactTable<D extends TableData>({
   setTableMode,
   tableMode,
   data,
-  filterDataCallback,
   tableStateCallback,
   cachedState
 }: BaseTableProps<D>): {
@@ -213,7 +158,7 @@ export function useBaseReactTable<D extends TableData>({
       pageSize: 25,
       hiddenColumns
     }) as TableState<D>;
-    const state = cachedState ?? mergedDefault;
+    const state = { ...(cachedState ?? mergedDefault) };
 
     // ensure data-only columns are all invisible
     const hiddenSet = new Set(state.hiddenColumns ?? []);
@@ -242,15 +187,12 @@ export function useBaseReactTable<D extends TableData>({
     },
     useFilters,
     useGlobalFilter,
-    ...(customHooks ?? []),
-    useSortBy,
+    ...(customHooks ?? [useSortBy]),
     usePagination
   );
   const {
-    flatColumns,
     headers,
     getTableProps,
-    rows,
     toggleSortBy,
     toggleHideColumn,
     setAllFilters,
@@ -267,14 +209,13 @@ export function useBaseReactTable<D extends TableData>({
     setPageSize,
     state
   } = table;
+  // It seems allComumns can be undefined on some cycles of the table hook
+  const allColumns = table.allColumns || [];
   const { filters, pageIndex, pageSize } = state;
 
   React.useEffect(() => {
     tableStateCallback({ ...state });
   }, [state, tableStateCallback]);
-  React.useEffect(() => {
-    filterDataCallback && filterDataCallback(rows.map(row => row.original));
-  }, [filterDataCallback, rows]);
 
   const pagingProps: PagingControlsProps = {
     canPreviousPage,
@@ -294,15 +235,15 @@ export function useBaseReactTable<D extends TableData>({
     .map(header => `minmax(${header.gridWidth ?? "140px"}, auto)`)
     .join(" ");
   const [toggleableColumns, initialFiltersVisible] = React.useMemo(() => {
-    const toggleableColumns = flatColumns.filter(column => column.mayToggle);
+    const toggleableColumns = allColumns.filter(column => column.mayToggle);
     const initialFiltersVisible: FiltersVisible = {};
-    for (const column of flatColumns) {
+    for (const column of allColumns) {
       if (column.canFilter) {
         initialFiltersVisible[column.id] = !!column.filterValue;
       }
     }
     return [toggleableColumns, initialFiltersVisible];
-  }, [flatColumns]);
+  }, [allColumns]);
   const [filtersVisible, setFiltersVisible] = React.useState(
     initialFiltersVisible
   );
@@ -318,7 +259,7 @@ export function useBaseReactTable<D extends TableData>({
 
   const tableControlsProps: TableControlsProps<D> = {
     filters,
-    flatColumns,
+    allColumns,
     getTableProps,
     globalFilter: state.globalFilter,
     gridTemplateColumns,

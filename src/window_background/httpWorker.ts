@@ -2,7 +2,7 @@ import qs from "qs";
 import http, { RequestOptions } from "https";
 import { IncomingMessage } from "http";
 
-import playerData from "../shared/player-data";
+import playerData from "../shared/PlayerData";
 import globals from "./globals";
 import { ipc_send as ipcSend, setData } from "./backgroundUtil";
 
@@ -109,7 +109,12 @@ export function getRequestOptions(task: HttpTask): RequestOptions {
 
 export function asyncWorker(task: HttpTask, callback: HttpTaskCallback): void {
   // list of requests that must always be sent, regardless of privacy settings
-  const nonPrivacyMethods = ["auth", "delete_data", "get_database"];
+  const nonPrivacyMethods = [
+    "auth",
+    "delete_data",
+    "get_database",
+    "get_database_version"
+  ];
   if (
     (!playerData.settings.send_data || playerData.offline) &&
     !nonPrivacyMethods.includes(task.method)

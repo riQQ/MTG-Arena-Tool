@@ -12,11 +12,11 @@ import {
   DATE_SEASON
 } from "../shared/constants";
 import db from "../shared/database";
-import pd from "../shared/player-data";
+import pd from "../shared/PlayerData";
 import { normalApproximationInterval } from "../shared/statsFns";
 import { getReadableEvent, getRecentDeckName } from "../shared/util";
-import { SerializedDeck } from "../shared/types/Deck";
-import { ExtendedMatchData } from "../window_background/data";
+import { InternalDeck } from "../types/Deck";
+import { InternalMatch } from "../types/match";
 
 export const dateMaxValid = (a: any, b: any): any => {
   const aValid = isValid(a);
@@ -133,8 +133,8 @@ export default class Aggregator {
     return [Aggregator.DEFAULT_TAG, ...tagList, ...formatList];
   }
 
-  private _decks: SerializedDeck[] = [];
-  private _matches: ExtendedMatchData[] = [];
+  private _decks: InternalDeck[] = [];
+  private _matches: InternalMatch[] = [];
   private _eventIds: string[] = [];
   private validDecks: Set<string> = new Set();
   private validMatches: Set<string> = new Set();
@@ -143,7 +143,7 @@ export default class Aggregator {
   public archCounts: { [key: string]: number } = {};
   public colorStats: { [key: string]: AggregatorStats } = {};
   public constructedStats: { [key: string]: AggregatorStats } = {};
-  public deckMap: { [key: string]: SerializedDeck } = {};
+  public deckMap: { [key: string]: InternalDeck } = {};
   public deckLastPlayed: { [key: string]: Date } = {};
   public drawStats: AggregatorStats = Aggregator.getDefaultStats();
   public deckStats: { [key: string]: AggregatorStats } = {};
@@ -342,8 +342,8 @@ export default class Aggregator {
         new Date(match.date),
         this.deckLastPlayed[id]
       );
-      if (pd.deckExists(id)) {
-        const currentDeck = pd.deck(match.playerDeck.id);
+      const currentDeck = pd.deck(match.playerDeck.id);
+      if (currentDeck) {
         if (!(id in this.deckStats)) {
           this.deckStats[id] = Aggregator.getDefaultStats();
         }
@@ -472,7 +472,7 @@ export default class Aggregator {
     ];
   }
 
-  get decks(): SerializedDeck[] {
+  get decks(): Partial<InternalDeck>[] {
     return [
       { id: Aggregator.DEFAULT_DECK, name: Aggregator.DEFAULT_DECK },
       ...this._decks
