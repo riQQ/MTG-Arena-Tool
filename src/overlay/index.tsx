@@ -5,7 +5,7 @@ import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import OverlayController from "../overlay/OverlayController";
 import appReducer from "./reducers";
-import PointerFix from "./electron-transparency-mouse-fix";
+import TransparencyFix from "./electron-transparency-mouse-fix";
 
 const store = configureStore({ reducer: appReducer });
 
@@ -51,6 +51,6 @@ ready(function() {
   );
   document.body.appendChild(wrap);
   setTimeout(() => {
-    new PointerFix();
+    new TransparencyFix();
   }, 1000);
 });
