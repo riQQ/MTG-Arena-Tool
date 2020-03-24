@@ -51,6 +51,9 @@ ready(function() {
   );
   document.body.appendChild(wrap);
   setTimeout(() => {
-    new TransparencyFix();
+    new TransparencyFix({
+      log: false,
+      fixPointerEvents: "auto"
+    });
   }, 1000);
 });
