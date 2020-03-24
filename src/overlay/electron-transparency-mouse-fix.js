@@ -13,7 +13,7 @@ const electron = require("electron");
 // Style for the default console logging tag
 const consoleTag = [
   "%celectron-transparency-mouse-fix",
-  `margin-right: .25em;padding: .1em .4em;border-radius: .25em;background-color: #3eabdc;color: white;font-weight: bold;`,
+  `margin-right: .25em;padding: .1em .4em;border-radius: .25em;background-color: #3eabdc;color: white;font-weight: bold;`
 ];
 
 /** Provide click-through support for Electron BrowserWindows */
@@ -30,7 +30,7 @@ class TransparencyMouseFix {
     electronWindow = electron.remote.getCurrentWindow(),
     htmlWindow = window,
     fixPointerEvents = "auto",
-    log = false,
+    log = false
   } = {}) {
     // Set local variables
     // > constant
@@ -156,7 +156,7 @@ class TransparencyMouseFix {
   registerWindow() {
     this.htmlWindow.addEventListener("mousemove", this._scopedOnMouseEvent);
     this.htmlWindow.addEventListener("dragover", this._scopedOnMouseEvent);
-    let styleSheet = this.htmlWindow.document.createElement("style");
+    const styleSheet = this.htmlWindow.document.createElement("style");
     styleSheet.classList.add("etmf-css");
     styleSheet.innerHTML = `
       html {pointer-events: none}
@@ -188,7 +188,7 @@ class TransparencyMouseFix {
   onMouseEvent(event) {
     this.log && this.log("debug", event);
 
-    let sinkHole = event.target.classList.contains("etmf-void");
+    const sinkHole = event.target.classList.contains("etmf-void");
 
     // Handle dragging events
     if (event.type === "dragover") {
@@ -197,9 +197,9 @@ class TransparencyMouseFix {
     }
 
     // Is the pointer is hovering an element that receives events?
-    let reachedBottom =
+    const reachedBottom =
       event.target === this.htmlWindow.document.documentElement;
-    let ignoreEvents = sinkHole || reachedBottom;
+    const ignoreEvents = sinkHole || reachedBottom;
     if (ignoreEvents) {
       // Latched state
       if (this._ignoringMouse) return;
@@ -209,12 +209,12 @@ class TransparencyMouseFix {
       if (this.fixPointerEvents) {
         // Circumvent forwarding of ignored mouse events
         // TODO: pause on minimize/hide/..
-        this.electronWindow.setIgnoreMouseEvents(true, {forward: false});
+        this.electronWindow.setIgnoreMouseEvents(true, { forward: false });
         this.altCheckHover(true);
         this.log && this.log("info", "mouse off (polling)");
       } else {
         // Ignore mouse events with built-in forwarding
-        this.electronWindow.setIgnoreMouseEvents(true, {forward: true});
+        this.electronWindow.setIgnoreMouseEvents(true, { forward: true });
         this.log && this.log("info", "mouse off (listening)");
       }
     } else {
@@ -252,26 +252,29 @@ class TransparencyMouseFix {
 
     // If the cursor is within content bounds, check the element it's hovering,
     //   emulate a MouseMove event with the element as target
-    let {x, y} = (
+    const { x, y } = (
       electron.screen || electron.remote.screen
     ).getCursorScreenPoint();
-    let {
+    const {
       x: left,
       y: top,
       width,
-      height,
+      height
     } = this.electronWindow.getContentBounds();
     this.log &&
-      this.log("debug", {mouse: {x, y}, window: {left, top, width, height}});
+      this.log("debug", {
+        mouse: { x, y },
+        window: { left, top, width, height }
+      });
     if (x >= left && x < left + width && y >= top && y < top + height) {
-      let tgt = document.elementFromPoint(x - left, y - top);
+      const tgt = document.elementFromPoint(x - left, y - top);
       // HINT: update classList checks when expanding code
       if (
         tgt &&
         !tgt.classList.contains("etmf-void") &&
         tgt !== this.htmlWindow.document.documentElement
       ) {
-        this.onMouseEvent({target: tgt});
+        this.onMouseEvent({ target: tgt });
         this.altCheckHover._instanceCount--;
         return true;
       }

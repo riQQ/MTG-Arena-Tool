@@ -5,10 +5,9 @@ import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import OverlayController from "../overlay/OverlayController";
 import appReducer from "./reducers";
+import TransparencyMouseFix from "./electron-transparency-mouse-fix";
 
 const store = configureStore({ reducer: appReducer });
-
-const TransparencyMouseFix = require("./electron-transparency-mouse-fix")
 
 if (!remote.app.isPackaged) {
   const { openNewGitHubIssue, debugInfo } = require("electron-util");
@@ -52,6 +51,9 @@ ready(function() {
   );
   document.body.appendChild(wrap);
   setTimeout(() => {
-    new TransparencyMouseFix();
+    new TransparencyMouseFix({
+      log: false,
+      fixPointerEvents: "auto"
+    });
   }, 1000);
 });
