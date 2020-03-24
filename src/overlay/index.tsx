@@ -8,7 +8,7 @@ import appReducer from "./reducers";
 
 const store = configureStore({ reducer: appReducer });
 
-const TransparencyMouseFix = require("electron-transparency-mouse-fix");
+const TransparencyMouseFix = require("./electron-transparency-mouse-fix")
 
 if (!remote.app.isPackaged) {
   const { openNewGitHubIssue, debugInfo } = require("electron-util");
@@ -52,9 +52,6 @@ ready(function() {
   );
   document.body.appendChild(wrap);
   setTimeout(() => {
-    new TransparencyMouseFix({
-      log: false,
-      fixPointerEvents: "auto"
-    });
+    new TransparencyMouseFix();
   }, 1000);
 });
