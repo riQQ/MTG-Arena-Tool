@@ -61,7 +61,6 @@ export const rendererSlice = createSlice({
       patreon: false,
       patreonTier: -1
     },
-    playerDataTimestamp: Date.now(),
     popup: {
       text: "",
       time: 0,
@@ -104,9 +103,6 @@ export const rendererSlice = createSlice({
     },
     setPatreon: (state, action): void => {
       state.patreon = action.payload;
-    },
-    setPlayerDataTimestamp: (state, action): void => {
-      state.playerDataTimestamp = action.payload;
     },
     setPopup: (state, action): void => {
       state.popup = action.payload;
