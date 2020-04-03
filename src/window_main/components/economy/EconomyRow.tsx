@@ -344,9 +344,11 @@ function FlexRight(props: FlexRightProps): JSX.Element {
     change.cardsAddedCount > 0 &&
     change.delta.cardsAdded &&
     change.delta.cardsAdded.length > 0;
+
   const checkAether =
     checkAetherized &&
-    change.aetherizedCards > 0 &&
+    change.aetherizedCardsCount > 0 &&
+    change.aetherizedCards &&
     change.aetherizedCards.length > 0;
   const aetherCards: string[] = checkAether
     ? change.aetherizedCards.reduce(
