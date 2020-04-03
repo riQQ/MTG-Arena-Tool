@@ -83,8 +83,11 @@ export function ListItemExplore(props: ListItemExploreProps): JSX.Element {
         </FlexBottom>
       </Column>
 
-      <Column class="list_item_center">
-        <WildcardsCostPreset wildcards={row.wildcards} />
+      <Column
+        style={{ maxWidth: "50%", alignSelf: "flex-end", marginLeft: "auto" }}
+        class="list_item_center"
+      >
+        <WildcardsCostPreset wildcards={row.wildcards} showComplete={true} />
       </Column>
       <Column class="list_item_right">
         <FlexTop innerClass="list_deck_winrate">

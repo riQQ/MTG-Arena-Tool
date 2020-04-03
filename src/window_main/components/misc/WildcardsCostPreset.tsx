@@ -19,12 +19,14 @@ interface WildcardsCostPresetProps {
     r?: number;
     m?: number;
   };
+  showComplete?: boolean;
 }
 
 export default function WildcardsCostPreset(
   props: WildcardsCostPresetProps
 ): JSX.Element {
   const { c, u, r, m } = props.wildcards;
+  const showComplete = props.showComplete || false;
 
   const missingWildcards: MissingWildcards = {
     common: c || 0,
@@ -40,6 +42,8 @@ export default function WildcardsCostPreset(
     missingWildcards.mythic;
 
   const drawCost = totalMissing > 0;
+
+  const boostersNeeded = Math.round(getBoosterCountEstimate(missingWildcards));
 
   return (
     <div
@@ -68,10 +72,14 @@ export default function WildcardsCostPreset(
           }
         }
       )}
-      {drawCost && (
+      {showComplete && boostersNeeded == 0 ? (
+        <div title="You can build this deck!" className="wc_complete" />
+      ) : drawCost ? (
         <div title="Boosters needed (estimated)" className="bo_explore_cost">
-          {Math.round(getBoosterCountEstimate(missingWildcards))}
+          {boostersNeeded}
         </div>
+      ) : (
+        <></>
       )}
     </div>
   );
