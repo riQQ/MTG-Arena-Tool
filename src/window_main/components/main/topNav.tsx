@@ -1,6 +1,5 @@
 import _ from "lodash";
 import React from "react";
-import pd from "../../../shared/PlayerData";
 
 import {
   get_rank_index as getRankIndex,
@@ -11,18 +10,20 @@ import {
   MAIN_HOME,
   MAIN_DECKS,
   MAIN_MATCHES,
+  MAIN_TIMELINE,
   MAIN_EVENTS,
   MAIN_EXPLORE,
   MAIN_ECONOMY,
   MAIN_COLLECTION,
   MAIN_CONSTRUCTED,
-  MAIN_LIMITED
+  MAIN_LIMITED,
+  IPC_NONE
 } from "../../../shared/constants";
-import { rendererSlice } from "../../../shared/redux/reducers";
 import { useDispatch, useSelector } from "react-redux";
-import { AppState } from "../../../shared/redux/reducers";
+import { AppState } from "../../../shared-redux/stores/rendererStore";
 import useWindowSize from "../../hooks/useWindowSize";
 import uxMove from "../../uxMove";
+import { reduxAction } from "../../../shared-redux/sharedRedux";
 
 interface TopNavItemProps {
   dispatcher: any;
@@ -37,9 +38,8 @@ function TopNavItem(props: TopNavItemProps): JSX.Element {
 
   const clickTab = React.useCallback(
     (tabId: number) => (): void => {
-      const { setBackgroundGrpId, setTopNav } = rendererSlice.actions;
-      dispatcher(setTopNav(tabId));
-      dispatcher(setBackgroundGrpId(0));
+      reduxAction(dispatcher, "SET_TOPNAV", tabId, IPC_NONE);
+      reduxAction(dispatcher, "SET_BACK_GRPID", 0, IPC_NONE);
       uxMove(0);
     },
     [dispatcher]
@@ -95,9 +95,8 @@ function TopRankIcon(props: TopRankProps): JSX.Element {
   const selected = currentTab === id;
   const clickTab = React.useCallback(
     tabId => (): void => {
-      const { setBackgroundGrpId, setTopNav } = rendererSlice.actions;
-      dispatcher(setTopNav(tabId));
-      dispatcher(setBackgroundGrpId(0));
+      reduxAction(dispatcher, "SET_TOPNAV", tabId, IPC_NONE);
+      reduxAction(dispatcher, "SET_BACK_GRPID", 0, IPC_NONE);
       uxMove(0);
     },
     [dispatcher]
@@ -154,6 +153,7 @@ export function TopNav(): JSX.Element {
     (state: AppState) => state.renderer.patreon.patreon
   );
   const currentTab = useSelector((state: AppState) => state.renderer.topNav);
+  const playerData = useSelector((state: AppState) => state.playerdata);
   const topNavIconsRef: any = React.useRef(null);
   const dispatcher = useDispatch();
   const windowSize = useWindowSize();
@@ -165,8 +165,9 @@ export function TopNav(): JSX.Element {
   };
 
   const homeTab = { ...defaultTab, id: MAIN_HOME, title: "" };
-  const myDecksTab = { ...defaultTab, id: MAIN_DECKS, title: "DECKS" };
-  const matchesTab = { ...defaultTab, id: MAIN_MATCHES, title: "MATCHES" };
+  const myDecksTab = { ...defaultTab, id: MAIN_DECKS, title: "MY DECKS" };
+  const historyTab = { ...defaultTab, id: MAIN_MATCHES, title: "HISTORY" };
+  const timelineTab = { ...defaultTab, id: MAIN_TIMELINE, title: "TIMELINE" };
   const eventsTab = { ...defaultTab, id: MAIN_EVENTS, title: "EVENTS" };
   const exploreTab = { ...defaultTab, id: MAIN_EXPLORE, title: "EXPLORE" };
   const economyTab = { ...defaultTab, id: MAIN_ECONOMY, title: "ECONOMY" };
@@ -180,7 +181,7 @@ export function TopNav(): JSX.Element {
     dispatcher: dispatcher,
     currentTab: currentTab,
     id: MAIN_CONSTRUCTED,
-    rank: pd.rank ? pd.rank.constructed : null,
+    rank: playerData.rank ? playerData.rank.constructed : null,
     rankClass: "top_constructed_rank"
   };
 
@@ -188,7 +189,7 @@ export function TopNav(): JSX.Element {
     dispatcher: dispatcher,
     currentTab: currentTab,
     id: MAIN_LIMITED,
-    rank: pd.rank ? pd.rank.limited : null,
+    rank: playerData.rank ? playerData.rank.limited : null,
     rankClass: "top_limited_rank"
   };
 
@@ -202,15 +203,16 @@ export function TopNav(): JSX.Element {
     }
   }, [windowSize, compact]);
 
-  const userName = pd.name.slice(0, -6);
-  const userNumerical = pd.name.slice(-6);
+  const userName = playerData.playerName.slice(0, -6);
+  const userNumerical = playerData.playerName.slice(-6);
 
   return (
     <div className="top_nav">
       <div ref={topNavIconsRef} className="top_nav_icons">
         <TopNavItem {...homeTab} />
         <TopNavItem {...myDecksTab} />
-        <TopNavItem {...matchesTab} />
+        <TopNavItem {...historyTab} />
+        <TopNavItem {...timelineTab} />
         <TopNavItem {...eventsTab} />
         <TopNavItem {...exploreTab} />
         <TopNavItem {...economyTab} />
