@@ -339,7 +339,7 @@ function FlexRight(props: FlexRightProps): JSX.Element {
       (change.orbCountDiff.currentOrbCount || 0) -
         (change.orbCountDiff.oldOrbCount || 0)
     );
-  console.log(change, props);
+  //console.log(change, props);
   const checkCards =
     change.cardsAddedCount > 0 &&
     change.delta.cardsAdded &&
