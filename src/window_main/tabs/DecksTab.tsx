@@ -29,7 +29,7 @@ import {
 import uxMove from "../uxMove";
 import { reduxAction } from "../../shared-redux/sharedRedux";
 import store from "../../shared-redux/stores/rendererStore";
-import { getDeck, decksList } from "../../shared-store";
+import globalStore, { getDeck, decksList } from "../../shared-store";
 
 function addTag(deckid: string, tag: string): void {
   const deck = getDeck(deckid);
@@ -119,6 +119,8 @@ function getDecksData(
         boosterCost,
         archivedSortVal,
         colorSortVal,
+        custom:
+          globalStore.staticDecks.indexOf(deck.id) == -1 ? true : deck.custom,
         timeUpdated: isValid(lastUpdated) ? lastUpdated.getTime() : NaN,
         timePlayed: isValid(lastPlayed) ? lastPlayed.getTime() : NaN,
         timeTouched: isValid(lastTouched) ? lastTouched.getTime() : NaN,
