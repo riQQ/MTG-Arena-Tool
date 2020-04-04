@@ -27,10 +27,7 @@ export default function saveMatch(id: string, matchEndTime: number): void {
   }
 
   // console.log("Save match:", match);
-  if (!globals.store.getState().matches.matchesIndex.includes(id)) {
-    reduxAction(globals.store.dispatch, "SET_MATCH", match, IPC_RENDERER);
-  }
-
+  reduxAction(globals.store.dispatch, "SET_MATCH", match, IPC_RENDERER);
   playerDb.upsert("", id, match);
   if (globals.matchCompletedOnGameNumber === globals.gameNumberCompleted) {
     const httpApi = require("./httpApi");
