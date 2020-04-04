@@ -378,13 +378,9 @@ function FlatCardTile(props: CardTileProps): JSX.Element {
 }
 
 export default function CardTile(props: CardTileProps): JSX.Element {
-  const { card, quantity } = props;
   const style = useSelector(
     (state: AppState) => state.settings.card_tile_style
   );
-  if (!card || quantity === 0) {
-    return <></>;
-  }
   if (parseInt(style + "") === CARD_TILE_FLAT) {
     return FlatCardTile(props);
   }
