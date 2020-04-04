@@ -12,6 +12,10 @@ import { getEditModeClass, useEditModeOnRef } from "./overlayUtil";
 
 function GroupedLandsDetails(props: { odds: Chances }): JSX.Element {
   const { landW, landU, landB, landR, landG } = props.odds;
+  const hoverCardSize = useSelector(
+    (state: AppState) => state.settings.cards_size_hover_card
+  );
+
   const manaChanceDiv = function(value: number, color: string): JSX.Element {
     return (
       <div className="mana_cont">
@@ -21,7 +25,10 @@ function GroupedLandsDetails(props: { odds: Chances }): JSX.Element {
     );
   };
   return (
-    <div className="lands_div">
+    <div
+      style={{ width: 100 - 34 + hoverCardSize * 15 + "px" }}
+      className="lands_div"
+    >
       {!!landW && manaChanceDiv(landW, "w")}
       {!!landU && manaChanceDiv(landU, "u")}
       {!!landB && manaChanceDiv(landB, "b")}
@@ -31,7 +38,8 @@ function GroupedLandsDetails(props: { odds: Chances }): JSX.Element {
   );
 }
 
-const SCALAR = 0.71808510638; // ???
+// This is the ratio of width/height of a magic card
+const SCALAR = 0.71808510638;
 
 export interface CardDetailsWindowletProps {
   arenaState: number;
@@ -73,7 +81,7 @@ export default function CardDetailsWindowlet(
   const card = db.card(grpId);
 
   // TODO remove group lands hack
-  const isCardGroupedLands = card?.id === 100 && odds;
+  const isCardGroupedLands = grpId === 100 && odds;
   // TODO support split cards
   const imgProps = {
     alt: card?.name ?? "",
@@ -114,7 +122,7 @@ to stop editing overlay positions`}
       ) : (
         <CSSTransition
           classNames="hover_fade"
-          in={!!card}
+          in={!!card || (isCardGroupedLands && grpId === 100 && opacity > 0)}
           timeout={200}
           unmountOnExit
         >
@@ -125,7 +133,11 @@ to stop editing overlay positions`}
                 <DraftRatings card={card} />
               </div>
             )}
-            {isCardGroupedLands && odds && <GroupedLandsDetails odds={odds} />}
+            {isCardGroupedLands && odds ? (
+              <GroupedLandsDetails odds={odds} />
+            ) : (
+              <></>
+            )}
           </div>
         </CSSTransition>
       )}
