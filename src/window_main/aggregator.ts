@@ -76,7 +76,8 @@ export default class Aggregator {
       winrateLow: NaN,
       winrateHigh: NaN,
       duration: 0,
-      avgDuration: NaN
+      avgDuration: NaN,
+      colors: []
     };
   }
 
@@ -364,7 +365,7 @@ export default class Aggregator {
     }
     // process opponent data
     if (match.oppDeck) {
-      const colors = match.oppDeck.colors;
+      const colors = match.oppDeck.colors || [];
       if (colors?.length) {
         colors.sort();
         if (!(colors in this.colorStats)) {
