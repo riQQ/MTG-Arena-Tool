@@ -116,9 +116,10 @@ ipc.on("start_background", async function() {
   if (typeof process.env.LOGFILE !== "undefined") {
     logUri = process.env.LOGFILE;
   }
-  if (!logUri) {
+  if (!logUri || logUri == "") {
     logUri = mtgaLog.defaultLogUri();
   }
+  appSettings.logUri = logUri;
 
   ipcSend("initialize_main", appSettings.launchToTray);
   //reduxAction(globals.store.dispatch, "SET_SETTINGS", appSettings, IPC_ALL ^ IPC_BACKGROUND);
