@@ -200,6 +200,9 @@ export async function loadPlayerConfig(): Promise<void> {
     const seasonalAdd = Object.keys(newSeasonal).map((id: string) => {
       const update = savedData.seasonal[id] as any;
       // Ugh.. some timestamps are stored as Date
+      if (typeof update.timestamp == "string") {
+        update.timestamp = new Date(update.timestamp).getTime();
+      }
       if (update.timestamp instanceof Date) {
         update.timestamp = update.timestamp.getTime();
       }
