@@ -4,7 +4,7 @@ import {
   IPC_RENDERER,
   IPC_ALL
 } from "../shared/constants";
-import { ipcSend, setData } from "./backgroundUtil";
+import { ipcSend } from "./backgroundUtil";
 import globals from "./globals";
 
 import { playerDb, playerDbLegacy } from "../shared/db/LocalDatabase";
@@ -81,6 +81,16 @@ export async function loadPlayerConfig(): Promise<void> {
   let savedData = await playerDb.findAll();
   savedData = fixBadPlayerData(savedData);
   const { settings } = savedData;
+
+  // update initial settings to renderer
+  if (settings) {
+    reduxAction(
+      globals.store.dispatch,
+      "SET_TOPNAV",
+      settings.last_open_tab,
+      IPC_RENDERER
+    );
+  }
 
   // Get Rank data
   if (savedData.rank) {

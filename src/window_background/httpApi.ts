@@ -27,7 +27,6 @@ import globalStore, {
 } from "../shared-store";
 import { IPC_RENDERER, IPC_ALL } from "../shared/constants";
 import { reduxAction } from "../shared-redux/sharedRedux";
-import { SeasonalRankData } from "../types/Season";
 
 let httpQueue: async.AsyncQueue<HttpTask>;
 

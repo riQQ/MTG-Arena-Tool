@@ -339,14 +339,16 @@ function FlexRight(props: FlexRightProps): JSX.Element {
       (change.orbCountDiff.currentOrbCount || 0) -
         (change.orbCountDiff.oldOrbCount || 0)
     );
-  console.log(change, props);
+  //console.log(change, props);
   const checkCards =
     change.cardsAddedCount > 0 &&
     change.delta.cardsAdded &&
     change.delta.cardsAdded.length > 0;
+
   const checkAether =
     checkAetherized &&
-    change.aetherizedCards > 0 &&
+    change.aetherizedCardsCount > 0 &&
+    change.aetherizedCards &&
     change.aetherizedCards.length > 0;
   const aetherCards: string[] = checkAether
     ? change.aetherizedCards.reduce(

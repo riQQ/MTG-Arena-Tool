@@ -4037,7 +4037,7 @@ a:hover {
 
 .inventory_card_quantity_container {
     position: absolute;
-    bottom: 8px;
+    bottom: 10px;
     left: 0;
     text-align: center;
     width: 100%;
@@ -4046,6 +4046,11 @@ a:hover {
 
 .inventory_card_quantity {
     color: var(--color-light);
+    font-family: var(--main-font-name);
+    font-size: 15px;
+    border-radius: 50%;
+    padding: 3px;
+    background-color: var(--color-back-100);
 }
 
 .timeline-line {

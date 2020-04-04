@@ -9,7 +9,7 @@ export function useMultiSelectFilter<D>(
   props: MultiSelectFilterProps<D>
 ): [D, OnClickFactory] {
   const { filterKey, filters, onFilterChanged } = props;
-  const filterValue = filters[filterKey];
+  const filterValue = { ...filters[filterKey] };
   const onClickMultiFilter = React.useCallback(
     (code: string) => (event: React.MouseEvent<HTMLDivElement>): void => {
       (filterValue as any)[code] = event.currentTarget.classList.contains(

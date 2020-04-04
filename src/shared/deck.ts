@@ -276,7 +276,7 @@ class Deck {
       const cardQ = card.measurable ? card.quantity : 1;
 
       const setCode = db.sets[cardSet].arenacode || get_set_code(cardSet);
-      str += `${cardQ} ${cardName} (${setCode}) ${cardCn} \r\n`;
+      str += `${cardQ} ${cardName} (${setCode}) ${cardCn}\r\n`;
     });
 
     return str;
