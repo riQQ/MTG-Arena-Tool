@@ -3,7 +3,6 @@ import { DATE_SEASON, RANKS } from "../../../shared/constants";
 import Aggregator, { AggregatorFilters } from "../../aggregator";
 import { formatPercent } from "../../rendererUtil";
 import store from "../../../shared-redux/stores/rendererStore";
-import globals from "../../../window_background/globals";
 
 const { RANKED_CONST, RANKED_DRAFT } = Aggregator;
 
@@ -16,38 +15,36 @@ function getNextRank(currentRank: string): undefined | string {
 }
 
 function getStepsUntilNextRank(mode: boolean, winrate: number): string {
-  const playerData = globals.store.getState().playerdata;
-  const rr = mode ? playerData.rank.limited : playerData.rank.constructed;
-
-  const cr = rr.rank;
-  const cs = rr.step;
-  const ct = rr.tier;
+  const playerRank = store.getState().playerdata.rank;
+  const { rank, step, tier } = mode
+    ? playerRank.limited
+    : playerRank.constructed;
 
   // TODO extract rank tier/level props into constants
   let st = 1;
   let stw = 1;
   let stl = 0;
-  if (cr == "Bronze") {
+  if (rank == "Bronze") {
     st = 4;
     stw = 2;
     stl = 0;
   }
-  if (cr == "Silver") {
+  if (rank == "Silver") {
     st = 5;
     stw = 2;
     stl = 1;
   }
-  if (cr == "Gold") {
+  if (rank == "Gold") {
     st = 6;
     stw = 1;
     stl = 1;
   }
-  if (cr == "Platinum") {
+  if (rank == "Platinum") {
     st = 7;
     stw = 1;
     stl = 1;
   }
-  if (cr == "Diamond") {
+  if (rank == "Diamond") {
     st = 7;
     stw = 1;
     stl = 1;
@@ -55,7 +52,7 @@ function getStepsUntilNextRank(mode: boolean, winrate: number): string {
 
   const expectedValue = winrate * stw - (1 - winrate) * stl;
   if (expectedValue <= 0) return "∞";
-  const stepsNeeded = st * ct - cs;
+  const stepsNeeded = st * tier - step;
   return "~" + Math.ceil(stepsNeeded / expectedValue);
 }
 
