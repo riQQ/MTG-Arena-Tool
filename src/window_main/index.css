@@ -858,7 +858,7 @@ font-family:  var(--main-font-name);
 .list_economy_awarded {
     margin: 0 8px 0 auto;
     align-items: center;
-    overflow: -webkit-paged-x;
+    overflow-y: hidden;
     display: flex;
     max-width: calc(100% - 300px);
 }
