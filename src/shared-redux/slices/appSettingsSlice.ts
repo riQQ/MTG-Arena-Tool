@@ -12,6 +12,8 @@ const settingsSlice = createSlice({
     betaChannel: false,
     metadataLang: "en",
     logLocaleFormat: "",
+    logTimeExample: "",
+    logTimeFormat: "",
     logUri: ""
   },
   reducers: {

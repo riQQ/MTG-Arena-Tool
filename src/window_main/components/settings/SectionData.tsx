@@ -134,27 +134,25 @@ export default function SectionData(): JSX.Element {
       });
   }, [arenaLogCallback, appSettings.logUri]);
 
-  let parsedOutput = <>auto-detection</>;
-  if (appSettings.logLocaleFormat) {
-    const testDate = parse(
-      playerData.lastLogTimestamp,
-      appSettings.logLocaleFormat,
-      new Date()
+  let parsedOutput = <></>;
+  const testDate = parse(
+    appSettings.logTimeExample,
+    appSettings.logTimeFormat,
+    new Date()
+  );
+  if (isValid(testDate) && !isNaN(testDate.getTime())) {
+    parsedOutput = (
+      <>
+        <b className="green">{testDate.toISOString()}</b>
+        <i> (simplified extended ISO_8601 format)</i>
+      </>
     );
-    if (isValid(testDate) && !isNaN(testDate.getTime())) {
-      parsedOutput = (
-        <>
-          <b className="green">{testDate.toISOString()}</b>
-          <i> (simplified extended ISO_8601 format)</i>
-        </>
-      );
-    } else {
-      parsedOutput = (
-        <>
-          <b className="red">Invalid format or timestamp</b>
-        </>
-      );
-    }
+  } else {
+    parsedOutput = (
+      <>
+        <b className="red">Invalid format or timestamp</b>
+      </>
+    );
   }
 
   return (
@@ -224,7 +222,6 @@ export default function SectionData(): JSX.Element {
         />
       </div>
       <div className="settings_note">
-        <p>Parsed output: {parsedOutput}</p>
         <i>
           <p>
             Date and time format to use when parsing the Arena log. Incorrect
@@ -240,6 +237,17 @@ export default function SectionData(): JSX.Element {
             .
           </p>
         </i>
+      </div>
+      <div style={{ paddingLeft: "35px" }} className="settings_note">
+        <p>
+          Example time read: <b>{appSettings.logTimeExample}</b>
+        </p>
+        <p>
+          Format used: <b>{appSettings.logTimeFormat}</b>
+        </p>
+        <p>
+          Output: <b>{parsedOutput}</b>
+        </p>
       </div>
       <div className="settings_title">Local Data</div>
       <div className="settings_note">

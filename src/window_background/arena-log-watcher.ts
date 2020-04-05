@@ -12,7 +12,8 @@ import * as Labels from "./onLabel";
 import {
   ipcSend,
   parseWotcTimeFallback,
-  updateLoading
+  updateLoading,
+  getDateFormat
 } from "./backgroundUtil";
 import {
   ARENA_MODE_MATCH,
@@ -200,8 +201,16 @@ function onLogEntryFound(entry: any): void {
         }
         if (timestamp) {
           globals.logTime = parseWotcTimeFallback(timestamp);
-          //reduxAction(globals.store.dispatch, "SET_LOG_TIMESTAMP", timestamp, IPC_RENDERER);
-          //reduxAction(globals.store.dispatch, "SET_LOG_FORMAT", getDateFormat(timestamp), IPC_RENDERER);
+          if (globals.logTimestamp == 0) {
+            const format = getDateFormat(timestamp);
+            reduxAction(
+              globals.store.dispatch,
+              "SET_APP_SETTINGS",
+              { logTimeExample: timestamp, logTimeFormat: format },
+              IPC_RENDERER
+            );
+          }
+          globals.logTimestamp = timestamp;
         }
       } catch (err) {
         console.log(entry.label, entry.position, entry.json());

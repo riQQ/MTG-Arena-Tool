@@ -60,6 +60,8 @@ let logReadStart: Date = new Date();
 
 let logTime = new Date();
 
+let logTimestamp = 0;
+
 let matchCompletedOnGameNumber = 0;
 
 let matchGameStats: MatchGameStats[] = [];
@@ -95,6 +97,7 @@ export default {
   instanceToCardIdMap,
   logReadStart,
   logTime,
+  logTimestamp,
   matchCompletedOnGameNumber,
   matchGameStats,
   oddsSampleSize,
