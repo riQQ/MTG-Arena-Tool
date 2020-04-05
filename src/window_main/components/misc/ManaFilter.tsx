@@ -16,7 +16,7 @@ export interface ManaFilterProps {
 
 export default function ManaFilter(props: ManaFilterProps): JSX.Element {
   const { filterKey, prefixId, filters, onFilterChanged } = props;
-  const colors = filters[filterKey];
+  const colors = { ...filters[filterKey] };
 
   const filterLabels: { [key in ManaFilterKeys]: string } = {
     w: "White",
