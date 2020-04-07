@@ -152,28 +152,48 @@ function PatreonBadge(): JSX.Element {
   return <div title={title} style={style} className="top_patreon"></div>;
 }
 
-function SyncBadge(): JSX.Element {
+function SyncBadge({ patreon }: { patreon: boolean }): JSX.Element {
+  const offline = useSelector((state: AppState) => state.renderer.offline);
   const syncState = useSelector((state: AppState) => state.renderer.syncState);
 
   let title = "All done";
-  if (syncState === SYNC_ERR)
+  let image = "sync_ok";
+  if (syncState === SYNC_ERR) {
     title = "Something went wrong. Click to try again.";
-  if (syncState === SYNC_IDLE) title = "Click to check";
-  if (syncState === SYNC_CHECK) title = "Checking";
-  if (syncState === SYNC_FETCH) title = "Fetching data";
-  if (syncState === SYNC_PUSH) title = "Pushing data";
+    image = "sync_error";
+  }
+  if (syncState === SYNC_IDLE) {
+    title = "Click to check";
+    image = "sync_force";
+  }
+  if (syncState === SYNC_CHECK) {
+    title = "Checking";
+    image = "sync_force";
+  }
+  if (syncState === SYNC_FETCH) {
+    title = "Fetching data";
+    image = "sync_pull";
+  }
+  if (syncState === SYNC_PUSH) {
+    title = "Pushing data";
+    image = "sync_push";
+  }
+  if (offline) {
+    title = "You are offline";
+    image = "sync_error";
+  }
+  if (!patreon) {
+    title = "";
+    image = "sync_patreon";
+  }
 
-  const style = useMemo(() => {
-    let image = "sync_ok";
-    if (syncState === SYNC_ERR) image = "sync_error";
-    if (syncState === SYNC_CHECK) image = "sync_force";
-    if (syncState === SYNC_IDLE) image = "sync_force";
-    if (syncState === SYNC_FETCH) image = "sync_pull";
-    if (syncState === SYNC_PUSH) image = "sync_push";
-    return { backgroundImage: `url(../images/${image}.png)` };
-  }, [syncState]);
-
-  return <div title={title} style={style} className="top_sync"></div>;
+  return (
+    <div
+      title={title}
+      style={{ backgroundImage: `url(../images/${image}.png)` }}
+      className="top_sync"
+    ></div>
+  );
 }
 
 export function TopNav(): JSX.Element {
@@ -252,7 +272,7 @@ export function TopNav(): JSX.Element {
           <TopRankIcon {...contructedNav} />
           <TopRankIcon {...limitedNav} />
           {patreon ? <PatreonBadge /> : null}
-          <SyncBadge />
+          <SyncBadge patreon={patreon} />
           <div className="top_username" title={"Arena username"}>
             {userName}
           </div>

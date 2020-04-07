@@ -54,6 +54,21 @@ export function setSyncState(state: number): void {
   reduxAction(globals.store.dispatch, "SET_SYNC_STATE", state, IPC_RENDERER);
 }
 
+export function finishSync(): void {
+  const toPush = globals.store.getState().renderer.syncToPush;
+  if (
+    toPush.courses.length == 0 &&
+    toPush.matches.length == 0 &&
+    toPush.drafts.length == 0 &&
+    toPush.economy.length == 0 &&
+    toPush.seasonal.length == 0
+  ) {
+    setSyncState(SYNC_OK);
+  } else {
+    setSyncState(SYNC_CHECK);
+  }
+}
+
 function syncUserData(data: any): void {
   //console.log("syncUserData: ", data);
   // Sync Events
@@ -167,7 +182,8 @@ function syncUserData(data: any): void {
     );
     playerDb.upsert("", "tags_colors", newTags);
   }
-  setSyncState(SYNC_IDLE);
+
+  finishSync();
 }
 
 export function httpNotificationsPull(): void {
@@ -246,6 +262,28 @@ function handleAuthResponse(
   parsedResult?: any
 ): void {
   if (error || !parsedResult) {
+    reduxAction(
+      globals.store.dispatch,
+      "SET_APP_SETTINGS",
+      {
+        token: "",
+        email: ""
+      },
+      IPC_ALL
+    );
+    ipcSend("auth", {});
+    ipcSend("toggle_login", true);
+    ipcSend("login_failed", true);
+    ipcSend("clear_pwd", 1);
+    ipcPop({
+      text: error?.message,
+      time: 3000,
+      progress: -1
+    });
+    return;
+  }
+
+  if (parsedResult) {
     const toPush = {
       courses: Object.keys(globalStore.events).filter(
         id => !(id in parsedResult.courses)
@@ -273,28 +311,8 @@ function handleAuthResponse(
     ) {
       setSyncState(SYNC_OK);
     } else {
-      setSyncState(SYNC_CHECK);
+      setSyncState(SYNC_IDLE);
     }
-
-    reduxAction(
-      globals.store.dispatch,
-      "SET_APP_SETTINGS",
-      {
-        token: "",
-        email: ""
-      },
-      IPC_ALL
-    );
-    ipcSend("auth", {});
-    ipcSend("toggle_login", true);
-    ipcSend("login_failed", true);
-    ipcSend("clear_pwd", 1);
-    ipcPop({
-      text: error?.message,
-      time: 3000,
-      progress: -1
-    });
-    return;
   }
 
   syncSettings({ token: parsedResult.token }, false);
@@ -456,6 +474,7 @@ function handleSetDataResponse(
   parsedResult?: any
 ): void {
   const mongoDbDuplicateKeyErrorCode = 11000;
+  finishSync();
   if (parsedResult && parsedResult.error === mongoDbDuplicateKeyErrorCode) {
     return; // idempotent success case, just return
   } else if (error) {
