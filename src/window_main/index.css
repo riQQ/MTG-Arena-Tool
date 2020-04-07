@@ -3694,6 +3694,7 @@ a:hover {
 
 .list_item_archive {
     width: 4px;
+    min-width: 4px;
     margin-left: 8px;
     overflow: hidden;
     background: var(--color-r) url(../images/hide.png) no-repeat left;
