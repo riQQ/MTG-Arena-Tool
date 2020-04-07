@@ -178,15 +178,14 @@ function SyncBadge({ patreon }: { patreon: boolean }): JSX.Element {
     title = "Pushing data";
     image = "sync_push";
   }
-  if (offline) {
-    title = "You are offline";
-    image = "sync_error";
-  }
   if (!patreon) {
     title = "";
     image = "sync_patreon";
   }
-
+  if (offline) {
+    title = "You are offline";
+    image = "sync_error";
+  }
   return (
     <div
       title={title}
