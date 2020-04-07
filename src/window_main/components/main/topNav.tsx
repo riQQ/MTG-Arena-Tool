@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React from "react";
+import React, { useMemo } from "react";
 
 import {
   get_rank_index as getRankIndex,
@@ -17,7 +17,12 @@ import {
   MAIN_COLLECTION,
   MAIN_CONSTRUCTED,
   MAIN_LIMITED,
-  IPC_NONE
+  IPC_NONE,
+  SYNC_CHECK,
+  SYNC_ERR,
+  SYNC_FETCH,
+  SYNC_PUSH,
+  SYNC_IDLE
 } from "../../../shared/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
@@ -147,6 +152,30 @@ function PatreonBadge(): JSX.Element {
   return <div title={title} style={style} className="top_patreon"></div>;
 }
 
+function SyncBadge(): JSX.Element {
+  const syncState = useSelector((state: AppState) => state.renderer.syncState);
+
+  let title = "All done";
+  if (syncState === SYNC_ERR)
+    title = "Something went wrong. Click to try again.";
+  if (syncState === SYNC_IDLE) title = "Click to check";
+  if (syncState === SYNC_CHECK) title = "Checking";
+  if (syncState === SYNC_FETCH) title = "Fetching data";
+  if (syncState === SYNC_PUSH) title = "Pushing data";
+
+  const style = useMemo(() => {
+    let image = "sync_ok";
+    if (syncState === SYNC_ERR) image = "sync_error";
+    if (syncState === SYNC_CHECK) image = "sync_force";
+    if (syncState === SYNC_IDLE) image = "sync_force";
+    if (syncState === SYNC_FETCH) image = "sync_pull";
+    if (syncState === SYNC_PUSH) image = "sync_push";
+    return { backgroundImage: `url(../images/${image}.png)` };
+  }, [syncState]);
+
+  return <div title={title} style={style} className="top_sync"></div>;
+}
+
 export function TopNav(): JSX.Element {
   const [compact, setCompact] = React.useState(false);
   const patreon = useSelector(
@@ -223,6 +252,7 @@ export function TopNav(): JSX.Element {
           <TopRankIcon {...contructedNav} />
           <TopRankIcon {...limitedNav} />
           {patreon ? <PatreonBadge /> : null}
+          <SyncBadge />
           <div className="top_username" title={"Arena username"}>
             {userName}
           </div>

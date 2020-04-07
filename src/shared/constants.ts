@@ -12,6 +12,14 @@ export const LOGIN_WAITING = 2;
 export const LOGIN_OK = 3;
 export const LOGIN_FAILED = 4;
 
+// Sync states
+export const SYNC_IDLE = 1;
+export const SYNC_OK = 2;
+export const SYNC_CHECK = 3;
+export const SYNC_FETCH = 4;
+export const SYNC_PUSH = 5;
+export const SYNC_ERR = 6;
+
 // Colour indices
 export const WHITE = 1;
 

@@ -25,7 +25,14 @@ import globalStore, {
   draftExists,
   seasonalList
 } from "../shared-store";
-import { IPC_RENDERER, IPC_ALL } from "../shared/constants";
+import {
+  SYNC_CHECK,
+  SYNC_OK,
+  SYNC_IDLE,
+  SYNC_FETCH,
+  IPC_RENDERER,
+  IPC_ALL
+} from "../shared/constants";
 import { reduxAction } from "../shared-redux/sharedRedux";
 
 let httpQueue: async.AsyncQueue<HttpTask>;
@@ -41,6 +48,10 @@ export function initHttpQueue(): void {
 
 export function isIdle(): boolean {
   return httpQueue ? httpQueue.idle() : false;
+}
+
+export function setSyncState(state: number): void {
+  reduxAction(globals.store.dispatch, "SET_SYNC_STATE", state, IPC_RENDERER);
 }
 
 function syncUserData(data: any): void {
@@ -156,6 +167,7 @@ function syncUserData(data: any): void {
     );
     playerDb.upsert("", "tags_colors", newTags);
   }
+  setSyncState(SYNC_IDLE);
 }
 
 export function httpNotificationsPull(): void {
@@ -210,6 +222,7 @@ function handleNotificationsResponse(
 export function httpAuth(userName: string, pass: string): void {
   const _id = makeId(6);
   const playerData = globals.store.getState().playerdata;
+  setSyncState(SYNC_CHECK);
   httpQueue.push(
     {
       reqId: _id,
@@ -233,6 +246,36 @@ function handleAuthResponse(
   parsedResult?: any
 ): void {
   if (error || !parsedResult) {
+    const toPush = {
+      courses: Object.keys(globalStore.events).filter(
+        id => !(id in parsedResult.courses)
+      ),
+      matches: Object.keys(globalStore.matches).filter(
+        id => !(id in parsedResult.matches)
+      ),
+      drafts: Object.keys(globalStore.drafts).filter(
+        id => !(id in parsedResult.drafts)
+      ),
+      economy: Object.keys(globalStore.transactions).filter(
+        id => !(id in parsedResult.economy)
+      ),
+      seasonal: Object.keys(globalStore.seasonal).filter(
+        id => !(id in parsedResult.seasonal)
+      )
+    };
+    reduxAction(globals.store.dispatch, "SET_TO_PUSH", toPush, IPC_RENDERER);
+    if (
+      toPush.courses.length == 0 &&
+      toPush.matches.length == 0 &&
+      toPush.drafts.length == 0 &&
+      toPush.economy.length == 0 &&
+      toPush.seasonal.length == 0
+    ) {
+      setSyncState(SYNC_OK);
+    } else {
+      setSyncState(SYNC_CHECK);
+    }
+
     reduxAction(
       globals.store.dispatch,
       "SET_APP_SETTINGS",
@@ -703,6 +746,7 @@ export interface SyncRequestData {
 }
 
 export function httpSyncRequest(data: SyncRequestData): void {
+  setSyncState(SYNC_FETCH);
   const _id = makeId(6);
   httpQueue.push(
     {
