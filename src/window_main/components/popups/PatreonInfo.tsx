@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const SpriteAnimator = require("react-sprite-animator");
 import React, { useState, useCallback, useEffect } from "react";
 import { shell } from "electron";
 
