@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React from "react";
+import React, { useState, useCallback } from "react";
 
 import {
   get_rank_index as getRankIndex,
@@ -17,13 +17,21 @@ import {
   MAIN_COLLECTION,
   MAIN_CONSTRUCTED,
   MAIN_LIMITED,
-  IPC_NONE
+  IPC_NONE,
+  SYNC_CHECK,
+  SYNC_ERR,
+  SYNC_FETCH,
+  SYNC_PUSH,
+  SYNC_IDLE,
+  SYNC_OK
 } from "../../../shared/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
 import useWindowSize from "../../hooks/useWindowSize";
 import uxMove from "../../uxMove";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
+import PatreonInfo from "../popups/PatreonInfo";
+import { ipcSend } from "../../rendererUtil";
 
 interface TopNavItemProps {
   dispatcher: any;
@@ -147,6 +155,94 @@ function PatreonBadge(): JSX.Element {
   return <div title={title} style={style} className="top_patreon"></div>;
 }
 
+function SyncBadge({ patreon }: { patreon: boolean }): JSX.Element {
+  const [patreonInfo, setPatreonInfo] = useState(false);
+  const offline = useSelector((state: AppState) => state.renderer.offline);
+  const syncState = useSelector((state: AppState) => state.renderer.syncState);
+  const toPush = useSelector((state: AppState) => state.renderer.syncToPush);
+
+  const sum =
+    toPush.courses.length +
+    toPush.drafts.length +
+    toPush.economy.length +
+    toPush.matches.length +
+    toPush.seasonal.length;
+
+  let title = "All done";
+  let image = "sync_ok";
+  if (syncState === SYNC_ERR) {
+    title = "Something went wrong. Click to try again.";
+    image = "sync_error";
+  }
+  if (syncState === SYNC_IDLE) {
+    title = "Click to check";
+    image = "sync_force";
+  }
+  if (syncState === SYNC_CHECK) {
+    title = "Checking";
+    image = "sync_force";
+  }
+  if (syncState === SYNC_FETCH) {
+    title = "Fetching data";
+    image = "sync_pull";
+  }
+  if (syncState === SYNC_PUSH) {
+    title = "Pushing data";
+    image = "sync_push";
+  }
+  if (!patreon) {
+    title = "";
+    image = "sync_patreon";
+  }
+  if (offline) {
+    title = "You are offline";
+    image = "sync_error";
+  } else {
+    if (
+      sum > 0 &&
+      (syncState == SYNC_IDLE ||
+        syncState == SYNC_OK ||
+        syncState == SYNC_CHECK)
+    ) {
+      title = `You have ${sum} documents not synchronized. Click to begin uploading.`;
+    }
+  }
+
+  const doClick = useCallback(() => {
+    if (!patreon) {
+      setPatreonInfo(true);
+    } else {
+      if (
+        syncState === SYNC_IDLE ||
+        syncState == SYNC_ERR ||
+        syncState == SYNC_OK ||
+        syncState == SYNC_CHECK
+      ) {
+        ipcSend("sync_check");
+        // Begin sync secuence
+      }
+    }
+  }, [patreon, syncState]);
+
+  const closePatreonDialog = useCallback(() => {
+    setTimeout(() => {
+      setPatreonInfo(false);
+    }, 350);
+  }, []);
+
+  return (
+    <>
+      <div
+        title={title}
+        onClick={doClick}
+        style={{ backgroundImage: `url(../images/${image}.png)` }}
+        className="top_sync"
+      ></div>
+      {patreonInfo ? <PatreonInfo closeCallback={closePatreonDialog} /> : <></>}
+    </>
+  );
+}
+
 export function TopNav(): JSX.Element {
   const [compact, setCompact] = React.useState(false);
   const patreon = useSelector(
@@ -223,6 +319,7 @@ export function TopNav(): JSX.Element {
           <TopRankIcon {...contructedNav} />
           <TopRankIcon {...limitedNav} />
           {patreon ? <PatreonBadge /> : null}
+          <SyncBadge patreon={patreon} />
           <div className="top_username" title={"Arena username"}>
             {userName}
           </div>

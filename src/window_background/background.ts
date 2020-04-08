@@ -101,6 +101,11 @@ ipc.on("download_metadata", () => {
 });
 
 //
+ipc.on("sync_check", async function() {
+  httpApi.httSyncPush();
+});
+
+//
 ipc.on("start_background", async function() {
   appDb.init("application");
   reduxAction(

@@ -23,9 +23,21 @@ import globalStore, {
   eventExists,
   transactionExists,
   draftExists,
-  seasonalList
+  seasonalList,
+  getEvent,
+  getDraft,
+  getTransaction,
+  getMatch,
+  getSeasonal
 } from "../shared-store";
-import { IPC_RENDERER, IPC_ALL } from "../shared/constants";
+import {
+  SYNC_CHECK,
+  SYNC_OK,
+  SYNC_IDLE,
+  SYNC_FETCH,
+  IPC_RENDERER,
+  IPC_ALL
+} from "../shared/constants";
 import { reduxAction } from "../shared-redux/sharedRedux";
 
 let httpQueue: async.AsyncQueue<HttpTask>;
@@ -41,6 +53,25 @@ export function initHttpQueue(): void {
 
 export function isIdle(): boolean {
   return httpQueue ? httpQueue.idle() : false;
+}
+
+export function setSyncState(state: number): void {
+  reduxAction(globals.store.dispatch, "SET_SYNC_STATE", state, IPC_RENDERER);
+}
+
+export function finishSync(): void {
+  const toPush = globals.store.getState().renderer.syncToPush;
+  if (
+    toPush.courses.length == 0 &&
+    toPush.matches.length == 0 &&
+    toPush.drafts.length == 0 &&
+    toPush.economy.length == 0 &&
+    toPush.seasonal.length == 0
+  ) {
+    setSyncState(SYNC_OK);
+  } else {
+    setSyncState(SYNC_CHECK);
+  }
 }
 
 function syncUserData(data: any): void {
@@ -156,6 +187,8 @@ function syncUserData(data: any): void {
     );
     playerDb.upsert("", "tags_colors", newTags);
   }
+
+  finishSync();
 }
 
 export function httpNotificationsPull(): void {
@@ -207,9 +240,42 @@ function handleNotificationsResponse(
   });
 }
 
+function handleSync(syncIds: SyncIds): void {
+  const toPush = {
+    courses: Object.keys(globalStore.events).filter(
+      id => !(id in syncIds.courses)
+    ),
+    matches: Object.keys(globalStore.matches).filter(
+      id => !(id in syncIds.matches)
+    ),
+    drafts: Object.keys(globalStore.drafts).filter(
+      id => !(id in syncIds.drafts)
+    ),
+    economy: Object.keys(globalStore.transactions).filter(
+      id => !(id in syncIds.economy)
+    ),
+    seasonal: Object.keys(globalStore.seasonal).filter(
+      id => !(id in syncIds.seasonal)
+    )
+  };
+  reduxAction(globals.store.dispatch, "SET_TO_PUSH", toPush, IPC_RENDERER);
+  if (
+    toPush.courses.length == 0 &&
+    toPush.matches.length == 0 &&
+    toPush.drafts.length == 0 &&
+    toPush.economy.length == 0 &&
+    toPush.seasonal.length == 0
+  ) {
+    setSyncState(SYNC_OK);
+  } else {
+    setSyncState(SYNC_IDLE);
+  }
+}
+
 export function httpAuth(userName: string, pass: string): void {
   const _id = makeId(6);
   const playerData = globals.store.getState().playerdata;
+  setSyncState(SYNC_CHECK);
   httpQueue.push(
     {
       reqId: _id,
@@ -224,6 +290,14 @@ export function httpAuth(userName: string, pass: string): void {
     },
     handleAuthResponse
   );
+}
+
+interface SyncIds {
+  courses: string[];
+  matches: string[];
+  drafts: string[];
+  economy: string[];
+  seasonal: string[];
 }
 
 function handleAuthResponse(
@@ -255,9 +329,9 @@ function handleAuthResponse(
   }
 
   syncSettings({ token: parsedResult.token }, false);
-
   ipcSend("auth", parsedResult);
   //ipcSend("auth", parsedResult.arenaids);
+
   const appSettings = globals.store.getState().appsettings;
   if (appSettings.rememberMe) {
     reduxAction(
@@ -274,21 +348,23 @@ function handleAuthResponse(
   data.patreon = parsedResult.patreon;
   data.patreon_tier = parsedResult.patreon_tier;
 
-  const serverData = {
+  const serverData: SyncIds = {
     matches: [],
     courses: [],
     drafts: [],
     economy: [],
     seasonal: []
   };
-  if (data.patreon) {
+
+  if (parsedResult && data.patreon) {
+    handleSync(parsedResult);
     serverData.matches = parsedResult.matches;
     serverData.courses = parsedResult.courses;
     serverData.drafts = parsedResult.drafts;
     serverData.economy = parsedResult.economy;
     serverData.seasonal = parsedResult.seasonal;
   }
-  setData(data, false);
+
   loadPlayerConfig().then(() => {
     ipcLog("...called back to http-api.");
     ipcLog("Checking for sync requests...");
@@ -413,6 +489,7 @@ function handleSetDataResponse(
   parsedResult?: any
 ): void {
   const mongoDbDuplicateKeyErrorCode = 11000;
+  finishSync();
   if (parsedResult && parsedResult.error === mongoDbDuplicateKeyErrorCode) {
     return; // idempotent success case, just return
   } else if (error) {
@@ -703,6 +780,7 @@ export interface SyncRequestData {
 }
 
 export function httpSyncRequest(data: SyncRequestData): void {
+  setSyncState(SYNC_FETCH);
   const _id = makeId(6);
   httpQueue.push(
     {
@@ -715,4 +793,32 @@ export function httpSyncRequest(data: SyncRequestData): void {
       syncUserData(parsedResult.data);
     })
   );
+}
+
+export function httSyncPush(): void {
+  const syncIds: SyncIds = globals.store.getState().renderer.syncToPush;
+  syncIds.courses.map((id: string) => {
+    const obj = getEvent(id);
+    if (obj) httpSubmitCourse(obj);
+  });
+
+  syncIds.drafts.map((id: string) => {
+    const obj = getDraft(id);
+    if (obj) httpSetDraft(obj);
+  });
+
+  syncIds.economy.map((id: string) => {
+    const obj = getTransaction(id);
+    if (obj) httpSetEconomy(obj);
+  });
+
+  syncIds.matches.map((id: string) => {
+    const obj = getMatch(id);
+    if (obj) httpSetMatch(obj);
+  });
+
+  syncIds.seasonal.map((id: string) => {
+    const obj = getSeasonal(id);
+    if (obj) httpSetSeasonal(obj);
+  });
 }

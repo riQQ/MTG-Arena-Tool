@@ -5,7 +5,8 @@ import { IncomingMessage } from "http";
 import globals from "./globals";
 import { ipcSend } from "./backgroundUtil";
 import { reduxAction } from "../shared-redux/sharedRedux";
-import { IPC_RENDERER } from "../shared/constants";
+import { IPC_RENDERER, SYNC_PUSH } from "../shared/constants";
+import { setSyncState } from "./httpApi";
 
 const serverAddress = "mtgatool.com";
 
@@ -135,6 +136,15 @@ export function asyncWorker(task: HttpTask, callback: HttpTaskCallback): void {
       "SEND >> " + task.method + ", " + _headers.reqId + ", " + _headers.token
     );
     console.log("SEND", _headers);
+  }
+  if (
+    task.method == "submit_course" ||
+    task.method == "set_match" ||
+    task.method == "set_draft" ||
+    task.method == "set_economy" ||
+    task.method == "set_seasonal"
+  ) {
+    setSyncState(SYNC_PUSH);
   }
   // console.log("POST", _headers);
   const postData = qs.stringify(_headers);
