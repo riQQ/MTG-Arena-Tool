@@ -403,7 +403,8 @@ export default function TimelineTab(): JSX.Element {
                 <div
                   style={{
                     whiteSpace: "nowrap",
-                    marginLeft: hoverPartX + "px"
+                    marginLeft:
+                      Math.min(dimensions.width - 120, hoverPartX) + "px"
                   }}
                 >
                   {data[hoverPart]
