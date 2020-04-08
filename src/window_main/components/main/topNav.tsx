@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { useMemo } from "react";
+import React, { useState, useCallback } from "react";
 
 import {
   get_rank_index as getRankIndex,
@@ -22,13 +22,15 @@ import {
   SYNC_ERR,
   SYNC_FETCH,
   SYNC_PUSH,
-  SYNC_IDLE
+  SYNC_IDLE,
+  SYNC_OK
 } from "../../../shared/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
 import useWindowSize from "../../hooks/useWindowSize";
 import uxMove from "../../uxMove";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
+import PatreonInfo from "../popups/PatreonInfo";
 
 interface TopNavItemProps {
   dispatcher: any;
@@ -153,6 +155,7 @@ function PatreonBadge(): JSX.Element {
 }
 
 function SyncBadge({ patreon }: { patreon: boolean }): JSX.Element {
+  const [patreonInfo, setPatreonInfo] = useState(false);
   const offline = useSelector((state: AppState) => state.renderer.offline);
   const syncState = useSelector((state: AppState) => state.renderer.syncState);
 
@@ -186,12 +189,37 @@ function SyncBadge({ patreon }: { patreon: boolean }): JSX.Element {
     title = "You are offline";
     image = "sync_error";
   }
+
+  const doClick = useCallback(() => {
+    if (!patreon) {
+      setPatreonInfo(true);
+    } else {
+      if (
+        syncState === SYNC_IDLE ||
+        syncState == SYNC_ERR ||
+        syncState == SYNC_OK
+      ) {
+        // Begin sync secuence
+      }
+    }
+  }, [patreon, syncState]);
+
+  const closePatreonDialog = useCallback(() => {
+    setTimeout(() => {
+      setPatreonInfo(false);
+    }, 350);
+  }, []);
+
   return (
-    <div
-      title={title}
-      style={{ backgroundImage: `url(../images/${image}.png)` }}
-      className="top_sync"
-    ></div>
+    <>
+      <div
+        title={title}
+        onClick={doClick}
+        style={{ backgroundImage: `url(../images/${image}.png)` }}
+        className="top_sync"
+      ></div>
+      {patreonInfo ? <PatreonInfo closeCallback={closePatreonDialog} /> : <></>}
+    </>
   );
 }
 
