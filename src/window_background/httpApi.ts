@@ -243,19 +243,19 @@ function handleNotificationsResponse(
 function handleSync(syncIds: SyncIds): void {
   const toPush = {
     courses: Object.keys(globalStore.events).filter(
-      id => !(id in syncIds.courses)
+      id => syncIds.courses.indexOf(id) == -1
     ),
     matches: Object.keys(globalStore.matches).filter(
-      id => !(id in syncIds.matches)
+      id => syncIds.matches.indexOf(id) == -1
     ),
     drafts: Object.keys(globalStore.drafts).filter(
-      id => !(id in syncIds.drafts)
+      id => syncIds.drafts.indexOf(id) == -1
     ),
     economy: Object.keys(globalStore.transactions).filter(
-      id => !(id in syncIds.economy)
+      id => syncIds.economy.indexOf(id) == -1
     ),
     seasonal: Object.keys(globalStore.seasonal).filter(
-      id => !(id in syncIds.seasonal)
+      id => syncIds.seasonal.indexOf(id) == -1
     )
   };
   reduxAction(globals.store.dispatch, "SET_TO_PUSH", toPush, IPC_RENDERER);
@@ -357,7 +357,6 @@ function handleAuthResponse(
   };
 
   if (parsedResult && data.patreon) {
-    handleSync(parsedResult);
     serverData.matches = parsedResult.matches;
     serverData.courses = parsedResult.courses;
     serverData.drafts = parsedResult.drafts;
@@ -367,6 +366,10 @@ function handleAuthResponse(
 
   loadPlayerConfig().then(() => {
     ipcLog("...called back to http-api.");
+    ipcLog("Checking local data without remote copies");
+    if (parsedResult && data.patreon) {
+      handleSync(parsedResult);
+    }
     ipcLog("Checking for sync requests...");
     const requestSync = {
       courses: serverData.courses.filter(id => !(id in globalStore.events)),
@@ -821,4 +824,17 @@ export function httSyncPush(): void {
     const obj = getSeasonal(id);
     if (obj) httpSetSeasonal(obj);
   });
+
+  reduxAction(
+    globals.store.dispatch,
+    "SET_TO_PUSH",
+    {
+      matches: [],
+      courses: [],
+      drafts: [],
+      economy: [],
+      seasonal: []
+    },
+    IPC_RENDERER
+  );
 }
