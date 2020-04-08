@@ -105,10 +105,12 @@ interface ArchiveButtonProps {
 function archiveButtonStyle(hover: boolean): React.CSSProperties {
   return hover
     ? {
-        width: "32px"
+        width: "32px",
+        minWidth: "32px"
       }
     : {
-        width: "4px"
+        width: "4px",
+        minWidth: "4px"
       };
 }
 

@@ -257,7 +257,7 @@ function WildcardsNeeded(props: WildcardsNeededProps): JSX.Element {
       return MissingCardSprite({ missing, cardRarity, listStyle, ww });
     }
   }
-  return <></>;
+  return <div className="not_owned_sprite_empty"></div>;
 }
 
 function MissingCardSprite(props: MissingCardsProps): JSX.Element {
@@ -349,21 +349,23 @@ function FlatCardTile(props: CardTileProps): JSX.Element {
   }
 
   return (
-    <div
-      className="card_tile_container_flat click-on"
-      data-grp-id={card.id}
-      data-id={indent}
-      data-quantity={quantity}
-      style={tileStyle}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleMouseClick}
-    >
-      <FlatQuantityDisplay quantity={quantity} />
-      <div className="card_tile_crop_flat" style={cardTileStyle} />
-      <div className="card_tile_name_flat">{card.name || "Unknown"}</div>
-      <div className="cart_tile_mana_flat">
-        <CostSymbols card={card} dfcCard={dfcCard} />
+    <div className="card_tile_container_outer">
+      <div
+        className="card_tile_container_flat click-on"
+        data-grp-id={card.id}
+        data-id={indent}
+        data-quantity={quantity}
+        style={tileStyle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleMouseClick}
+      >
+        <FlatQuantityDisplay quantity={quantity} />
+        <div className="card_tile_crop_flat" style={cardTileStyle} />
+        <div className="card_tile_name_flat">{card.name || "Unknown"}</div>
+        <div className="cart_tile_mana_flat">
+          <CostSymbols card={card} dfcCard={dfcCard} />
+        </div>
       </div>
       {showWildcards && deck && (
         <WildcardsNeeded

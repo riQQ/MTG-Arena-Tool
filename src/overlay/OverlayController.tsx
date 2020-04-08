@@ -87,7 +87,7 @@ export default function OverlayController(): JSX.Element {
   useEffect(() => {
     document.body.style.backgroundColor = editMode
       ? "rgba(0, 0, 0, 0.3)"
-      : "rgba(0, 0, 0, 0.05)"; // Not all graphics setups can handle full transparency
+      : "rgba(0, 0, 0, 0)"; // Not all graphics setups can handle full transparency
   }, [editMode]);
 
   const handleBeep = useCallback(() => {

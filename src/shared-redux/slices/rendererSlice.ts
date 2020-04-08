@@ -14,6 +14,14 @@ const rendererSlice = createSlice({
       patreon: false,
       patreonTier: -1
     },
+    syncState: 0,
+    syncToPush: {
+      courses: [],
+      matches: [],
+      drafts: [],
+      economy: [],
+      seasonal: []
+    },
     popup: {
       text: "",
       time: 0,
@@ -87,6 +95,12 @@ const rendererSlice = createSlice({
       if (!id) return;
       // update local cache (avoids round trip)
       state.archivedCache[id] = !!archived;
+    },
+    setSyncState: (state, action): void => {
+      state.syncState = action.payload;
+    },
+    setSyncToPush: (state, action): void => {
+      Object.assign(state.syncToPush, action.payload);
     }
   }
 });

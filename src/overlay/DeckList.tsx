@@ -204,7 +204,7 @@ export default function DeckList(props: DeckListProps): JSX.Element {
       return;
     }
 
-    let dfcCard = card?.dfcId ? db.card(card.dfcId) : undefined;
+    const dfcCard = card?.dfcId ? db.card(card.dfcId) : undefined;
     mainCardTiles.push(
       <CardTile
         card={fullCard}
@@ -221,14 +221,20 @@ export default function DeckList(props: DeckListProps): JSX.Element {
   });
 
   const sideboardCardTiles: JSX.Element[] = [];
-  if (settings.sideboard && deckClone.getSideboard().count() > 0) {
+  const sideboardCards = deckClone.getSideboard().count();
+  if (settings.sideboard && sideboardCards > 0) {
     const sideCards = deckClone.getSideboard();
     sideCards.removeDuplicates();
     sideCards.get().sort(sortFunc);
     sideCards.get().forEach((card: any, index: number) => {
       const quantity =
         settings.mode === OVERLAY_ODDS || settings.mode === OVERLAY_MIXED
-          ? "0%"
+          ? settings.mode === OVERLAY_ODDS
+            ? "0%"
+            : {
+                quantity: card.quantity,
+                odds: "0%"
+              }
           : card.quantity;
       let fullCard = card;
       if (card?.id) {
@@ -259,7 +265,7 @@ export default function DeckList(props: DeckListProps): JSX.Element {
       <div className="decklist_title">{subTitle}</div>
       {!!settings.deck && mainCardTiles}
       {!!settings.sideboard && sideboardCardTiles.length && (
-        <div className="card_tile_separator">Sideboard</div>
+        <div className="decklist_title">Sideboard ({sideboardCards} cards)</div>
       )}
       {!!settings.sideboard && sideboardCardTiles}
       {!!settings.type_counts && <DeckTypesStats deck={deck} />}

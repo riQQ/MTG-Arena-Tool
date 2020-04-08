@@ -153,7 +153,9 @@ body {
     margin-right: auto;
     */
     -webkit-border-radius: 4.75% / 3.5%;
+    /*
     box-shadow: 0px 15px 30px 0px rgba(0, 0, 0, 0.5);
+    */
     -webkit-transition: opacity 0.2s ease-in;
 }
 

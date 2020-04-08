@@ -127,7 +127,8 @@ function getDecksData(
         lastEditWins: recentStats.wins,
         lastEditLosses: recentStats.losses,
         lastEditTotal: recentStats.total,
-        lastEditWinrate: recentStats.winrate
+        lastEditWinrate: recentStats.winrate,
+        colors: deck.colors
       };
     }
   );

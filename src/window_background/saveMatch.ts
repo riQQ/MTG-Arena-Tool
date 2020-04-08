@@ -27,11 +27,16 @@ export default function saveMatch(id: string, matchEndTime: number): void {
   }
 
   // console.log("Save match:", match);
+  const matches_index = [...globals.store.getState().matches.matchesIndex];
   reduxAction(globals.store.dispatch, "SET_MATCH", match, IPC_RENDERER);
   playerDb.upsert("", id, match);
   if (globals.matchCompletedOnGameNumber === globals.gameNumberCompleted) {
     const httpApi = require("./httpApi");
     httpApi.httpSetMatch(match);
+  }
+  if (matches_index.indexOf(id) == -1) {
+    matches_index.push(id);
+    playerDb.upsert("", "matches_index", matches_index);
   }
   ipcSend("popup", { text: "Match saved!", time: 3000 });
 }
