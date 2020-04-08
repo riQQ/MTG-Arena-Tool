@@ -31,6 +31,7 @@ import useWindowSize from "../../hooks/useWindowSize";
 import uxMove from "../../uxMove";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
 import PatreonInfo from "../popups/PatreonInfo";
+import { ipcSend } from "../../rendererUtil";
 
 interface TopNavItemProps {
   dispatcher: any;
@@ -158,6 +159,14 @@ function SyncBadge({ patreon }: { patreon: boolean }): JSX.Element {
   const [patreonInfo, setPatreonInfo] = useState(false);
   const offline = useSelector((state: AppState) => state.renderer.offline);
   const syncState = useSelector((state: AppState) => state.renderer.syncState);
+  const toPush = useSelector((state: AppState) => state.renderer.syncToPush);
+
+  const sum =
+    toPush.courses.length +
+    toPush.drafts.length +
+    toPush.economy.length +
+    toPush.matches.length +
+    toPush.seasonal.length;
 
   let title = "All done";
   let image = "sync_ok";
@@ -188,6 +197,15 @@ function SyncBadge({ patreon }: { patreon: boolean }): JSX.Element {
   if (offline) {
     title = "You are offline";
     image = "sync_error";
+  } else {
+    if (
+      sum > 0 &&
+      (syncState == SYNC_IDLE ||
+        syncState == SYNC_OK ||
+        syncState == SYNC_CHECK)
+    ) {
+      title = `You have ${sum} documents not synchronized. Click to begin uploading.`;
+    }
   }
 
   const doClick = useCallback(() => {
@@ -197,8 +215,10 @@ function SyncBadge({ patreon }: { patreon: boolean }): JSX.Element {
       if (
         syncState === SYNC_IDLE ||
         syncState == SYNC_ERR ||
-        syncState == SYNC_OK
+        syncState == SYNC_OK ||
+        syncState == SYNC_CHECK
       ) {
+        ipcSend("sync_check");
         // Begin sync secuence
       }
     }

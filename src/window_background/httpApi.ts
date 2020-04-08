@@ -23,7 +23,12 @@ import globalStore, {
   eventExists,
   transactionExists,
   draftExists,
-  seasonalList
+  seasonalList,
+  getEvent,
+  getDraft,
+  getTransaction,
+  getMatch,
+  getSeasonal
 } from "../shared-store";
 import {
   SYNC_CHECK,
@@ -235,6 +240,38 @@ function handleNotificationsResponse(
   });
 }
 
+function handleSync(syncIds: SyncIds): void {
+  const toPush = {
+    courses: Object.keys(globalStore.events).filter(
+      id => !(id in syncIds.courses)
+    ),
+    matches: Object.keys(globalStore.matches).filter(
+      id => !(id in syncIds.matches)
+    ),
+    drafts: Object.keys(globalStore.drafts).filter(
+      id => !(id in syncIds.drafts)
+    ),
+    economy: Object.keys(globalStore.transactions).filter(
+      id => !(id in syncIds.economy)
+    ),
+    seasonal: Object.keys(globalStore.seasonal).filter(
+      id => !(id in syncIds.seasonal)
+    )
+  };
+  reduxAction(globals.store.dispatch, "SET_TO_PUSH", toPush, IPC_RENDERER);
+  if (
+    toPush.courses.length == 0 &&
+    toPush.matches.length == 0 &&
+    toPush.drafts.length == 0 &&
+    toPush.economy.length == 0 &&
+    toPush.seasonal.length == 0
+  ) {
+    setSyncState(SYNC_OK);
+  } else {
+    setSyncState(SYNC_IDLE);
+  }
+}
+
 export function httpAuth(userName: string, pass: string): void {
   const _id = makeId(6);
   const playerData = globals.store.getState().playerdata;
@@ -253,6 +290,14 @@ export function httpAuth(userName: string, pass: string): void {
     },
     handleAuthResponse
   );
+}
+
+interface SyncIds {
+  courses: string[];
+  matches: string[];
+  drafts: string[];
+  economy: string[];
+  seasonal: string[];
 }
 
 function handleAuthResponse(
@@ -283,42 +328,10 @@ function handleAuthResponse(
     return;
   }
 
-  if (parsedResult) {
-    const toPush = {
-      courses: Object.keys(globalStore.events).filter(
-        id => !(id in parsedResult.courses)
-      ),
-      matches: Object.keys(globalStore.matches).filter(
-        id => !(id in parsedResult.matches)
-      ),
-      drafts: Object.keys(globalStore.drafts).filter(
-        id => !(id in parsedResult.drafts)
-      ),
-      economy: Object.keys(globalStore.transactions).filter(
-        id => !(id in parsedResult.economy)
-      ),
-      seasonal: Object.keys(globalStore.seasonal).filter(
-        id => !(id in parsedResult.seasonal)
-      )
-    };
-    reduxAction(globals.store.dispatch, "SET_TO_PUSH", toPush, IPC_RENDERER);
-    if (
-      toPush.courses.length == 0 &&
-      toPush.matches.length == 0 &&
-      toPush.drafts.length == 0 &&
-      toPush.economy.length == 0 &&
-      toPush.seasonal.length == 0
-    ) {
-      setSyncState(SYNC_OK);
-    } else {
-      setSyncState(SYNC_IDLE);
-    }
-  }
-
   syncSettings({ token: parsedResult.token }, false);
-
   ipcSend("auth", parsedResult);
   //ipcSend("auth", parsedResult.arenaids);
+
   const appSettings = globals.store.getState().appsettings;
   if (appSettings.rememberMe) {
     reduxAction(
@@ -335,21 +348,23 @@ function handleAuthResponse(
   data.patreon = parsedResult.patreon;
   data.patreon_tier = parsedResult.patreon_tier;
 
-  const serverData = {
+  const serverData: SyncIds = {
     matches: [],
     courses: [],
     drafts: [],
     economy: [],
     seasonal: []
   };
-  if (data.patreon) {
+
+  if (parsedResult && data.patreon) {
+    handleSync(parsedResult);
     serverData.matches = parsedResult.matches;
     serverData.courses = parsedResult.courses;
     serverData.drafts = parsedResult.drafts;
     serverData.economy = parsedResult.economy;
     serverData.seasonal = parsedResult.seasonal;
   }
-  setData(data, false);
+
   loadPlayerConfig().then(() => {
     ipcLog("...called back to http-api.");
     ipcLog("Checking for sync requests...");
@@ -778,4 +793,32 @@ export function httpSyncRequest(data: SyncRequestData): void {
       syncUserData(parsedResult.data);
     })
   );
+}
+
+export function httSyncPush(): void {
+  const syncIds: SyncIds = globals.store.getState().renderer.syncToPush;
+  syncIds.courses.map((id: string) => {
+    const obj = getEvent(id);
+    if (obj) httpSubmitCourse(obj);
+  });
+
+  syncIds.drafts.map((id: string) => {
+    const obj = getDraft(id);
+    if (obj) httpSetDraft(obj);
+  });
+
+  syncIds.economy.map((id: string) => {
+    const obj = getTransaction(id);
+    if (obj) httpSetEconomy(obj);
+  });
+
+  syncIds.matches.map((id: string) => {
+    const obj = getMatch(id);
+    if (obj) httpSetMatch(obj);
+  });
+
+  syncIds.seasonal.map((id: string) => {
+    const obj = getSeasonal(id);
+    if (obj) httpSetSeasonal(obj);
+  });
 }
