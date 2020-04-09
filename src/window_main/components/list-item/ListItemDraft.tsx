@@ -50,7 +50,7 @@ export default function ListItemDraft({
     >
       <HoverTile
         hover={hover}
-        grpId={db.sets[draft.set].tile || DEFAULT_TILE}
+        grpId={db.sets[draft.set]?.tile || DEFAULT_TILE}
       />
 
       <Column class="list_item_left">
