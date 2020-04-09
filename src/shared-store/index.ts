@@ -135,7 +135,7 @@ export function decksList(): InternalDeck[] {
 // Deck Changes utility functions
 //
 export function getDeckChange(id: string): DeckChange | undefined {
-  if (!id || !globalStore.events[id]) return undefined;
+  if (!id || !globalStore.deckChanges[id]) return undefined;
   return globalStore.deckChanges[id];
 }
 
@@ -146,7 +146,7 @@ export function deckChangeExists(id: string): boolean {
 export function getDeckChangesList(id?: string): DeckChange[] {
   return Object.keys(globalStore.deckChanges)
     .map(id => globalStore.deckChanges[id])
-    .filter(change => change && change.deckId === id);
+    .filter(change => change);
 }
 
 //

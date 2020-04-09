@@ -152,8 +152,13 @@ export async function loadPlayerConfig(): Promise<void> {
   if (savedData.deck_changes_index) {
     // Get Deck Changes data
     const changesList: DeckChange[] = savedData.deck_changes_index
-      .filter((id: string) => savedData[id])
-      .map((id: string) => savedData[id]);
+      .filter((id: string) => savedData.deck_changes[id] as DeckChange)
+      .map((id: string) => {
+        savedData.deck_changes[id].date = new Date(
+          savedData.deck_changes[id].date
+        ).toString();
+        return savedData.deck_changes[id];
+      });
 
     reduxAction(
       globals.store.dispatch,

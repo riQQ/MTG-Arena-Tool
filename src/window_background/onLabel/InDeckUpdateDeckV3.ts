@@ -29,7 +29,7 @@ export default function InDeckUpdateDeckV3(entry: Entry): void {
   const deltaDeck: DeckChange = {
     id: changeId,
     deckId: _deck?.id || "",
-    date: new Date(json.lastUpdated),
+    date: json.lastUpdated,
     changesMain: [],
     changesSide: [],
     previousMain: _deck?.mainDeck || [],
@@ -95,19 +95,16 @@ export default function InDeckUpdateDeckV3(entry: Entry): void {
     (deltaDeck.changesMain.length || deltaDeck.changesSide.length);
 
   if (foundNewDeckChange) {
-    const deckChangesIndex = globals.store.getState().deckChanges
-      .deckChangesIndex;
-    if (!deckChangesIndex.includes(changeId)) {
-      deckChangesIndex.push(changeId);
-    }
-    playerDb.upsert("", "deck_changes_index", deckChangesIndex);
-    playerDb.upsert("deck_changes", changeId, deltaDeck);
     reduxAction(
       globals.store.dispatch,
       "SET_DECK_CHANGE",
       deltaDeck,
       IPC_RENDERER
     );
+    const deckChangesIndex = globals.store.getState().deckChanges
+      .deckChangesIndex;
+    playerDb.upsert("", "deck_changes_index", deckChangesIndex);
+    playerDb.upsert("deck_changes", changeId, deltaDeck);
   }
 
   const deckData = { ..._deck, ...entryDeck, id: entryDeck.id ?? "" };

@@ -75,7 +75,7 @@ export interface CardSkin {
 export interface DeckChange {
   id: string;
   deckId: string;
-  date: Date;
+  date: string;
   changesMain: CardObject[];
   changesSide: CardObject[];
   previousMain: v2cardsList;

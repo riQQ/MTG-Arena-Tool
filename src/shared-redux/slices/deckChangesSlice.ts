@@ -19,9 +19,9 @@ const deckChangesSlice = createSlice({
       const newList: string[] = [];
       action.payload.map((change: DeckChange) => {
         if (state.deckChangesIndex.indexOf(change.id) === -1) {
-          globalStore.deckChanges[change.id] = change;
           newList.push(change.id);
         }
+        globalStore.deckChanges[change.id] = change;
       });
       state.deckChangesIndex = [...newList, ...state.deckChangesIndex];
     }
