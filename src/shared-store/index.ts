@@ -146,7 +146,7 @@ export function deckChangeExists(id: string): boolean {
 export function getDeckChangesList(id?: string): DeckChange[] {
   return Object.keys(globalStore.deckChanges)
     .map(id => globalStore.deckChanges[id])
-    .filter(change => change);
+    .filter(change => change && change.deckId === id);
 }
 
 //
