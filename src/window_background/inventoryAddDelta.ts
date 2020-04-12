@@ -2,6 +2,7 @@ import { InventoryDelta } from "../types/inventory";
 import { reduxAction } from "../shared-redux/sharedRedux";
 import globals from "./globals";
 import { IPC_RENDERER, IPC_OVERLAY } from "../shared/constants";
+import { playerDb } from "../shared/db/LocalDatabase";
 
 export default function inventoryAddDelta(
   delta: Partial<InventoryDelta>
@@ -23,6 +24,8 @@ export default function inventoryAddDelta(
       delta.cardsAdded,
       IPC_RENDERER | IPC_OVERLAY
     );
+    const cards = globals.store.getState().playerdata.cards;
+    playerDb.upsert("", "cards", cards);
   }
   reduxAction(
     globals.store.dispatch,

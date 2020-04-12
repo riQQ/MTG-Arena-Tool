@@ -93,7 +93,7 @@ function getSeasonData(
   function morphData(data: SeasonalRankData): SeasonalRankData {
     data.oldRankNumeric = getRankY(data.oldClass, data.oldLevel, data.oldStep);
     data.newRankNumeric = getRankY(data.newClass, data.newLevel, data.newStep);
-    data.date = new Date(data.timestamp * 1000);
+    data.date = new Date(data.timestamp);
     //console.log(data);
     return data;
   }
@@ -403,12 +403,13 @@ export default function TimelineTab(): JSX.Element {
                 <div
                   style={{
                     whiteSpace: "nowrap",
-                    marginLeft: hoverPartX + "px"
+                    marginLeft:
+                      Math.min(dimensions.width - 120, hoverPartX) + "px"
                   }}
                 >
                   {data[hoverPart]
                     ? format(
-                        new Date(data[hoverPart].timestamp * 1000),
+                        data[hoverPart].date || new Date(),
                         "EEEE do, HH:mm"
                       )
                     : ""}

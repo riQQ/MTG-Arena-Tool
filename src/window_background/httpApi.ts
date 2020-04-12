@@ -124,6 +124,9 @@ function syncUserData(data: any): void {
       const id = doc._id;
       doc.id = id;
       delete doc._id;
+      // For some reason this is not needed here
+      // Maybe it was patched somehwere else
+      //doc.timestamp = doc.timestamp * 1000;
       playerDb.upsert("", id, doc);
       economy_index.push(id);
       return doc;
@@ -163,6 +166,8 @@ function syncUserData(data: any): void {
     const id = doc._id;
     doc.id = id;
     delete doc._id;
+    // This was my problem!
+    doc.timestamp = doc.timestamp * 1000;
     newSeasonal.push(doc);
     playerDb.upsert("seasonal", id, doc);
     return doc;

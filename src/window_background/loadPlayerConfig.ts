@@ -152,8 +152,13 @@ export async function loadPlayerConfig(): Promise<void> {
   if (savedData.deck_changes_index) {
     // Get Deck Changes data
     const changesList: DeckChange[] = savedData.deck_changes_index
-      .filter((id: string) => savedData[id])
-      .map((id: string) => savedData[id]);
+      .filter((id: string) => savedData.deck_changes[id] as DeckChange)
+      .map((id: string) => {
+        savedData.deck_changes[id].date = new Date(
+          savedData.deck_changes[id].date
+        ).toISOString();
+        return savedData.deck_changes[id];
+      });
 
     reduxAction(
       globals.store.dispatch,
@@ -210,7 +215,6 @@ export async function loadPlayerConfig(): Promise<void> {
         return update;
       })
       .filter((update: any) => update?.rankUpdateType);
-    console.log(newSeasonal, seasonalAdd);
     reduxAction(
       globals.store.dispatch,
       "SET_MANY_SEASONAL",
@@ -225,12 +229,15 @@ export async function loadPlayerConfig(): Promise<void> {
     if (newCards.cards_time instanceof Date) {
       newCards.cards_time = newCards.cards_time.getTime();
     }
+
     reduxAction(
       globals.store.dispatch,
       "ADD_CARDS_FROM_STORE",
       newCards,
       IPC_RENDERER
     );
+    const cards = globals.store.getState().playerdata.cards;
+    playerDb.upsert("", "cards", cards);
   }
 
   // Get tags colors data
