@@ -316,7 +316,7 @@ export default function TimelineTab(): JSX.Element {
     }
   }, [dispatcher, hoverMatch]);
 
-  const seasonZero = new Date(1546300800000);
+  const seasonZero = new Date(1543665600000);
   const drawingSeasonDate = addMonths(seasonZero, drawingSeason);
 
   const hoverPartX = (dimensions.width / data.length) * (hoverPart + 1) - 4;

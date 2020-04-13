@@ -23,7 +23,7 @@ export function deckSearchFilterFn(
         "values.tags",
         (row: Row<DecksData>): string => {
           const { colors } = row.values;
-          return colors.map((color: number): string => MANA[color]).join(" ");
+          return colors?.map((color: number): string => MANA[color]).join(" ");
         }
       ]
     })
