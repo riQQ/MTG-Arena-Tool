@@ -58,11 +58,9 @@ function getRankY(rank: string, tier: number, steps: number): number {
     case "Diamond":
       value = 4 * 6 * 4;
       break;
-    case "Master":
-      value = 4 * 6 * 5;
-      break;
     case "Mythic":
-      value = 4 * 6 * 6;
+      value = 4 * 6 * 5;
+      return value + (48 / 1500) * (1500 - steps);
       break;
   }
 
@@ -90,18 +88,47 @@ function getSeasonData(
 
   seasonalData = seasonalData.filter((v, i) => seasonalData?.indexOf(v) === i);
 
-  function morphData(data: SeasonalRankData): SeasonalRankData {
-    data.oldRankNumeric = getRankY(data.oldClass, data.oldLevel, data.oldStep);
-    data.newRankNumeric = getRankY(data.newClass, data.newLevel, data.newStep);
+  function morphData(
+    data: SeasonalRankData,
+    prev?: SeasonalRankData
+  ): SeasonalRankData {
+    if (data.oldClass == "Mythic" && data.newClass == "Mythic") {
+      // Added previous argument to help with mythic rank lines
+      data.oldRankNumeric = getRankY(
+        prev?.oldClass || data.oldClass,
+        prev?.oldLevel || data.oldLevel,
+        prev?.oldStep || data.oldStep
+      );
+      data.newRankNumeric = getRankY(
+        data.newClass,
+        data.newLevel,
+        data.newStep
+      );
+    } else {
+      data.oldRankNumeric = getRankY(
+        data.oldClass,
+        data.oldLevel,
+        data.oldStep
+      );
+      data.newRankNumeric = getRankY(
+        data.newClass,
+        data.newLevel,
+        data.newStep
+      );
+    }
     data.date = new Date(data.timestamp);
     //console.log(data);
     return data;
   }
 
-  return seasonalData
+  const newData = seasonalData
     .filter((id: string) => seasonalExists(id))
-    .map((id: string) => getSeasonal(id) as SeasonalRankData)
-    .map((data: SeasonalRankData) => morphData(data))
+    .map((id: string) => getSeasonal(id) as SeasonalRankData);
+
+  return newData
+    .map((data: SeasonalRankData, i: number) =>
+      morphData(data, i > 0 ? newData[i - 1] : undefined)
+    )
     .sort(sortByTimestamp);
 }
 
@@ -358,7 +385,7 @@ export default function TimelineTab(): JSX.Element {
         <div style={{ display: "flex" }}>
           <div className="timeline-box-labels">
             <div className="timeline-label">#1</div>
-            <div className="timeline-label">#1200</div>
+            <div className="timeline-label"></div>
             <div className="timeline-label">Mythic</div>
             <div className="timeline-label">Diamond</div>
             <div className="timeline-label">Platinum</div>

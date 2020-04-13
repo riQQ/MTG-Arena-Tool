@@ -24,6 +24,8 @@ export default function MythicRatingUpdated(entry: Entry): void {
   const rank = JSON.parse(JSON.stringify(playerData.rank));
 
   if (!json) return;
+  // Ugh, no type on the mythic rank update!
+  const type = matchIsLimited(globals.currentMatch) ? "limited" : "constructed";
   const newJson: SeasonalRankData = {
     oldClass: "Mythic",
     newClass: "Mythic",
@@ -35,24 +37,13 @@ export default function MythicRatingUpdated(entry: Entry): void {
     owner,
     playerId: playerData.playerId,
     player: playerData.playerName,
-    rankUpdateType: matchIsLimited(globals.currentMatch)
-      ? "limited"
-      : "constructed", // Ugh, no type on the mythic rank update!
-    seasonOrdinal: 1,
+    rankUpdateType: type,
+    seasonOrdinal: rank[type].seasonOrdinal,
     id: entry.hash,
     timestamp: parseWotcTimeFallback(entry.timestamp).getTime(),
     lastMatchId: globals.currentMatch.matchId,
     eventId: globals.currentMatch.eventId
   };
-
-  // Default constructed?
-  let type = "constructed";
-  // should probably be db.constructed_ranked_events
-  if (db.standard_ranked_events.includes(newJson.eventId)) {
-    type = "constructed";
-  } else if (db.limited_ranked_events.includes(newJson.eventId)) {
-    type = "limited";
-  }
 
   rank[type].percentile = json.newMythicPercentile;
   rank[type].leaderboardPlace = json.newMythicLeaderboardPlacement;
