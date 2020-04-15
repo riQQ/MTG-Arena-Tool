@@ -19,3 +19,4 @@ src/fonts/*
 # production
 /build
 /dist
+/node_modules

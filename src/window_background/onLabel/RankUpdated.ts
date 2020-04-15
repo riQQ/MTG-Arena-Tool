@@ -14,6 +14,7 @@ interface Entry extends LogEntry {
 export default function RankUpdated(entry: Entry): void {
   const json = entry.json();
   if (!json) return;
+  if (json.newClass == "Mythic" && json.oldClass == "Mythic") return;
 
   const playerData = globals.store.getState().playerdata;
   const owner = globals.store.getState().appsettings.email;
