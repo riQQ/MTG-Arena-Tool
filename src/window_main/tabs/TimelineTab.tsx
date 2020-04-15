@@ -42,24 +42,25 @@ function sortByTimestamp(a: SeasonalRankData, b: SeasonalRankData): number {
  */
 function getRankY(rank: string, tier: number, steps: number): number {
   let value = 0;
+  const regularSteps = 4 * 6;
   switch (rank) {
     case "Bronze":
       value = 0;
       break;
     case "Silver":
-      value = 4 * 6;
+      value = regularSteps;
       break;
     case "Gold":
-      value = 4 * 6 * 2;
+      value = regularSteps * 2;
       break;
     case "Platinum":
-      value = 4 * 6 * 3;
+      value = regularSteps * 3;
       break;
     case "Diamond":
-      value = 4 * 6 * 4;
+      value = regularSteps * 4;
       break;
     case "Mythic":
-      value = 4 * 6 * 5;
+      value = regularSteps * 5;
       return value + (48 / 1500) * (1500 - steps);
       break;
   }
