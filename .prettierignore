@@ -19,3 +19,4 @@ coverage
 build
 dist
 lib
+node_modules
