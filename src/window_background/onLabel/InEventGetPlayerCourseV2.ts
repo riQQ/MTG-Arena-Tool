@@ -7,7 +7,7 @@ import addCustomDeck from "../addCustomDeck";
 import globals from "../globals";
 import selectDeck from "../selectDeck";
 import convertDeckFromV3 from "../convertDeckFromV3";
-import { eventExists, getEvent } from "../../shared-store";
+import { getEvent } from "../../shared-store";
 import { reduxAction } from "../../shared-redux/sharedRedux";
 import { IPC_RENDERER } from "../../shared/constants";
 
@@ -26,12 +26,9 @@ function saveCourse(json: InternalEvent): void {
     ...json
   };
 
-  if (!eventExists(id)) {
-    reduxAction(globals.store.dispatch, "SET_EVENT", eventData, IPC_RENDERER);
-    const coursesIndex = [...globals.store.getState().events.eventsIndex, id];
-    playerDb.upsert("", "courses_index", coursesIndex);
-  }
-
+  reduxAction(globals.store.dispatch, "SET_EVENT", eventData, IPC_RENDERER);
+  const coursesIndex = globals.store.getState().events.eventsIndex;
+  playerDb.upsert("", "courses_index", coursesIndex);
   playerDb.upsert("", id, eventData);
 }
 
