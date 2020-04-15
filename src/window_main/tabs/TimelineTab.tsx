@@ -95,28 +95,17 @@ function getSeasonData(
   ): SeasonalRankData {
     if (data.oldClass == "Mythic" && data.newClass == "Mythic") {
       // Added previous argument to help with mythic rank lines
-      data.oldRankNumeric = getRankY(
-        prev?.oldClass || data.oldClass,
-        prev?.oldLevel || data.oldLevel,
-        prev?.oldStep || data.oldStep
-      );
-      data.newRankNumeric = getRankY(
-        data.newClass,
-        data.newLevel,
-        data.newStep
-      );
+      data.oldRankNumeric = prev
+        ? getRankY(prev.oldClass, prev.oldLevel, prev.oldStep)
+        : getRankY(data.oldClass, data.oldLevel, data.oldStep);
     } else {
       data.oldRankNumeric = getRankY(
         data.oldClass,
         data.oldLevel,
         data.oldStep
       );
-      data.newRankNumeric = getRankY(
-        data.newClass,
-        data.newLevel,
-        data.newStep
-      );
     }
+    data.newRankNumeric = getRankY(data.newClass, data.newLevel, data.newStep);
     data.date = new Date(data.timestamp);
     //console.log(data);
     return data;
