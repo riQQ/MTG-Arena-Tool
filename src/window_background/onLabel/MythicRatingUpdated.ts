@@ -1,4 +1,3 @@
-import db from "../../shared/database";
 import { playerDb } from "../../shared/db/LocalDatabase";
 
 import globals from "../globals";

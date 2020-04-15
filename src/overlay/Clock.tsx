@@ -76,7 +76,7 @@ export default function Clock(props: ClockProps): JSX.Element {
       return <>{"You have priority."}</>;
     }
     return <>{oppName + " has priority."}</>;
-  }, [clockMode, playerSeat, turnPriority]);
+  }, [oppName, clockMode, playerSeat, turnPriority]);
 
   // Clock Mode BOTH
   const lastDurationInSec = Math.floor(

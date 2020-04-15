@@ -344,13 +344,6 @@ ipc.on("set_log", function(event, arg) {
 // Set variables to default first
 let prevLogSize = 0;
 
-function sendSettings(): void {
-  const settingsData = {
-    tags_colors: globals.store.getState().playerdata.tagsColors
-  };
-  httpApi.httpSetSettings(settingsData);
-}
-
 // Old parser
 async function attemptLogLoop(): Promise<void> {
   try {
