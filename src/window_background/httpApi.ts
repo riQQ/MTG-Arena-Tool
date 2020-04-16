@@ -7,7 +7,7 @@ import { makeId } from "../shared/util";
 import db from "../shared/database";
 import { playerDb } from "../shared/db/LocalDatabase";
 
-import { ipcSend, setData } from "./backgroundUtil";
+import { ipcSend } from "./backgroundUtil";
 import { loadPlayerConfig, syncSettings } from "./loadPlayerConfig";
 import {
   asyncWorker,
