@@ -1,5 +1,4 @@
 import LogEntry from "../../types/logDecoder";
-import { setData } from "../backgroundUtil";
 import { playerDb } from "../../shared/db/LocalDatabase";
 import { PlayerCourse } from "../../types/event";
 import addCustomDeck from "../addCustomDeck";
@@ -24,6 +23,5 @@ export default function InEventGetPlayerCoursesV2(entry: Entry): void {
     if (course.Id) staticEvents.push(course.Id);
   });
 
-  setData({ staticEvents });
   playerDb.upsert("", "static_events", staticEvents);
 }
