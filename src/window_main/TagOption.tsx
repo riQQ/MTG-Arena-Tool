@@ -12,7 +12,7 @@ export interface TagOptionProps {
   archCounts?: { [key: string]: number };
 }
 
-export default function TagOption(props: TagOptionProps) {
+export default function TagOption(props: TagOptionProps): JSX.Element | string {
   const { tag, showCount, archCounts } = props;
   if (tag === Aggregator.DEFAULT_TAG) return tag;
   if (tag === Aggregator.DEFAULT_ARCH) return tag;

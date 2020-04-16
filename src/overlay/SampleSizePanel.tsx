@@ -21,7 +21,7 @@ export default function SampleSizePanel(
       newSampleSize = cardsLeft - 1;
     }
     setOddsCallback(newSampleSize);
-  }, [sampleSize, cardsLeft]);
+  }, [sampleSize, cardsLeft, setOddsCallback]);
 
   const handleOddsNext = useCallback((): void => {
     const cardsLeft = cardOdds.cardsLeft || 60;
@@ -30,7 +30,7 @@ export default function SampleSizePanel(
       newSampleSize = 1;
     }
     setOddsCallback(newSampleSize);
-  }, [sampleSize, cardsLeft]);
+  }, [cardOdds.cardsLeft, sampleSize, setOddsCallback]);
 
   return (
     <>

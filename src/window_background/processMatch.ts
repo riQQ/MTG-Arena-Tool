@@ -31,11 +31,12 @@ export default function processMatch(
   globals.instanceToCardIdMap = {};
 
   ipcSend("ipc_log", "vs " + match.opponent.name);
-
+  /*
   if (match.eventId == "DirectGame" && globals.currentDeck) {
     const str = globals.currentDeck.getSave();
     const httpApi = require("../httpApi");
   }
+  */
 
   return match;
 }

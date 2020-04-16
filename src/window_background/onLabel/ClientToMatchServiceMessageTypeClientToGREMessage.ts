@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import CardsList from "../../shared/cardsList";
 import globals from "../globals";
 import LogEntry from "../../types/logDecoder";
 import { normaliseFields } from "../backgroundUtil";

@@ -64,6 +64,7 @@ export class SetStats {
   public uncommon: CountStats;
   public rare: CountStats;
   public mythic: CountStats;
+  public token: CountStats;
   public boosters: number;
   public boosterRares: number;
   public boosterMythics: number;
@@ -75,6 +76,7 @@ export class SetStats {
     this.uncommon = new CountStats();
     this.rare = new CountStats();
     this.mythic = new CountStats();
+    this.token = new CountStats();
     this.boosters = 0;
     this.boosterRares = 0;
     this.boosterMythics = 0;
@@ -155,6 +157,10 @@ export function getCollectionStats(
       wanted: 0
     };
     // add to totals
+    if (stats[card.set][card.rarity] == undefined) {
+      console.log(card, card.set, card.rarity);
+      return;
+    }
     stats[card.set][card.rarity].total += 4;
     stats[card.set][card.rarity].unique += 1;
     stats.complete[card.rarity].total += 4;

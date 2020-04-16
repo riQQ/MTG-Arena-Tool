@@ -148,12 +148,3 @@ export function normaliseFields(object: any): any {
 export function unleakString(s: string): string {
   return (" " + s).substr(1);
 }
-
-export function setData(
-  data: any,
-  refresh = globals.debugLog || !globals.firstPass
-): void {
-  // Unused now, and should be removed.
-  // Any uses of it currently mean something needs
-  // to be updated to the new redux ways.
-}

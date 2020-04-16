@@ -71,9 +71,11 @@ export function CardTileRow({
       ref={containerEl}
       title={`open ${card.name} in Scryfall (browser)`}
       onClick={onClick}
-      style={{ display: "inline-block" }}
+      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      <OwnershipStars card={card} wanted={card.wanted} />
+      <div style={{ width: "100%" }}>
+        <OwnershipStars card={card} wanted={card.wanted} />
+      </div>
       <div
         className={"inventory_card"}
         onMouseEnter={hoverIn}

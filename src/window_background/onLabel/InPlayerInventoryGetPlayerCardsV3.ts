@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import differenceInDays from "date-fns/differenceInDays";
 import { playerDb } from "../../shared/db/LocalDatabase";
 import LogEntry from "../../types/logDecoder";
 import globals from "../globals";

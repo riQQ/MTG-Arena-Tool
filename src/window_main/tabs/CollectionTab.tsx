@@ -13,8 +13,9 @@ import { ipcSend, getMissingCardCounts } from "../rendererUtil";
 import { CardCounts } from "../components/decks/types";
 import Deck from "../../shared/deck";
 import { reduxAction } from "../../shared-redux/sharedRedux";
-import store from "../../shared-redux/stores/rendererStore";
+import store, { AppState } from "../../shared-redux/stores/rendererStore";
 import { decksList } from "../../shared-store";
+import { useSelector } from "react-redux";
 
 const Menu = remote.Menu;
 const MenuItem = remote.MenuItem;
@@ -134,7 +135,11 @@ export default function CollectionTab(): JSX.Element {
     collectionTableMode,
     collectionTableState
   } = store.getState().settings;
-  const data = React.useMemo(() => getCollectionData(), []);
+  const cardsNew = useSelector((state: AppState) => state.playerdata.cardsNew);
+  const data = React.useMemo(() => {
+    cardsNew;
+    return getCollectionData();
+  }, [cardsNew]);
   return (
     <div className="ux_item">
       <CollectionTable

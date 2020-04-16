@@ -24,13 +24,6 @@ export default function setDraftData(
       playerDb.upsert("", "draft_index", draftIndex);
       reduxAction(globals.store.dispatch, "SET_DRAFT", data, IPC_RENDERER);
     }
-    // Add to db
-    /*
-    setData({
-      cards: playerData.cards,
-      cardsNew: playerData.cardsNew
-    });
-    */
     playerDb.upsert("", id, data);
   } else if (persist) {
     console.log("Couldnt save draft without id:", data);

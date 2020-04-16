@@ -15,7 +15,7 @@ import { appDb, playerDb } from "../shared/db/LocalDatabase";
 import { InternalDeck } from "../types/Deck";
 import addCustomDeck from "./addCustomDeck";
 import arenaLogWatcher from "./arena-log-watcher";
-import { ipcSend, setData, unleakString } from "./backgroundUtil";
+import { ipcSend, unleakString } from "./backgroundUtil";
 import { createDeck } from "./data";
 import forceDeckUpdate from "./forceDeckUpdate";
 import globals from "./globals";
@@ -186,7 +186,6 @@ ipc.on("request_deck_link", function(event, obj) {
 //
 ipc.on("windowBounds", (event, windowBounds) => {
   if (globals.firstPass) return;
-  setData({ windowBounds }, false);
   playerDb.upsert("", "windowBounds", windowBounds);
 });
 
@@ -198,10 +197,6 @@ ipc.on("overlayBounds", (event, index, bounds) => {
     bounds // new bounds
   };
   overlays[index] = newOverlay;
-  setData(
-    { settings: { ...globals.store.getState().settings, overlays } },
-    false
-  );
   playerDb.upsert("settings", "overlays", overlays);
 });
 
@@ -344,13 +339,6 @@ ipc.on("set_log", function(event, arg) {
 // Set variables to default first
 let prevLogSize = 0;
 
-function sendSettings(): void {
-  const settingsData = {
-    tags_colors: globals.store.getState().playerdata.tagsColors
-  };
-  httpApi.httpSetSettings(settingsData);
-}
-
 // Old parser
 async function attemptLogLoop(): Promise<void> {
   try {
@@ -411,8 +399,7 @@ async function logLoop(): Promise<void> {
   const splitString = rawString.split("[UnityCrossThread");
   const parsedData: Record<string, string | undefined> = {
     arenaId: undefined,
-    name: undefined,
-    arenaVersion: undefined
+    playerName: undefined
   };
 
   let detailedLogs = true;
@@ -435,22 +422,16 @@ async function logLoop(): Promise<void> {
     }
 
     // Get player Id
-    strCheck = '\\"playerId\\": \\"';
+    strCheck = "AccountID:";
     if (value.includes(strCheck) && parsedData.arenaId == undefined) {
       parsedData.arenaId =
-        debugArenaID ?? unleakString(dataChop(value, strCheck, '\\"'));
+        debugArenaID ?? unleakString(dataChop(value, strCheck, ","));
     }
 
     // Get User name
-    strCheck = '\\"screenName\\": \\"';
+    strCheck = " DisplayName:";
     if (value.includes(strCheck) && parsedData.playerName == undefined) {
-      parsedData.playerName = unleakString(dataChop(value, strCheck, '\\"'));
-    }
-
-    // Get Client Version
-    strCheck = '\\"clientVersion\\": \\"';
-    if (value.includes(strCheck) && parsedData.arenaVersion == undefined) {
-      parsedData.arenaVersion = unleakString(dataChop(value, strCheck, '\\"'));
+      parsedData.playerName = unleakString(dataChop(value, strCheck, ","));
     }
     /*
     if (globals.firstPass) {
@@ -466,7 +447,7 @@ async function logLoop(): Promise<void> {
   }
 
   prevLogSize = size;
-  const { arenaId, playerName, arenaVersion } = parsedData;
+  const { arenaId, playerName } = parsedData;
   if (!arenaId || !playerName) {
     ipcSend("popup", {
       text: "output_log.txt contains no player data",
@@ -479,12 +460,6 @@ async function logLoop(): Promise<void> {
       globals.store.dispatch,
       "SET_PLAYER_NAME",
       playerName,
-      IPC_RENDERER
-    );
-    reduxAction(
-      globals.store.dispatch,
-      "SET_ARENA_VERSION",
-      arenaVersion,
       IPC_RENDERER
     );
   }
