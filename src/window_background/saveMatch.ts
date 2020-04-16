@@ -7,7 +7,7 @@ import { IPC_RENDERER } from "../shared/constants";
 import { getMatch } from "../shared-store";
 
 export default function saveMatch(id: string, matchEndTime: number): void {
-  //console.log(globals.currentMatch.matchId, id);
+  console.log(globals.currentMatch, id);
   if (
     !globals.currentMatch ||
     !globals.currentMatch.matchTime ||
