@@ -25,7 +25,6 @@ export default function processMatch(
   globals.currentMatch = match;
   globals.matchGameStats = [];
   globals.matchCompletedOnGameNumber = 0;
-  globals.gameNumberCompleted = 0;
   globals.initialLibraryInstanceIds = [];
   globals.idChanges = {};
   globals.instanceToCardIdMap = {};
