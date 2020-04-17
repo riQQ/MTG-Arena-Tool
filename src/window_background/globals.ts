@@ -48,8 +48,6 @@ let duringMatch = false;
 
 let firstPass = true;
 
-let gameNumberCompleted = 0;
-
 let idChanges: any = {};
 
 let initialLibraryInstanceIds: number[] = [];
@@ -91,7 +89,6 @@ export default {
   duringDraft,
   duringMatch,
   firstPass,
-  gameNumberCompleted,
   idChanges,
   initialLibraryInstanceIds,
   instanceToCardIdMap,

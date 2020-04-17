@@ -5,14 +5,12 @@ import { ipcSend } from "./backgroundUtil";
 import { reduxAction } from "../shared-redux/sharedRedux";
 import { IPC_RENDERER } from "../shared/constants";
 import { getMatch } from "../shared-store";
+import getMatchGameStats from "./getMatchGameStats";
 
 export default function saveMatch(id: string, matchEndTime: number): void {
   console.log(globals.currentMatch, id);
-  if (
-    !globals.currentMatch ||
-    !globals.currentMatch.matchTime ||
-    globals.currentMatch.matchId !== id
-  ) {
+  getMatchGameStats();
+  if (!globals.currentMatch || globals.currentMatch.matchId !== id) {
     return;
   }
 
@@ -30,7 +28,12 @@ export default function saveMatch(id: string, matchEndTime: number): void {
   const matches_index = [...globals.store.getState().matches.matchesIndex];
   reduxAction(globals.store.dispatch, "SET_MATCH", match, IPC_RENDERER);
   playerDb.upsert("", id, match);
-  if (globals.matchCompletedOnGameNumber === globals.gameNumberCompleted) {
+
+  const gameNumberCompleted = globals.currentMatch.results.filter(
+    res => res.scope == "MatchScope_Match"
+  ).length;
+
+  if (globals.matchCompletedOnGameNumber === gameNumberCompleted) {
     const httpApi = require("./httpApi");
     httpApi.httpSetMatch(match);
   }

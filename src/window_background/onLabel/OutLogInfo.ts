@@ -23,6 +23,7 @@ export default function OutLogInfo(entry: Entry): void {
   const json = entry.json();
   if (!json) return;
   // console.log(json);
+  // DEPRECATED
 
   if (json.params.messageName == "Client.UserDeviceSpecs") {
     const payload = {
@@ -45,6 +46,7 @@ export default function OutLogInfo(entry: Entry): void {
   if (json.params.messageName == "DuelScene.GameStop") {
     globals.currentMatch.opponent.cards = globals.currentMatch.oppCardsUsed;
 
+    let gameNumberCompleted = 0;
     const payload = json.params.payloadObject;
 
     const loserName = getNameBySeat(payload.winningTeamId == 1 ? 2 : 1);
@@ -62,7 +64,7 @@ export default function OutLogInfo(entry: Entry): void {
     const mid = payload.matchId + "-" + playerData.arenaId;
     const time = payload.secondsCount;
     if (mid == globals.currentMatch.matchId) {
-      globals.gameNumberCompleted = payload.gameNumber;
+      gameNumberCompleted = payload.gameNumber;
 
       const game: MatchGameStats = {
         time: time,
@@ -118,7 +120,7 @@ export default function OutLogInfo(entry: Entry): void {
       );
       game.handsDrawn.push(game.shuffledOrder.slice(0, 7));
 
-      if (globals.gameNumberCompleted > 1) {
+      if (gameNumberCompleted > 1) {
         const originalDeck = globals.currentMatch.player.originalDeck.clone();
         const newDeck = globals.currentMatch.player.deck.clone();
         const sideboardChanges = getDeckChanges(
@@ -184,7 +186,7 @@ export default function OutLogInfo(entry: Entry): void {
       game.landsInLibrary = landsInLibrary;
       game.libraryLands = libraryLands;
 
-      globals.matchGameStats[globals.gameNumberCompleted - 1] = game;
+      globals.matchGameStats[gameNumberCompleted - 1] = game;
       globals.currentMatch.matchTime = globals.matchGameStats.reduce(
         (acc, cur) => acc + cur.time,
         0

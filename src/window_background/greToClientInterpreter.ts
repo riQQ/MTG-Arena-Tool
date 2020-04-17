@@ -22,6 +22,7 @@ import {
   GameObject,
   GameObjectTypeAbility
 } from "../types/greInterpreter";
+import getMatchGameStats from "./getMatchGameStats";
 
 const actionType = [];
 actionType[0] = "ActionType_None";
@@ -683,7 +684,7 @@ export function GREMessageByID(msgId: number, time: Date): void {
 }
 
 export function GREMessage(message: GreMessage, time: Date): void {
-  //globals.currentMatch.GREtoClient[message.msgId] = message;
+  globals.currentMatch.GREtoClient[message.msgId] = message;
   globals.logTime = time;
 
   const fn = GREMessages[message.type];
@@ -770,6 +771,7 @@ function checkGameInfo(gameInfo: GameInfo): void {
   //actionLog(-1, globals.logTime, `>> GameStage: ${gameInfo.stage} (${globals.currentMatch.gameStage})`);
   globals.currentMatch.gameStage = gameInfo.stage;
   globals.currentMatch.game = gameInfo.gameNumber;
+
   if (gameInfo.matchWinCondition) {
     if (gameInfo.matchWinCondition == "MatchWinCondition_SingleElimination") {
       globals.currentMatch.bestOf = 1;
@@ -782,6 +784,10 @@ function checkGameInfo(gameInfo: GameInfo): void {
 
   if (gameInfo.results) {
     globals.currentMatch.results = objectClone(gameInfo.results);
+  }
+
+  if (gameInfo.stage == "GameStage_GameOver") {
+    getMatchGameStats();
   }
 }
 

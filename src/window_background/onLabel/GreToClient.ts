@@ -18,6 +18,14 @@ interface Entry extends LogEntry {
 }
 
 export default function GreToClient(entry: Entry): void {
+  if (
+    entry.jsonString &&
+    entry.jsonString ==
+      "[Message summarized because one or more GameStateMessages exceeded the 50 GameObject or 50 Annotation limit.]"
+  ) {
+    console.log("GRE Message summarized");
+    return;
+  }
   const json = entry.json();
   if (!json) return;
   //if (skipMatch) return;

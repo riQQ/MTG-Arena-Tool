@@ -4,5 +4,6 @@ export default interface LogEntry {
   timestamp: string;
   arrow: string;
   type: string;
+  jsonString?: string;
   json: () => any;
 }
