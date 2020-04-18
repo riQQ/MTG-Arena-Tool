@@ -27,7 +27,7 @@ export function ColorsCell<D extends TableData>({
   const colors = data[key] ?? cell.value;
   return (
     <FlexLeftContainer>
-      {colors.map((color: number, index: number) => {
+      {colors?.map((color: number, index: number) => {
         return <ManaSymbol key={index} colorIndex={color} />;
       })}
     </FlexLeftContainer>
