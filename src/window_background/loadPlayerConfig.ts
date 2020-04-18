@@ -109,7 +109,7 @@ export async function loadPlayerConfig(): Promise<void> {
         (id: string) =>
           savedData[id] &&
           savedData[id]?.gameStats &&
-          savedData[id]?.gameStats[0]?.win
+          savedData[id]?.gameStats[0]?.win !== undefined
       )
       .map((id: string) => {
         savedData[id].date = new Date(savedData[id].date).toString();
