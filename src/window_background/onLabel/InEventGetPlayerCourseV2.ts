@@ -1,7 +1,11 @@
 // PROBABLY DEPRECATED
 import { playerDb } from "../../shared/db/LocalDatabase";
 import Deck from "../../shared/deck";
-import { InternalEvent, PlayerCourse } from "../../types/event";
+import {
+  InternalEvent,
+  PlayerCourse,
+  ModuleInstanceData
+} from "../../types/event";
 import LogEntry from "../../types/logDecoder";
 import addCustomDeck from "../addCustomDeck";
 import globals from "../globals";
@@ -33,9 +37,16 @@ function saveCourse(json: InternalEvent): void {
 }
 
 export default function InEventGetPlayerCourseV2(entry: Entry): void {
-  const json = entry.json();
+  const json = entry.json() as any;
   if (!json) return;
   if (json.Id == "00000000-0000-0000-0000-000000000000") return;
+
+  const newModule: Record<string, any> = {};
+  json.ModuleInstanceData = Object.keys(json.ModuleInstanceData).map(k => {
+    const newK = k.split(".").join("");
+    newModule[newK] = json.ModuleInstanceData[k];
+  });
+  json.ModuleInstanceData = { ...newModule };
 
   if (!json.CourseDeck) return;
   // Says v2 in the label but its actually v3 !

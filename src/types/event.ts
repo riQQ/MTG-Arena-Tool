@@ -45,6 +45,18 @@ export interface ModuleInstanceData {
   HasGranted?: boolean;
   WinLossGate?: WinLossGate;
   WinNoGate?: WinNoGate;
+  HumanDraft_internalState?: {
+    DraftId: string;
+    ScreenName: string;
+    Avatar: string;
+    PodmakingSessionId: string;
+    IsCompleted: boolean;
+    IsDone: boolean;
+    JoinPodmakingTime: string;
+  };
+  HumanDraftPublicState?: {
+    State: number;
+  };
 }
 
 export interface PlayerCourse {
