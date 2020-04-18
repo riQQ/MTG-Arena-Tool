@@ -105,7 +105,12 @@ export async function loadPlayerConfig(): Promise<void> {
   // Get Matches data
   if (savedData.matches_index) {
     const matchesList: InternalMatch[] = savedData.matches_index
-      .filter((id: string) => savedData[id] && savedData[id].gameStats[0]?.win)
+      .filter(
+        (id: string) =>
+          savedData[id] &&
+          savedData[id]?.gameStats &&
+          savedData[id]?.gameStats[0]?.win
+      )
       .map((id: string) => {
         savedData[id].date = new Date(savedData[id].date).toString();
         return savedData[id];
