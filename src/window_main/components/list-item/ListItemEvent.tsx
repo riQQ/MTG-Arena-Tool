@@ -36,7 +36,7 @@ function DraftRares({ event }: { event: EventTableData }): JSX.Element {
   let draftRares: JSX.Element[] = [];
   if (draftExists(draftId)) {
     const draft = getDraft(draftId);
-    if (draft) {
+    if (draft && draft.CardPool) {
       const pool = [...draft.CardPool];
       draftRares = pool
         .map((cardId: string | number) => db.card(cardId))

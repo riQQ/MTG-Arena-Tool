@@ -56,6 +56,12 @@ export default function ListItemMatch({
     setHover(false);
   }, []);
 
+  let dateTime = new Date(match.date);
+  // Quick hack to check if NaN
+  if (dateTime.getTime() !== dateTime.getTime()) {
+    dateTime = new Date();
+  }
+
   return (
     <ListItem
       click={onRowClick}
@@ -88,10 +94,10 @@ export default function ListItemMatch({
         </FlexTop>
         <FlexBottom style={{ alignItems: "center" }}>
           <div className="list_match_time">
-            <relative-time datetime={new Date(match.date || 0).toISOString()}>
+            <relative-time datetime={dateTime.toISOString()}>
               {match.date?.toString() ?? ""}
             </relative-time>{" "}
-            {" " + toMMSS(match.duration) + " long"}
+            {toMMSS(match.duration) + " long"}
           </div>
 
           <ManaCost class="mana_s20" colors={match.oppDeck.colors || []} />
