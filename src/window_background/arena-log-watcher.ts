@@ -227,12 +227,6 @@ function onLogEntryFound(entry: any): void {
 function entrySwitch(entry: LogEntry): void {
   // console.log(entry, entry.json());
   switch (entry.label) {
-    case "Log.BI":
-      if (entry.arrow == "==>") {
-        Labels.OutLogInfo(entry);
-      }
-      break;
-
     case "GreToClientEvent":
       Labels.GreToClient(entry);
       break;
@@ -258,7 +252,9 @@ function entrySwitch(entry: LogEntry): void {
         Labels.InEventGetCombinedRankInfo(entry);
       }
       break;
-
+    // Aparently deprecated after Ikoria
+    // Will conflict with out new way of updating seasonal data if enabled again
+    /*
     case "Rank.Updated":
       Labels.RankUpdated(entry);
       break;
@@ -266,6 +262,7 @@ function entrySwitch(entry: LogEntry): void {
     case "MythicRating.Updated":
       Labels.MythicRatingUpdated(entry);
       break;
+    */
 
     case "Event.GetPlayerCoursesV2":
       if (entry.arrow == "<==") {

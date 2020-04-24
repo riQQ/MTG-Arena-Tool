@@ -1,11 +1,5 @@
 /* eslint-disable prefer-const */
-import Deck from "../shared/deck";
 import { ZoneData } from "../types/greInterpreter";
-import {
-  MatchData,
-  matchDataDefault,
-  MatchGameStats
-} from "../types/currentMatch";
 import { InternalDraft } from "../types/draft";
 import store from "../shared-redux/stores/backgroundStore";
 
@@ -36,8 +30,6 @@ let actionLogDir = "";
 
 let currentDraft = InternalDraftDefault;
 
-let currentDeck = new Deck();
-
 const debugLog = false;
 
 const debugNet = true;
@@ -48,12 +40,6 @@ let duringMatch = false;
 
 let firstPass = true;
 
-let idChanges: any = {};
-
-let initialLibraryInstanceIds: number[] = [];
-
-let instanceToCardIdMap: any = {};
-
 let logReadStart: Date = new Date();
 
 let logTime = new Date();
@@ -61,10 +47,6 @@ let logTime = new Date();
 let logTimestamp = 0;
 
 let matchCompletedOnGameNumber = 0;
-
-let matchGameStats: MatchGameStats[] = [];
-
-let originalDeck: Deck = new Deck();
 
 let oddsSampleSize = 1;
 
@@ -76,30 +58,21 @@ let stopWatchingLog: any;
 
 let cardTypesByZone: ZoneData = {};
 
-let currentMatch: MatchData = matchDataDefault;
-
 export default {
   store,
   actionLogDir,
   currentDraft,
-  currentDeck,
-  currentMatch,
   debugLog,
   debugNet,
   duringDraft,
   duringMatch,
   firstPass,
-  idChanges,
-  initialLibraryInstanceIds,
-  instanceToCardIdMap,
   logReadStart,
   logTime,
   logTimestamp,
   matchCompletedOnGameNumber,
-  matchGameStats,
   oddsSampleSize,
   cardTypesByZone,
-  originalDeck,
   stopWatchingLog,
   toolVersion,
   watchingLog
