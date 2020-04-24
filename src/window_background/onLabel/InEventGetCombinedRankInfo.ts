@@ -5,6 +5,8 @@ import { reduxAction } from "../../shared-redux/sharedRedux";
 import globals from "../globals";
 import { IPC_RENDERER } from "../../shared/constants";
 import setSeasonalRankFromCombinedRank from "../setSeasonalRankFromCombinedRank";
+import globalStore from "../../shared-store";
+import { isRankedEvent } from "../../shared/util";
 
 interface EntryJson {
   playerId: string;
@@ -60,7 +62,10 @@ export default function InEventGetCombinedRankInfo(entry: Entry): void {
     }
   };
 
-  setSeasonalRankFromCombinedRank(rank, entry.hash);
+  const eventId = globalStore.currentMatch.eventId;
+  if (isRankedEvent(eventId)) {
+    setSeasonalRankFromCombinedRank(rank, entry.hash);
+  }
 
   const infoLength = Object.keys(json).length - 1;
   const processedLength = [rank.limited, rank.constructed]
