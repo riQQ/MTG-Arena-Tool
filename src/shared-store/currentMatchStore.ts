@@ -91,7 +91,10 @@ export function resetCurrentGame(): void {
     turnInfo: {},
     gameInfo: {},
     players: [],
-    priorityTimers: matchStateObject.priorityTimers,
+    priorityTimers: {
+      last: 0,
+      timers: [0, 0, 0, 0, 0]
+    },
     currentPriority: 0,
     zones: {},
     annotations: {},
