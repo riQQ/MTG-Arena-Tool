@@ -31,6 +31,7 @@ export const matchStateObject = {
   currentDeck: new Deck(),
   originalDeck: new Deck(),
   cardsLeft: new Deck(),
+  cardsBottom: [] as number[],
   // Info
   player: {} as InternalPlayer,
   players: [] as PlayerInfo[],
@@ -211,6 +212,10 @@ export function addCardCast(arg: CardCast): void {
 
 export function clearCardsCast(): void {
   globalStore.currentMatch.cardsCast = [];
+}
+
+export function setCardsBottom(arg: number[]): void {
+  globalStore.currentMatch.cardsBottom = arg;
 }
 
 export function setInitialLibraryInstanceIds(arg: number[]): void {
