@@ -12,7 +12,9 @@ import {
   Annotations,
   GameObject,
   //GameObjectTypeAbility,
-  DetailsType
+  AggregatedDetailsType,
+  DetailsSrcDestCategoryType,
+  DetailsKeyType
 } from "../types/greInterpreter";
 
 import {
@@ -142,48 +144,6 @@ function instanceIdToObject(instanceID: number): GameObject {
     return instance;
   }
   throw new NoInstanceException(orig, instanceID, instance);
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function keyValuePair(obj: KeyValuePairInfo, addTo: any): DetailsType {
-  // the f value is not in the GreTypes..
-  if (obj.key) {
-    try {
-      switch (obj.type) {
-        case "KeyValuePairValueType_uint32":
-          addTo[obj.key] = obj.valueUint32;
-          break;
-        case "KeyValuePairValueType_int32":
-          addTo[obj.key] = obj.valueInt32;
-          break;
-        case "KeyValuePairValueType_uint64":
-          addTo[obj.key] = obj.valueUint64;
-          break;
-        case "KeyValuePairValueType_int64":
-          addTo[obj.key] = obj.valueInt64;
-          break;
-        case "KeyValuePairValueType_bool":
-          addTo[obj.key] = obj.valueBool;
-          break;
-        case "KeyValuePairValueType_string":
-          addTo[obj.key] = obj.valueString;
-          break;
-        case "KeyValuePairValueType_float":
-          addTo[obj.key] = obj.valueFloat;
-          break;
-        case "KeyValuePairValueType_double":
-          addTo[obj.key] = obj.valueDouble;
-          break;
-        default:
-          break;
-      }
-      if (addTo[obj.key].length == 1) addTo[obj.key] = addTo[obj.key][0];
-    } catch (e) {
-      addTo[obj.key] = undefined;
-    }
-  }
-
-  return addTo;
 }
 
 const AnnotationType_ObjectIdChanged = function(ann: Annotations): void {
@@ -589,18 +549,110 @@ function annotationsSwitch(ann: Annotations, type: AnnotationType): void {
   }
 }
 
+function extractNumberValueFromKVP(obj: KeyValuePairInfo): number | undefined {
+  const numberArray = extractNumberArrayFromKVP(obj);
+
+  return numberArray.length === 1 ? numberArray[0] : undefined;
+}
+
+function extractNumberArrayFromKVP(obj: KeyValuePairInfo): number[] {
+  switch (obj.type) {
+    case "KeyValuePairValueType_uint32":
+      return obj.valueUint32;
+    case "KeyValuePairValueType_int32":
+      return obj.valueInt32;
+    case "KeyValuePairValueType_uint64":
+      return obj.valueUint64;
+    case "KeyValuePairValueType_int64":
+      return obj.valueInt64;
+    case "KeyValuePairValueType_float":
+      return obj.valueFloat;
+    case "KeyValuePairValueType_double":
+      return obj.valueDouble;
+    default:
+      return [];
+  }
+}
+
+function extractBooleanValueFromKVP(
+  obj: KeyValuePairInfo
+): boolean | undefined {
+  return obj.valueBool.length === 1 ? obj.valueBool[0] : undefined;
+}
+
+function extractBooleanArrayFromKVP(obj: KeyValuePairInfo): boolean[] {
+  return obj.valueBool;
+}
+
+function extractStringValueFromKVP(obj: KeyValuePairInfo): string | undefined {
+  return obj.valueString.length === 1 ? obj.valueString[0] : undefined;
+}
+
+function extractStringArrayFromKVP(obj: KeyValuePairInfo): string[] {
+  return obj.valueString;
+}
+
+function keyValuePair(kvp: KeyValuePairInfo[]): AggregatedDetailsType {
+  const aggregate: AggregatedDetailsType = {
+    abilityGrpId: 0,
+    bottomIds: undefined,
+    category: undefined,
+    damage: 0,
+    grpid: 0,
+    index: 0,
+    life: 0,
+    new_id: 0,
+    orig_id: 0,
+    phase: 0,
+    source_zone: 0,
+    step: 0,
+    topIds: undefined,
+    type: 0,
+    zone_dest: 0,
+    zone_src: 0
+  };
+
+  for (const obj of kvp) {
+    const key = obj.key as DetailsKeyType | undefined;
+    switch (key) {
+      case undefined:
+        break;
+      case "abilityGrpId":
+      case "grpid":
+      case "damage":
+      case "index":
+      case "life":
+      case "new_id":
+      case "orig_id":
+      case "phase":
+      case "source_zone":
+      case "step":
+      case "type":
+      case "zone_dest":
+      case "zone_src":
+        aggregate[key] = extractNumberValueFromKVP(obj) ?? 0;
+        break;
+      case "bottomIds":
+      case "topIds":
+        aggregate[key] = extractNumberValueFromKVP(obj);
+        break;
+      case "category":
+        aggregate[key] = extractStringValueFromKVP(
+          obj
+        ) as DetailsSrcDestCategoryType;
+        break;
+    }
+  }
+  return aggregate;
+}
+
 function processAnnotations(): void {
   const removeIds = [] as number[];
   const anns = getAllAnnotations();
   anns.forEach(ann => {
     if (ann.id && isAnnotationProcessed(ann.id)) return;
 
-    let details: Partial<DetailsType> = {};
-    if (ann.details) {
-      ann.details.forEach(
-        (detail: KeyValuePairInfo) => (details = keyValuePair(detail, details))
-      );
-    }
+    const details = keyValuePair(ann.details);
 
     try {
       ann.type.forEach((type: AnnotationType) => {
