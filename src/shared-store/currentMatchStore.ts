@@ -4,7 +4,8 @@ import {
   AnnotationInfo,
   GameInfo,
   TurnInfo,
-  GameObjectInfo
+  GameObjectInfo,
+  GREToClientMessage
 } from "../proto/GreTypes";
 
 import {
@@ -45,6 +46,7 @@ export const matchStateObject = {
   } as PriorityTimers,
   currentPriority: 0,
   // Zones, objects, annotations, ids tracking
+  GREtoClient: [] as GREToClientMessage[],
   zones: {} as Record<number, ZoneInfo>,
   annotations: {} as Record<number, AnnotationInfo>,
   processedAnnotations: [] as number[],

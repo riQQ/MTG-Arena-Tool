@@ -549,12 +549,6 @@ function annotationsSwitch(ann: Annotations, type: AnnotationType): void {
   }
 }
 
-function extractNumberValueFromKVP(obj: KeyValuePairInfo): number | undefined {
-  const numberArray = extractNumberArrayFromKVP(obj);
-
-  return numberArray.length === 1 ? numberArray[0] : undefined;
-}
-
 function extractNumberArrayFromKVP(obj: KeyValuePairInfo): number[] {
   switch (obj.type) {
     case "KeyValuePairValueType_uint32":
@@ -574,6 +568,17 @@ function extractNumberArrayFromKVP(obj: KeyValuePairInfo): number[] {
   }
 }
 
+function extractNumberValueFromKVP(obj: KeyValuePairInfo): number | undefined {
+  const numberArray = extractNumberArrayFromKVP(obj);
+
+  return numberArray.length === 1 ? numberArray[0] : undefined;
+}
+
+function extractStringValueFromKVP(obj: KeyValuePairInfo): string | undefined {
+  return obj.valueString.length === 1 ? obj.valueString[0] : undefined;
+}
+
+/*
 function extractBooleanValueFromKVP(
   obj: KeyValuePairInfo
 ): boolean | undefined {
@@ -584,13 +589,10 @@ function extractBooleanArrayFromKVP(obj: KeyValuePairInfo): boolean[] {
   return obj.valueBool;
 }
 
-function extractStringValueFromKVP(obj: KeyValuePairInfo): string | undefined {
-  return obj.valueString.length === 1 ? obj.valueString[0] : undefined;
-}
-
 function extractStringArrayFromKVP(obj: KeyValuePairInfo): string[] {
   return obj.valueString;
 }
+*/
 
 function keyValuePair(kvp: KeyValuePairInfo[]): AggregatedDetailsType {
   const aggregate: AggregatedDetailsType = {
@@ -652,7 +654,8 @@ function processAnnotations(): void {
   anns.forEach(ann => {
     if (ann.id && isAnnotationProcessed(ann.id)) return;
 
-    const details = keyValuePair(ann.details);
+    // Details can be undefined sometimes
+    const details = keyValuePair(ann.details || []);
 
     try {
       ann.type.forEach((type: AnnotationType) => {
@@ -1063,7 +1066,7 @@ export function GREMessageByID(msgId: number, time: Date): void {
 */
 
 export function GREMessage(message: GREToClientMessage, time: Date): void {
-  //globals.currentMatch.GREtoClient[message.msgId || 0] = message;
+  //globalStore.currentMatch.GREtoClient[message.msgId || 0] = message;
   globals.logTime = time;
 
   GREMessagesSwitch(message, message.type);
