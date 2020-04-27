@@ -84,6 +84,8 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
       subTitle = "Total Seen: " + cardsCount + " cards";
       break;
   }
+  visibleDeck?.getMainboard().removeZeros(true);
+  visibleDeck?.getSideboard().removeZeros(true);
   return (
     <div
       className="outer_wrapper elements_wrapper"

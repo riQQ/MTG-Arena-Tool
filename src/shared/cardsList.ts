@@ -321,6 +321,27 @@ class CardsList {
 
     return newList;
   }
+
+  /**
+   * Removes all cards that have zero or less than zero quantity.
+   * If ReplaceList is set, replaces the _list with the new one.
+   * Returns the new list (not a cardsList object)
+   **/
+  removeZeros(replaceList = true): v2cardsList {
+    const newList: v2cardsList = [];
+
+    this.list.forEach(card => {
+      if (card.quantity > 0) {
+        newList.push(card);
+      }
+    });
+
+    if (replaceList) {
+      this.list = newList;
+    }
+
+    return newList;
+  }
 }
 
 export default CardsList;
