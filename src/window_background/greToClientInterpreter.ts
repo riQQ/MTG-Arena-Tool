@@ -54,7 +54,8 @@ import {
   setHandDrawn,
   setGameBeginTime,
   setGameWinner,
-  setCardsBottom
+  setCardsBottom,
+  addCardFromSideboard
 } from "../shared-store/currentMatchStore";
 
 function changePriority(previous: number, current: number, time: number): void {
@@ -155,6 +156,15 @@ const AnnotationType_ObjectIdChanged = function(ann: Annotations): void {
 
 const AnnotationType_ZoneTransfer = function(ann: Annotations): void {
   if (ann.type !== "AnnotationType_ZoneTransfer") return;
+
+  // Capture cards that travel from the sideboard
+  const fromZone = getZone(ann.details.zone_src);
+  if (fromZone.type == "ZoneType_Sideboard") {
+    const obj = instanceIdToObject(ann.affectedIds[0]);
+    if (obj.ownerSeatId == globalStore.currentMatch.playerSeat) {
+      addCardFromSideboard([obj.grpId]);
+    }
+  }
 
   // A player played a land
   if (ann.details.category == "PlayLand") {
@@ -1066,7 +1076,7 @@ export function GREMessageByID(msgId: number, time: Date): void {
 */
 
 export function GREMessage(message: GREToClientMessage, time: Date): void {
-  //globalStore.currentMatch.GREtoClient[message.msgId || 0] = message;
+  globalStore.currentMatch.GREtoClient[message.msgId || 0] = message;
   globals.logTime = time;
 
   GREMessagesSwitch(message, message.type);

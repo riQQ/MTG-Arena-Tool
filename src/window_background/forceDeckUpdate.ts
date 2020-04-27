@@ -36,7 +36,14 @@ const forceDeckUpdate = function(removeUsed = true): void {
   const currentMatch = globalStore.currentMatch;
   const playerCardsUsed = currentMatch.player.cardsUsed;
   const playerCardsBottom = currentMatch.cardsBottom;
+  const playerCardsFromSide = currentMatch.cardsFromSideboard;
   const playerCardsLeft = globalStore.currentMatch.currentDeck.clone();
+
+  // Remove cards that came from the sideboard from the list of
+  // cards used to remove from the mainboard.
+  playerCardsFromSide.forEach(grpId => {
+    playerCardsUsed.splice(playerCardsUsed.indexOf(grpId) + 1, 1);
+  });
 
   if (globals.debugLog || !globals.firstPass) {
     playerCardsLeft
@@ -52,6 +59,9 @@ const forceDeckUpdate = function(removeUsed = true): void {
       cardsleft -= playerCardsUsed.length;
       playerCardsUsed.forEach((grpId: number) => {
         playerCardsLeft.getMainboard().remove(grpId, 1);
+      });
+      playerCardsFromSide.forEach((grpId: number) => {
+        playerCardsLeft.getSideboard().remove(grpId, 1);
       });
     }
     // Remove cards that were put on the bottom

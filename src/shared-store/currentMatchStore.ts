@@ -32,6 +32,7 @@ export const matchStateObject = {
   currentDeck: new Deck(),
   originalDeck: new Deck(),
   cardsLeft: new Deck(),
+  cardsFromSideboard: [] as number[],
   cardsBottom: [] as number[],
   // Info
   player: {} as InternalPlayer,
@@ -99,6 +100,8 @@ export function resetCurrentGame(): void {
       last: 0,
       timers: [0, 0, 0, 0, 0]
     },
+    cardsFromSideboard: [],
+    cardsBottom: [],
     currentPriority: 0,
     zones: {},
     annotations: {},
@@ -218,6 +221,13 @@ export function clearCardsCast(): void {
 
 export function setCardsBottom(arg: number[]): void {
   globalStore.currentMatch.cardsBottom = arg;
+}
+
+export function addCardFromSideboard(arg: number[]): void {
+  globalStore.currentMatch.cardsFromSideboard = [
+    ...globalStore.currentMatch.cardsFromSideboard,
+    ...arg
+  ];
 }
 
 export function setInitialLibraryInstanceIds(arg: number[]): void {
