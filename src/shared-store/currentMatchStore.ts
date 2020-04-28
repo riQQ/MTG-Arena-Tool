@@ -4,7 +4,8 @@ import {
   AnnotationInfo,
   GameInfo,
   TurnInfo,
-  GameObjectInfo
+  GameObjectInfo,
+  GREToClientMessage
 } from "../proto/GreTypes";
 
 import {
@@ -31,6 +32,8 @@ export const matchStateObject = {
   currentDeck: new Deck(),
   originalDeck: new Deck(),
   cardsLeft: new Deck(),
+  cardsFromSideboard: [] as number[],
+  cardsBottom: [] as number[],
   // Info
   player: {} as InternalPlayer,
   players: [] as PlayerInfo[],
@@ -44,6 +47,7 @@ export const matchStateObject = {
   } as PriorityTimers,
   currentPriority: 0,
   // Zones, objects, annotations, ids tracking
+  GREtoClient: [] as GREToClientMessage[],
   zones: {} as Record<number, ZoneInfo>,
   annotations: {} as Record<number, AnnotationInfo>,
   processedAnnotations: [] as number[],
@@ -83,6 +87,7 @@ export function setOppCardsUsed(arg: number[]): void {
 
 export function resetCurrentMatch(): void {
   Object.assign(globalStore.currentMatch, matchStateObject);
+  globalStore.currentMatch.matchGameStats = [];
 }
 
 export function resetCurrentGame(): void {
@@ -95,6 +100,8 @@ export function resetCurrentGame(): void {
       last: 0,
       timers: [0, 0, 0, 0, 0]
     },
+    cardsFromSideboard: [],
+    cardsBottom: [],
     currentPriority: 0,
     zones: {},
     annotations: {},
@@ -210,6 +217,17 @@ export function addCardCast(arg: CardCast): void {
 
 export function clearCardsCast(): void {
   globalStore.currentMatch.cardsCast = [];
+}
+
+export function setCardsBottom(arg: number[]): void {
+  globalStore.currentMatch.cardsBottom = arg;
+}
+
+export function addCardFromSideboard(arg: number[]): void {
+  globalStore.currentMatch.cardsFromSideboard = [
+    ...globalStore.currentMatch.cardsFromSideboard,
+    ...arg
+  ];
 }
 
 export function setInitialLibraryInstanceIds(arg: number[]): void {

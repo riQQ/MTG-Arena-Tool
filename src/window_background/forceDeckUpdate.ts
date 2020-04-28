@@ -35,7 +35,15 @@ const forceDeckUpdate = function(removeUsed = true): void {
   let typeLan = 0;
   const currentMatch = globalStore.currentMatch;
   const playerCardsUsed = currentMatch.player.cardsUsed;
+  const playerCardsBottom = currentMatch.cardsBottom;
+  const playerCardsFromSide = currentMatch.cardsFromSideboard;
   const playerCardsLeft = globalStore.currentMatch.currentDeck.clone();
+
+  // Remove cards that came from the sideboard from the list of
+  // cards used to remove from the mainboard.
+  playerCardsFromSide.forEach(grpId => {
+    playerCardsUsed.splice(playerCardsUsed.indexOf(grpId) + 1, 1);
+  });
 
   if (globals.debugLog || !globals.firstPass) {
     playerCardsLeft
@@ -52,7 +60,16 @@ const forceDeckUpdate = function(removeUsed = true): void {
       playerCardsUsed.forEach((grpId: number) => {
         playerCardsLeft.getMainboard().remove(grpId, 1);
       });
+      playerCardsFromSide.forEach((grpId: number) => {
+        playerCardsLeft.getSideboard().remove(grpId, 1);
+      });
     }
+    // Remove cards that were put on the bottom
+    playerCardsBottom.forEach((grpId: number) => {
+      playerCardsLeft.getMainboard().remove(grpId, 1);
+    });
+    cardsleft -= playerCardsBottom.length;
+
     const main = playerCardsLeft.getMainboard();
     //main.addProperty("chance", card =>
     main.addChance((card: CardObject) =>
@@ -145,12 +162,20 @@ const forceDeckUpdate = function(removeUsed = true): void {
     chancesObj.cardsLeft = cardsleft;
 
     setCardsOdds(chancesObj);
+
+    // Add that that were put on the bottom again, so it
+    // doesnt affect the display of the decklist
+    playerCardsBottom.forEach((grpId: number) => {
+      playerCardsLeft.getMainboard().add(grpId, 1);
+    });
+    cardsleft += playerCardsBottom.length;
   } else {
     const main = playerCardsLeft.getMainboard();
     main.addChance(() => 1);
     const chancesObj = new Chances();
     setCardsOdds(chancesObj);
   }
+
   globalStore.currentMatch.cardsLeft = playerCardsLeft;
 };
 
