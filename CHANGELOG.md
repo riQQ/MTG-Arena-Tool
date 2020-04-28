@@ -1,3 +1,8 @@
+## 4.1.0 (2020-04-28)
+
+
+
+
 ## <small>2.14.1 (2019-11-29)</small>
 
 * add overlaySetBounds (#770) ([0a83393](https://github.com/Manuel-777/MTG-Arena-Tool/commit/0a83393)), closes [#770](https://github.com/Manuel-777/MTG-Arena-Tool/issues/770)
