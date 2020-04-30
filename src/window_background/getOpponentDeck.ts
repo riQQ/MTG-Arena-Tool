@@ -60,12 +60,16 @@ function getBestArchetype(deck: Deck): string {
 }
 
 function getOpponentDeck(): InternalDeck {
-  const currentMatch = globalStore.currentMatch;
-  const _deck = new Deck(undefined, currentMatch.opponent.cardsUsed, []);
+  let oppCardsList: number[] = [...globalStore.currentMatch.opponent.cardsUsed];
+  globalStore.currentMatch.matchGameStats.map(stats => {
+    oppCardsList = [...oppCardsList, ...stats.cardsSeen];
+  });
+
+  const _deck = new Deck(undefined, oppCardsList, []);
   _deck.getMainboard().removeDuplicates(true);
   _deck.colors;
 
-  const format = db.events_format[currentMatch.eventId];
+  const format = db.events_format[globalStore.currentMatch.eventId];
   //currentMatch.opponent.deck.archetype = "-";
   const deckSave = _deck.getSave();
 
@@ -74,8 +78,10 @@ function getOpponentDeck(): InternalDeck {
     (format !== "Standard" && format !== "Traditional Standard") ||
     oppArchetype == "Unknown"
   ) {
-    if (currentMatch.opponent.commanderGrpIds?.length) {
-      const card = db.card(currentMatch.opponent.commanderGrpIds[0]);
+    if (globalStore.currentMatch.opponent.commanderGrpIds?.length) {
+      const card = db.card(
+        globalStore.currentMatch.opponent.commanderGrpIds[0]
+      );
       oppArchetype = card ? card.name : "";
     } else {
       oppArchetype = _deck.colors.getColorArchetype();
