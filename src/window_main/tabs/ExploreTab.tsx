@@ -234,6 +234,14 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
     [filters, getFilterEvents]
   );
 
+  function validateWildcardValues(
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void {
+    if (parseInt(e.target.value) < 0) {
+      e.target.value = "";
+    }
+  }
+
   return (
     <div className="explore_buttons_container">
       <div className="explore_buttons_row explore_buttons_top">
@@ -297,6 +305,7 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
           containerClassName="input_container_explore explore_wc_input"
           value={filters.filterWCC}
           placeholder=""
+          validate={validateWildcardValues}
           callback={(value: string): void =>
             updateFilters({
               ...filters,
@@ -310,6 +319,7 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
           containerClassName="input_container_explore explore_wc_input"
           value={filters.filterWCU}
           placeholder=""
+          validate={validateWildcardValues}
           callback={(value: string): void =>
             updateFilters({
               ...filters,
@@ -323,6 +333,7 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
           containerClassName="input_container_explore explore_wc_input"
           value={filters.filterWCR}
           placeholder=""
+          validate={validateWildcardValues}
           callback={(value: string): void =>
             updateFilters({
               ...filters,
@@ -336,6 +347,7 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
           containerClassName="input_container_explore explore_wc_input"
           value={filters.filterWCM}
           placeholder=""
+          validate={validateWildcardValues}
           callback={(value: string): void =>
             updateFilters({
               ...filters,
