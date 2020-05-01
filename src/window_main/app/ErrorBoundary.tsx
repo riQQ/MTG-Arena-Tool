@@ -1,5 +1,8 @@
 import React, { ReactNode } from "react";
 import ErrorInfo from "../components/popups/ErrorInfo";
+import { reduxAction } from "../../shared-redux/sharedRedux";
+import { IPC_NONE } from "../../shared/constants";
+import store from "../../shared-redux/stores/rendererStore";
 
 interface ErrorState {
   error: any;
@@ -22,6 +25,18 @@ export default class ErrorBoundary extends React.Component<{}, ErrorState> {
   }
 
   closeErrorDialog = (): void => {
+    const dispatcher = store.dispatch;
+    reduxAction(dispatcher, "SET_TOPNAV", 0, IPC_NONE);
+    reduxAction(
+      dispatcher,
+      "SET_SUBNAV",
+      {
+        type: -1,
+        id: "",
+        data: null
+      },
+      IPC_NONE
+    );
     setTimeout(() => {
       this.setState({
         error: null,
@@ -33,10 +48,11 @@ export default class ErrorBoundary extends React.Component<{}, ErrorState> {
   render(): ReactNode {
     return (
       <>
-        {this.state.errorInfo && (
+        {this.state.errorInfo ? (
           <ErrorInfo {...this.state} closeCallback={this.closeErrorDialog} />
+        ) : (
+          this.props.children
         )}
-        {this.props.children}
       </>
     );
   }
