@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Column, Row } from "react-table";
-import { DATE_SEASON, MATCHES_TABLE_MODE } from "../../../shared/constants";
+import {
+  DATE_SEASON,
+  MATCHES_TABLE_MODE,
+  IPC_ALL,
+  IPC_RENDERER
+} from "../../../shared/constants";
 import Aggregator, { AggregatorFilters } from "../../aggregator";
 import ListItemMatch from "../list-item/ListItemMatch";
 import MatchResultsStatsPanel from "../misc/MatchResultsStatsPanel";
-import ResizableDragger from "../misc/ResizableDragger";
 import {
   ArchivedCell,
   ArchiveHeader,
@@ -44,8 +48,11 @@ import {
   MatchesTableProps,
   MatchTableData
 } from "./types";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
+import { animated } from "react-spring";
+import useResize from "../../hooks/useResize";
+import { reduxAction } from "../../../shared-redux/sharedRedux";
 
 const { RANKED_CONST, RANKED_DRAFT } = Aggregator;
 
@@ -390,10 +397,24 @@ export default function MatchesTable({
     ...tableControlsProps
   };
   const isTableMode = tableMode === MATCHES_TABLE_MODE;
+
   const panelWidth = useSelector(
     (state: AppState) => state.settings.right_panel_width
   );
-  const sidePanelWidth = panelWidth + "px";
+  const dispatcher = useDispatch();
+  const finishResize = useCallback(
+    (newWidth: number) => {
+      reduxAction(
+        dispatcher,
+        "SET_SETTINGS",
+        { right_panel_width: newWidth },
+        IPC_ALL ^ IPC_RENDERER
+      );
+    },
+    [dispatcher]
+  );
+  const [width, bind] = useResize(panelWidth, finishResize);
+
   return (
     <>
       <div className={"wrapper_column"}>
@@ -447,19 +468,17 @@ export default function MatchesTable({
           <PagingControls {...pagingProps} />
         </div>
       </div>
-      <div
-        className={"wrapper_column sidebar_column_l"}
-        style={{
-          width: sidePanelWidth,
-          flex: `0 0 ${sidePanelWidth}`
-        }}
+
+      <animated.div {...bind()} className={"sidebar-dragger"}></animated.div>
+      <animated.div
+        className={"sidebar-main"}
+        style={{ width, minWidth: width, maxWidth: width }}
       >
-        <ResizableDragger />
         <MatchesSidePanel
           subAggFilters={{ ...aggFilters, ...getDataAggFilters(rows) }}
           setAggFiltersCallback={setAggFiltersCallback}
         />
-      </div>
+      </animated.div>
     </>
   );
 }

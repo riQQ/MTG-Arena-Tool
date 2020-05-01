@@ -1,14 +1,15 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { Column, Filters, FilterValue, IdType, Row } from "react-table";
 import {
   COLLECTION_CARD_MODE,
   COLLECTION_CHART_MODE,
   COLLECTION_SETS_MODE,
   COLLECTION_TABLE_MODE,
-  DRAFT_RANKS
+  DRAFT_RANKS,
+  IPC_ALL,
+  IPC_RENDERER
 } from "../../../shared/constants";
 import db from "../../../shared/database";
-import ResizableDragger from "../misc/ResizableDragger";
 import { ColorsCell, MetricCell, ShortTextCell } from "../tables/cells";
 import {
   ColorColumnFilter,
@@ -46,8 +47,11 @@ import {
   CollectionTableControlsProps,
   CollectionTableProps
 } from "./types";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
+import useResize from "../../hooks/useResize";
+import { animated } from "react-spring";
+import { reduxAction } from "../../../shared-redux/sharedRedux";
 
 function isBoosterMathValid(filters: Filters<CardsData>): boolean {
   let hasCorrectBoosterFilter = false;
@@ -376,16 +380,31 @@ export default function CollectionTable({
         })}
       </div>
     );
-  const panelWidth = useSelector(
-    (state: AppState) => state.settings.right_panel_width
-  );
-  const sidePanelWidth = panelWidth + "px";
+
   const clickCompletionCallback = React.useCallback((): void => {
     setTableMode(COLLECTION_SETS_MODE);
     setAllFilters((): FilterValue[] => [
       { id: "booster", value: { true: true, false: false } }
     ]);
   }, [setAllFilters]);
+
+  const panelWidth = useSelector(
+    (state: AppState) => state.settings.right_panel_width
+  );
+  const dispatcher = useDispatch();
+  const finishResize = useCallback(
+    (newWidth: number) => {
+      reduxAction(
+        dispatcher,
+        "SET_SETTINGS",
+        { right_panel_width: newWidth },
+        IPC_ALL ^ IPC_RENDERER
+      );
+    },
+    [dispatcher]
+  );
+  const [width, bind] = useResize(panelWidth, finishResize);
+
   return (
     <>
       <div className={"wrapper_column"}>
@@ -410,20 +429,23 @@ export default function CollectionTable({
           ) && <PagingControls {...pagingProps} />}
         </div>
       </div>
-      <div
-        className={"wrapper_column sidebar_column_l"}
+      <animated.div {...bind()} className={"sidebar-dragger"}></animated.div>
+      <animated.div
+        className={"sidebar-main"}
         style={{
-          width: sidePanelWidth,
-          flex: `0 0 ${sidePanelWidth}`
+          width,
+          minWidth: width,
+          maxWidth: width,
+          display: "flex",
+          flexDirection: "column"
         }}
       >
-        <ResizableDragger />
         <CollectionStatsPanel
           stats={stats}
           boosterMath={boosterMath}
           clickCompletionCallback={clickCompletionCallback}
         />
-      </div>
+      </animated.div>
     </>
   );
 }

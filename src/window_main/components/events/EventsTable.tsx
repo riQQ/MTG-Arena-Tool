@@ -1,12 +1,15 @@
 import _ from "lodash";
-import React from "react";
+import React, { useCallback } from "react";
 import { Column, Row } from "react-table";
-import { EVENTS_TABLE_MODE } from "../../../shared/constants";
+import {
+  EVENTS_TABLE_MODE,
+  IPC_ALL,
+  IPC_RENDERER
+} from "../../../shared/constants";
 import Aggregator, { AggregatorFilters } from "../../aggregator";
 import { toggleArchived } from "../../rendererUtil";
 import { ListItemEvent } from "../list-item/ListItemEvent";
 import MatchResultsStatsPanel from "../misc/MatchResultsStatsPanel";
-import ResizableDragger from "../misc/ResizableDragger";
 import {
   ArchivedCell,
   ArchiveHeader,
@@ -38,8 +41,11 @@ import {
   EventsTableProps,
   EventTableData
 } from "./types";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
+import useResize from "../../hooks/useResize";
+import { animated } from "react-spring";
+import { reduxAction } from "../../../shared-redux/sharedRedux";
 
 const columns: Column<EventTableData>[] = [
   { accessor: "id" },
@@ -234,7 +240,20 @@ export default function EventsTable({
   const panelWidth = useSelector(
     (state: AppState) => state.settings.right_panel_width
   );
-  const sidePanelWidth = panelWidth + "px";
+  const dispatcher = useDispatch();
+  const finishResize = useCallback(
+    (newWidth: number) => {
+      reduxAction(
+        dispatcher,
+        "SET_SETTINGS",
+        { right_panel_width: newWidth },
+        IPC_ALL ^ IPC_RENDERER
+      );
+    },
+    [dispatcher]
+  );
+  const [width, bind] = useResize(panelWidth, finishResize);
+
   return (
     <>
       <div className={"wrapper_column"}>
@@ -284,14 +303,11 @@ export default function EventsTable({
           <PagingControls {...pagingProps} />
         </div>
       </div>
-      <div
-        className={"wrapper_column sidebar_column_l"}
-        style={{
-          width: sidePanelWidth,
-          flex: `0 0 ${sidePanelWidth}`
-        }}
+      <animated.div {...bind()} className={"sidebar-dragger"}></animated.div>
+      <animated.div
+        className={"sidebar-main"}
+        style={{ width, minWidth: width, maxWidth: width }}
       >
-        <ResizableDragger />
         <MatchResultsStatsPanel
           prefixId={"events_top"}
           aggregator={
@@ -299,7 +315,7 @@ export default function EventsTable({
           }
           showCharts
         />
-      </div>
+      </animated.div>
     </>
   );
 }
