@@ -154,9 +154,11 @@ function Seat(props: SeatProps): JSX.Element {
   const [gameSeen, setGameSeen] = useState(0);
 
   let combinedList: number[] = [];
-  match?.gameStats.forEach((stats: MatchGameStats) => {
-    combinedList = [...combinedList, ...stats.cardsSeen];
-  });
+  if (gameDetails) {
+    match?.gameStats.forEach((stats: MatchGameStats) => {
+      combinedList = [...combinedList, ...stats.cardsSeen];
+    });
+  }
 
   const deck =
     gameDetails && match
