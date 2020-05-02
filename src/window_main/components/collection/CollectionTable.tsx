@@ -6,6 +6,7 @@ import {
   COLLECTION_SETS_MODE,
   COLLECTION_TABLE_MODE,
   DRAFT_RANKS,
+  DRAFT_RANKS_LOLA,
   IPC_ALL,
   IPC_RENDERER
 } from "../../../shared/constants";

@@ -3,6 +3,7 @@ import CardTile from "../shared/CardTile";
 import Colors from "../shared/colors";
 import {
   DRAFT_RANKS,
+  DRAFT_RANKS_LOLA,
   OVERLAY_DRAFT,
   OVERLAY_FULL,
   OVERLAY_LEFT,
@@ -75,7 +76,8 @@ function compareDraftPicks(a: CardObject, b: CardObject): -1 | 0 | 1 {
   const aType = getCardTypeSort(aCard.type);
   const bType = getCardTypeSort(bCard.type);
 
-  const rankDiff = bCard.rank - aCard.rank;
+  const rankDiff =
+    aCard.source == 0 ? bCard.rank - aCard.rank : aCard.rank - bCard.rank;
   const colorsLengthDiff = aColors.length - bColors.length;
   const cmcDiff = aCard.cmc - bCard.cmc;
   const typeDiff = aType - bType;
@@ -177,7 +179,7 @@ export default function DeckList(props: DeckListProps): JSX.Element {
       });
     } else if (settings.mode === OVERLAY_DRAFT) {
       const rank = getRank(card.id);
-      quantity = DRAFT_RANKS[rank];
+      quantity = card.source == 0 ? DRAFT_RANKS[rank] : DRAFT_RANKS_LOLA[rank];
     }
 
     let fullCard = card;

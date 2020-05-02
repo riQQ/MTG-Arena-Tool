@@ -185,9 +185,9 @@ function ExploreFilters(props: ExploreFiltersProps): JSX.Element {
 
         newFilters = [...new Set(newFilters)];
       } else if (prevFilters.filterType === "Ranked Draft") {
-        newFilters = db.limited_ranked_events;
+        newFilters = [...db.limited_ranked_events];
       } else if (prevFilters.filterType === "Ranked Constructed") {
-        newFilters = db.standard_ranked_events;
+        newFilters = [...db.standard_ranked_events];
       }
       newFilters.sort(function(a, b) {
         if (a < b) return -1;

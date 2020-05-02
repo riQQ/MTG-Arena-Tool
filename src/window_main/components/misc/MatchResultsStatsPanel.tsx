@@ -202,7 +202,7 @@ export default function MatchResultsStatsPanel({
   React.useEffect(() => {
     const interval = setInterval(function() {
       checkResize();
-    }, 500);
+    }, 100);
     return (): void => {
       clearInterval(interval);
     };

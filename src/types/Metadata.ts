@@ -34,10 +34,13 @@ export interface DbCardData {
   booster: boolean;
   dfcId?: number;
   rank: number;
-  rank_values: number[];
+  rank_values: number[] | string[];
   rank_controversy: string;
   images: ImageLinks;
   reprints: boolean | number[];
+  source: number;
+  side?: boolean;
+  ceil?: number | null;
 }
 
 export type Rarity = typeof CARD_RARITIES[number];

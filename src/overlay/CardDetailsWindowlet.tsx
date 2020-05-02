@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { CSSTransition } from "react-transition-group";
 import { ARENA_MODE_DRAFT } from "../shared/constants";
 import db from "../shared/database";
-import DraftRatings from "../shared/DraftRatings";
+import { DraftRatings, DraftRatingsLola } from "../shared/DraftRatings";
 import { getCardImage } from "../shared/util";
 import { Chances } from "../types/Chances";
 import { SettingsData } from "../types/settings";
@@ -128,9 +128,13 @@ to stop editing overlay positions`}
         >
           <div style={{ display: "flex" }}>
             {!!card && !isCardGroupedLands && <img {...imgProps} />}
-            {!!card && arenaState === ARENA_MODE_DRAFT && (
+            {!!card && arenaState === ARENA_MODE_DRAFT && opacity > 0 && (
               <div className="main_hover_ratings">
-                <DraftRatings card={card} />
+                {card.source == 0 ? (
+                  <DraftRatings card={card} />
+                ) : (
+                  <DraftRatingsLola card={card} />
+                )}
               </div>
             )}
             {isCardGroupedLands && odds ? (
