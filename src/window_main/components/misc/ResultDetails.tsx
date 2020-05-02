@@ -17,8 +17,8 @@ export default function ResultDetails(props: ResultDetailsProps): JSX.Element {
   // on the play if they lost before and viceversa. This is
   // because we are not storing who played first on each game!
   const g1OnThePlay = match.player.seat == match.onThePlay;
-  const g2OnThePlay = match.gameStats[1] ? !match.gameStats[0].win : -1;
-  const g3OnThePlay = match.gameStats[2] ? !match.gameStats[1].win : -1;
+  const g2OnThePlay = match.gameStats[1] ? !match.gameStats[0]?.win : -1;
+  const g3OnThePlay = match.gameStats[2] ? !match.gameStats[1]?.win : -1;
 
   const g1Title =
     (g1OnThePlay ? "On the Play, " : "On the Draw, ") +
