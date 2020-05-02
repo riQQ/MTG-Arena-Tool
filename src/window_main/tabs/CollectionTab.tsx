@@ -2,7 +2,7 @@ import { remote } from "electron";
 import React from "react";
 import { TableState } from "react-table";
 import Colors from "../../shared/colors";
-import { DRAFT_RANKS, IPC_ALL, IPC_RENDERER } from "../../shared/constants";
+import { DRAFT_RANKS, IPC_ALL, IPC_RENDERER, DRAFT_RANKS_LOLA } from "../../shared/constants";
 import db from "../../shared/database";
 import { DbCardData } from "../../types/Metadata";
 import { openScryfallCard, replaceAll } from "../../shared/util";
@@ -109,6 +109,7 @@ function getCollectionData(): CardsData[] {
     .filter(card => card.collectible)
     .map(
       (card): CardsData => {
+        const RANK_SOURCE = card.source == 0 ? DRAFT_RANKS : DRAFT_RANKS_LOLA;
         const owned = cards.cards[card.id] ?? 0;
         const acquired = cardsNew[card.id] ?? 0;
         const wanted = wantedCards[card.id] ?? 0;
@@ -116,7 +117,7 @@ function getCollectionData(): CardsData[] {
         colorsObj.addFromCost(card.cost);
         const colors = colorsObj.get();
         const colorSortVal = colors.join("");
-        const rankSortVal = DRAFT_RANKS[card.rank] ?? "?";
+        const rankSortVal = RANK_SOURCE[card.rank] ?? "?";
         return {
           ...card,
           owned,

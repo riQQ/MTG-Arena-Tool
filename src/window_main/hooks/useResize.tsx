@@ -4,10 +4,9 @@ import { ReactEventHandlers } from "react-use-gesture/dist/types";
 import { useState } from "react";
 
 export default function useResize(
-  initialWidth: number,
+  initialSize: number,
   callback?: (sz: number) => void
 ): [SpringValue<number>, (...args: any[]) => ReactEventHandlers] {
-  const initialSize = initialWidth;
   const [isDrag, setDrag] = useState(false);
   const [{ width }, set] = useSpring(() => ({ width: initialSize }));
   // Set the drag hook and define component movement based on gesture data

@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Column, Row } from "react-table";
 import {
   DATE_SEASON,
@@ -53,6 +53,7 @@ import { AppState } from "../../../shared-redux/stores/rendererStore";
 import { animated } from "react-spring";
 import useResize from "../../hooks/useResize";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
+import useResizePanel from "../../hooks/useResizePanel";
 
 const { RANKED_CONST, RANKED_DRAFT } = Aggregator;
 
@@ -398,22 +399,7 @@ export default function MatchesTable({
   };
   const isTableMode = tableMode === MATCHES_TABLE_MODE;
 
-  const panelWidth = useSelector(
-    (state: AppState) => state.settings.right_panel_width
-  );
-  const dispatcher = useDispatch();
-  const finishResize = useCallback(
-    (newWidth: number) => {
-      reduxAction(
-        dispatcher,
-        "SET_SETTINGS",
-        { right_panel_width: newWidth },
-        IPC_ALL ^ IPC_RENDERER
-      );
-    },
-    [dispatcher]
-  );
-  const [width, bind] = useResize(panelWidth, finishResize);
+  const [width, bind] = useResizePanel();
 
   return (
     <>

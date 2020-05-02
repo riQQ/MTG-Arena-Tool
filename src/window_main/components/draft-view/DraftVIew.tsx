@@ -3,7 +3,11 @@ import Slider, { SliderPosition } from "../misc/Slider";
 import DeckList from "../misc/DeckList";
 import Deck from "../../../shared/deck";
 import { getCardImage, getRankColorClass } from "../../../shared/util";
-import { PACK_SIZES, DRAFT_RANKS } from "../../../shared/constants";
+import {
+  PACK_SIZES,
+  DRAFT_RANKS,
+  DRAFT_RANKS_LOLA
+} from "../../../shared/constants";
 import useHoverCard from "../../hooks/useHoverCard";
 import { DraftData } from "../../../types/draft";
 import uxMove from "../../uxMove";
@@ -56,6 +60,7 @@ function DraftCard(props: DraftCardProps): JSX.Element {
     };
   }, [grpId, size]);
 
+  const RANK_SOURCE = card?.source == 0 ? DRAFT_RANKS : DRAFT_RANKS_LOLA;
   return (
     <div className="draft-card-cont">
       <div
@@ -67,10 +72,10 @@ function DraftCard(props: DraftCardProps): JSX.Element {
       <div
         className={
           "draft-card-rank " +
-          getRankColorClass(DRAFT_RANKS[card ? card.rank : 0])
+          getRankColorClass(RANK_SOURCE[card ? card.rank : 0])
         }
       >
-        {card ? DRAFT_RANKS[card.rank] : "-"}
+        {card ? RANK_SOURCE[card.rank] : "-"}
       </div>
     </div>
   );

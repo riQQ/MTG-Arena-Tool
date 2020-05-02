@@ -1,12 +1,7 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { InternalDeck, CardObject } from "../../../types/Deck";
 import ManaCost from "../misc/ManaCost";
-import {
-  MANA_COLORS,
-  IPC_NONE,
-  IPC_ALL,
-  IPC_RENDERER
-} from "../../../shared/constants";
+import { MANA_COLORS, IPC_NONE } from "../../../shared/constants";
 import DeckList from "../misc/DeckList";
 import DeckTypesStats from "../../../shared/DeckTypesStats";
 import DeckManaCurve from "../../../shared/DeckManaCurve";
@@ -27,7 +22,7 @@ import MatchResultsStatsPanel from "../misc/MatchResultsStatsPanel";
 import Aggregator from "../../aggregator";
 import { useAggregatorData } from "../tables/useAggregatorData";
 import { animated } from "react-spring";
-import useResize from "../../hooks/useResize";
+import useResizePanel from "../../hooks/useResizePanel";
 
 const ReactSvgPieChart = require("react-svg-piechart");
 
@@ -196,21 +191,7 @@ export function DeckView(props: DeckViewProps): JSX.Element {
     { title: "Green", value: landCounts.g, color: MANA_COLORS[4] }
   ];
 
-  const panelWidth = useSelector(
-    (state: AppState) => state.settings.right_panel_width
-  );
-  const finishResize = useCallback(
-    (newWidth: number) => {
-      reduxAction(
-        dispatcher,
-        "SET_SETTINGS",
-        { right_panel_width: newWidth },
-        IPC_ALL ^ IPC_RENDERER
-      );
-    },
-    [dispatcher]
-  );
-  const [width, bind] = useResize(panelWidth, finishResize);
+  const [width, bind] = useResizePanel();
 
   const dateFilter = useSelector(
     (state: AppState) => state.settings.last_date_filter
