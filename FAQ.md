@@ -20,14 +20,6 @@ NO, do not ever input your MTG Arena credentials anywhere except MTG Arena itsel
 
 MTG Arena Tool reads through your entire log file at startup, that means it can read past games even when you did not have it running then. The log file is cleared by MTGA every time you initiate it, so with MTG Arena Tool you will probably see past games but only a few.
 
-### Where are draft scores taken from?
-
-They come from the [Magic Community Set Reviews](https://www.mtgcommunityreview.com/).
-
-### I logged into another PC but my history is empty, what gives?
-
-Currently progress is stored locally, that means you can only see the history of games you played in the PC you played them in. Sync features are in the works!
-
 ### OBS does not capture the app window
 
 Check this out: [youtube.com/watch?v=bjmX7NdJX8w](https://www.youtube.com/watch?v=bjmX7NdJX8w).
