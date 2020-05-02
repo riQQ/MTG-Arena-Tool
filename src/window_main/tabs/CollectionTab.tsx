@@ -2,7 +2,12 @@ import { remote } from "electron";
 import React from "react";
 import { TableState } from "react-table";
 import Colors from "../../shared/colors";
-import { DRAFT_RANKS, IPC_ALL, IPC_RENDERER, DRAFT_RANKS_LOLA } from "../../shared/constants";
+import {
+  DRAFT_RANKS,
+  IPC_ALL,
+  IPC_RENDERER,
+  DRAFT_RANKS_LOLA
+} from "../../shared/constants";
 import db from "../../shared/database";
 import { DbCardData } from "../../types/Metadata";
 import { openScryfallCard, replaceAll } from "../../shared/util";
