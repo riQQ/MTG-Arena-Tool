@@ -34,5 +34,9 @@ export default function useResizePanel(): [
     [dispatcher]
   );
 
-  return useResize(panelWidth == 0 ? selectorWidth : panelWidth, finishResize);
+  const finalWidth = Math.min(
+    Math.max(panelWidth == 0 ? selectorWidth : panelWidth, 4),
+    window.outerWidth - 10
+  );
+  return useResize(finalWidth, finishResize);
 }

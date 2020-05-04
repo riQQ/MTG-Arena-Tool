@@ -2471,6 +2471,7 @@ a:hover {
 }
 
 .sidebar-main {
+    flex-direction: column;
     display: flex;
     overflow-x: hidden;
     justify-content: space-between;
@@ -2479,7 +2480,7 @@ a:hover {
 
 .sidebar-dragger {
     cursor: e-resize;
-    min-width: 3px;
+    min-width: 4px;
     background-color: var(--color-b);
 }
 
