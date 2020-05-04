@@ -13,12 +13,31 @@ export default function ResultDetails(props: ResultDetailsProps): JSX.Element {
     flexDirection: "column"
   };
 
-  // This is fundamentally wrong, it assumes players are always
-  // on the play if they lost before and viceversa. This is
-  // because we are not storing who played first on each game!
-  const g1OnThePlay = match.player.seat == match.onThePlay;
-  const g2OnThePlay = match.gameStats[1] ? !match.gameStats[0]?.win : -1;
-  const g3OnThePlay = match.gameStats[2] ? !match.gameStats[1]?.win : -1;
+  let g1OnThePlay: boolean | -1 = -1;
+  let g2OnThePlay: boolean | -1 = -1;
+  let g3OnThePlay: boolean | -1 = -1;
+
+  const hasPlayDrawData = match && match.toolVersion >= 262400;
+  if (hasPlayDrawData) {
+    g1OnThePlay = match.gameStats[0]
+      ? match.player.seat == match.gameStats[0].onThePlay
+      : false;
+    g2OnThePlay = match.gameStats[1]
+      ? match.player.seat == match.gameStats[1].onThePlay
+      : false;
+    g3OnThePlay = match.gameStats[2]
+      ? match.player.seat == match.gameStats[2].onThePlay
+      : false;
+  } else {
+    // This is fundamentally wrong, it assumes players are always
+    // on the play if they lost before and viceversa. This is
+    // because we are not storing who played first on each game!
+    g1OnThePlay = match.player.seat == match.onThePlay;
+    g2OnThePlay =
+      match.gameStats[0] && match.gameStats[1] ? !match.gameStats[0].win : -1;
+    g3OnThePlay =
+      match.gameStats[1] && match.gameStats[2] ? !match.gameStats[1].win : -1;
+  }
 
   const g1Title =
     (g1OnThePlay ? "On the Play, " : "On the Draw, ") +
