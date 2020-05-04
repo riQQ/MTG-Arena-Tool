@@ -3999,7 +3999,8 @@ a:hover {
     background-color: #d3ebb0;
 }
 .completion_table_card.wanted {
-    opacity: 0.5;
+    font-family: var(--sub-font-name-bold);
+    color: var(--color-u);
 }
 
 .economyDateSelect {
