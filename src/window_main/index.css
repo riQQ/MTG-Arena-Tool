@@ -2471,6 +2471,7 @@ a:hover {
 }
 
 .sidebar-main {
+    flex-direction: column;
     display: flex;
     overflow-x: hidden;
     justify-content: space-between;
@@ -2479,7 +2480,7 @@ a:hover {
 
 .sidebar-dragger {
     cursor: e-resize;
-    min-width: 3px;
+    min-width: 4px;
     background-color: var(--color-b);
 }
 
@@ -3999,7 +4000,8 @@ a:hover {
     background-color: #d3ebb0;
 }
 .completion_table_card.wanted {
-    opacity: 0.5;
+    font-family: var(--sub-font-name-bold);
+    color: var(--color-u);
 }
 
 .economyDateSelect {

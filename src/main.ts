@@ -539,11 +539,12 @@ function toggleWindow(): void {
 
 function showWindow(): void {
   if (mainWindow) {
-    if (!mainWindow.isVisible()) mainWindow.show();
+    if (!mainWindow.isVisible() || mainWindow.isMinimized()) mainWindow.show();
     else mainWindow.moveTop();
   }
   if (updaterWindow) {
-    if (!updaterWindow.isVisible()) updaterWindow.show();
+    if (!updaterWindow.isVisible() || updaterWindow.isMinimized())
+      updaterWindow.show();
     else updaterWindow.moveTop();
   }
 }
