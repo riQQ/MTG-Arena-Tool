@@ -91,6 +91,8 @@ const defaultConfig = {
     shortcut_editmode: "Alt+Shift+E",
     shortcut_devtools_main: "Alt+Shift+D",
     shortcut_devtools_overlay: "Alt+Shift+O",
+    fullOverlayBounds: [],
+    primaryMonitorPos: { x: 0, y: 0 },
     overlays: [
       {
         ...overlayCfg,

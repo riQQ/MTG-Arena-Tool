@@ -705,7 +705,7 @@ export const OVERLAY_DRAFT = 5;
 export const OVERLAY_DRAFT_BREW = 6;
 export const OVERLAY_MIXED = 7;
 
-export const OVERLAY_DRAFT_MODES = [OVERLAY_DRAFT, OVERLAY_DRAFT_BREW] as const;
+export const OVERLAY_DRAFT_MODES = [OVERLAY_DRAFT, OVERLAY_DRAFT_BREW];
 
 export const ARENA_MODE_IDLE = 0;
 export const ARENA_MODE_MATCH = 1;

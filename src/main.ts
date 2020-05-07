@@ -21,7 +21,8 @@ import {
   ARENA_MODE_DRAFT,
   ARENA_MODE_IDLE,
   ARENA_MODE_MATCH,
-  OVERLAY_DRAFT_MODES
+  OVERLAY_DRAFT_MODES,
+  IPC_ALL
 } from "./shared/constants";
 import { appDb } from "./shared/db/LocalDatabase";
 import { SettingsData, OverlaySettingsData } from "./types/settings";
@@ -474,6 +475,8 @@ function getOverlayVisible(settings: OverlaySettingsData): boolean {
 }
 
 function overlaySetBounds(): void {
+  const primaryBounds = electron.screen.getPrimaryDisplay().bounds;
+  const primaryPos = { x: 0, y: 0 };
   const newBounds = { x: 0, y: 0, width: 0, height: 0 };
   electron.screen.getAllDisplays().forEach(display => {
     newBounds.x = Math.min(newBounds.x, display.bounds.x);
@@ -490,6 +493,9 @@ function overlaySetBounds(): void {
     );
   });
 
+  primaryPos.x = primaryBounds.x - newBounds.x;
+  primaryPos.y = primaryBounds.y - newBounds.y;
+
   console.log(
     "Overlay bounds: ",
     newBounds.x,
@@ -498,6 +504,20 @@ function overlaySetBounds(): void {
     newBounds.height
   );
 
+  const windows = [overlay, mainWindow, background];
+  windows
+    .filter(w => w)
+    .map(window =>
+      window?.webContents.send(
+        "redux-action",
+        "SET_SETTINGS",
+        JSON.stringify({
+          fullOverlayBounds: newBounds,
+          primaryMonitorPos: primaryPos
+        }),
+        IPC_ALL
+      )
+    );
   overlay?.setBounds(newBounds);
 }
 

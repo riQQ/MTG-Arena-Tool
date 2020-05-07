@@ -134,7 +134,7 @@ modeHelp[OVERLAY_DRAFT_BREW] =
 
 interface SectionProps {
   current: number;
-  settings: any;
+  settings: AppState["settings"]["overlays"][0];
   show: boolean;
 }
 
@@ -157,6 +157,9 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
   const { settings, current, show } = props;
   const [overlayAlpha, setOverlayAlpha] = React.useState(0);
   const [overlayAlphaBack, setOverlayAlphaBack] = React.useState(0);
+  const primaryMonitorPos = useSelector(
+    (state: AppState) => state.settings.primaryMonitorPos
+  );
 
   // Alpha
   const overlayAlphaDebouce = React.useCallback(
@@ -347,18 +350,28 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
           onChange={overlayAlphaBackHandler}
         />
       </div>
-      <Button
-        text="Reset Position"
-        onClick={(): void =>
-          saveOverlaySettings(
-            current,
-            {
-              ...defaultConfig.settings.overlays[0].bounds
-            },
-            "bounds"
-          )
-        }
-      />
+      <div className="settings_note" style={{ textAlign: "center" }}>
+        Position: [{settings.bounds.x},{settings.bounds.y}]
+      </div>
+      <div className="settings_note" style={{ textAlign: "center" }}>
+        <Button
+          text="Reset Position"
+          onClick={(): void =>
+            saveOverlaySettings(
+              current,
+              {
+                x:
+                  defaultConfig.settings.overlays[current].bounds.x +
+                  primaryMonitorPos.x,
+                y:
+                  defaultConfig.settings.overlays[current].bounds.y +
+                  primaryMonitorPos.y
+              },
+              "bounds"
+            )
+          }
+        />
+      </div>
     </>
   ) : (
     <></>
