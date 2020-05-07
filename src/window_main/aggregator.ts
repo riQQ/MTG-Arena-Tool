@@ -18,6 +18,42 @@ import { InternalDeck } from "../types/Deck";
 import { InternalMatch } from "../types/match";
 import { matchesList, getDeck, getDeckName } from "../shared-store";
 import store from "../shared-redux/stores/rendererStore";
+import database from "../shared/database";
+import Colors from "../shared/colors";
+
+export interface CardWinrateData {
+  name: string;
+  wins: number;
+  losses: number;
+  turnsUsed: number[];
+  sidedIn: number;
+  sidedOut: number;
+  sideInWins: number;
+  sideInLosses: number;
+  sideOutWins: number;
+  sideOutLosses: number;
+  initHandWins: number;
+  initHandsLosses: number;
+  colors: { [key: number]: { wins: number; losses: number } };
+}
+
+export function newCardWinrate(grpId: number): CardWinrateData {
+  return {
+    name: database.card(grpId)?.name || "",
+    wins: 0,
+    losses: 0,
+    turnsUsed: [],
+    sidedIn: 0,
+    sidedOut: 0,
+    sideInWins: 0,
+    sideInLosses: 0,
+    sideOutWins: 0,
+    sideOutLosses: 0,
+    initHandWins: 0,
+    initHandsLosses: 0,
+    colors: {}
+  };
+}
 
 export const dateMaxValid = (a: any, b: any): any => {
   const aValid = isValid(a);
@@ -214,6 +250,7 @@ export default class Aggregator {
     );
   }
 
+  // Type!
   filterMatch(match: any): boolean {
     if (!match) return false;
     const { eventId, showArchived, matchIds } = this.filters;
@@ -267,7 +304,6 @@ export default class Aggregator {
     this.constructedStats = {};
     this.limitedStats = {};
 
-    // this._matches
     matchesList()
       .filter(this.filterMatch)
       .map(this._processMatch);
@@ -301,6 +337,7 @@ export default class Aggregator {
     }
   }
 
+  // Type Warning! Should be of InternalMatch
   _processMatch(match: any): void {
     const statsToUpdate = [this.stats];
     // on play vs draw
@@ -485,5 +522,89 @@ export default class Aggregator {
 
   get tags(): string[] {
     return Aggregator.gatherTags(this.decks);
+  }
+
+  getMatchesList(): InternalMatch[] {
+    return matchesList().filter(this.filterMatch);
+  }
+
+  getCardsWinrates(): Record<number, CardWinrateData> {
+    const winrates: Record<number, CardWinrateData> = {};
+    matchesList()
+      .filter(this.filterMatch)
+      .forEach(match => {
+        let addDelta: number[] = [];
+        let remDelta: number[] = [];
+        match.gameStats.forEach(game => {
+          const gameCards: number[] = [];
+          const wins = game.win ? 1 : 0;
+          const losses = game.win ? 0 : 1;
+          // For each card cast
+          game.cardsCast.forEach(cardCast => {
+            const { grpId, player, turn } = cardCast;
+            // Only if we casted it
+            if (player == match.player.seat) {
+              // define
+              if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
+              // Only once per card cast!
+              if (!gameCards.includes(grpId)) {
+                winrates[grpId].wins += wins;
+                winrates[grpId].losses += losses;
+
+                const colors = new Colors();
+                colors.addFromArray(match.oppDeck.colors || []);
+                if (colors.length > 0) {
+                  const bits = colors.getBits();
+                  if (!winrates[grpId].colors[bits]) {
+                    winrates[grpId].colors[bits] = {
+                      wins: 0,
+                      losses: 0
+                    };
+                  }
+                  winrates[grpId].colors[bits].wins += wins;
+                  winrates[grpId].colors[bits].losses += losses;
+                  gameCards.push(grpId);
+                }
+              }
+              // Do this for every card cast in the game
+              winrates[grpId].turnsUsed.push(Math.ceil(turn / 2));
+            }
+          });
+
+          // Initial hand
+          game.handsDrawn[game.handsDrawn.length - 1]?.forEach(grpId => {
+            // define
+            if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
+            winrates[grpId].initHandWins += wins;
+            winrates[grpId].initHandsLosses += losses;
+          });
+
+          // Add the previos changes to the current ones
+          addDelta = [...addDelta, ...(game.sideboardChanges?.added || [])];
+          remDelta = [...remDelta, ...(game.sideboardChanges?.removed || [])];
+
+          addDelta.forEach(grpId => {
+            // define
+            if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
+            winrates[grpId].sidedIn++;
+            // Only add if the card was used
+            if (gameCards.includes(grpId)) {
+              winrates[grpId].sideInWins += wins;
+              winrates[grpId].sideInLosses += losses;
+            }
+          });
+          remDelta.forEach(grpId => {
+            // define
+            if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
+            winrates[grpId].sidedOut++;
+            // Only add if the card was not used
+            if (!gameCards.includes(grpId)) {
+              winrates[grpId].sideOutWins += wins;
+              winrates[grpId].sideOutLosses += losses;
+            }
+          });
+        });
+      });
+    return winrates;
   }
 }

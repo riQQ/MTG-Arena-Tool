@@ -1,4 +1,12 @@
 import { WHITE, BLUE, BLACK, RED, GREEN, MULTI, COLORLESS } from "./constants";
+const colorFlags = {
+  NONE: 0,
+  W: 1,
+  U: 2,
+  B: 4,
+  R: 8,
+  G: 16
+};
 
 class Colors {
   private w: number;
@@ -25,21 +33,33 @@ class Colors {
    * Returns an array containing the colors as non-repeating constants
    * inside an array.
    */
-  get() {
-    let _arr = [];
+  get(): number[] {
+    const _arr = [];
     if (this.w !== 0) _arr.push(WHITE);
     if (this.u !== 0) _arr.push(BLUE);
     if (this.b !== 0) _arr.push(BLACK);
     if (this.r !== 0) _arr.push(RED);
     if (this.g !== 0) _arr.push(GREEN);
-
     return _arr;
+  }
+
+  /**
+   * Returns an Integer that identifies this color as a "bitshift" sum
+   */
+  getBits(): number {
+    let bits = 0;
+    if (this.w !== 0) bits |= colorFlags.W;
+    if (this.u !== 0) bits |= colorFlags.U;
+    if (this.b !== 0) bits |= colorFlags.B;
+    if (this.r !== 0) bits |= colorFlags.R;
+    if (this.g !== 0) bits |= colorFlags.G;
+    return bits;
   }
 
   /**
    * Return the color, multicolor or colorless.
    */
-  getBaseColor() {
+  getBaseColor(): number {
     if (this.length > 1) {
       return MULTI;
     } else if (this.length === 0) {
@@ -51,7 +71,7 @@ class Colors {
   /**
    * Returns the number of colors
    */
-  get length() {
+  get length(): number {
     let ret = 0;
     if (this.w > 0) ret += 1;
     if (this.u > 0) ret += 1;
@@ -65,7 +85,7 @@ class Colors {
   /**
    * Adds a string mana cost to this class.
    */
-  addFromCost(cost: string[]) {
+  addFromCost(cost: string[]): Colors {
     cost.forEach(symbol => {
       for (const c of symbol) {
         switch (c) {
@@ -94,7 +114,7 @@ class Colors {
   /**
    * Adds an array mana cost to this one.
    */
-  addFromArray(cost: number[]) {
+  addFromArray(cost: number[]): Colors {
     cost.forEach(color => {
       switch (color) {
         case WHITE:
@@ -121,12 +141,25 @@ class Colors {
   /**
    * Merges another instance of Colors into this one.
    */
-  addFromColor(color: Colors) {
+  addFromColor(color: Colors): Colors {
     this.w += color.w;
     this.u += color.u;
     this.b += color.b;
     this.r += color.r;
     this.g += color.g;
+
+    return this;
+  }
+
+  /**
+   * Merges a "bitshift" integer into this color.
+   */
+  addFromBits(colorBits: number): Colors {
+    this.w += colorBits & colorFlags.W ? 1 : 0;
+    this.u += colorBits & colorFlags.U ? 1 : 0;
+    this.b += colorBits & colorFlags.B ? 1 : 0;
+    this.r += colorBits & colorFlags.R ? 1 : 0;
+    this.g += colorBits & colorFlags.G ? 1 : 0;
 
     return this;
   }
@@ -145,15 +178,6 @@ class Colors {
   }
 
   getColorArchetype(): string {
-    const colorFlags = {
-      NONE: 0,
-      W: 1,
-      U: 2,
-      B: 4,
-      R: 8,
-      G: 16
-    };
-
     let currentColorFlags: number = colorFlags.NONE;
     if (this.w) currentColorFlags |= colorFlags.W;
     if (this.u) currentColorFlags |= colorFlags.U;
