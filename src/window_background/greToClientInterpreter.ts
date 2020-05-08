@@ -77,6 +77,12 @@ function getZone(id: number): ZoneInfo {
   return globalStore.currentMatch.zones[id];
 }
 
+function getPlayer(seat: number): PlayerInfo | undefined {
+  return globalStore.currentMatch.players.filter(
+    player => player.systemSeatNumber == seat
+  )[0];
+}
+
 function getZoneByType(
   type: ZoneInfo["type"],
   seat: number
@@ -413,9 +419,8 @@ const AnnotationType_DamageDealt = function(ann: Annotations): void {
 
 const AnnotationType_ModifiedLife = function(ann: Annotations): void {
   if (ann.type !== "AnnotationType_ModifiedLife") return;
-  const players = globalStore.currentMatch.players;
   const affected = ann.affectedIds[0];
-  const total = players[affected].lifeTotal;
+  const total = getPlayer(affected)?.lifeTotal || 0 + ann.details.life;
   const lifeStr = (ann.details.life > 0 ? "+" : "") + ann.details.life;
 
   actionLog(
