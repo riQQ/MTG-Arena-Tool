@@ -142,6 +142,16 @@ export function DeckView(props: DeckViewProps): JSX.Element {
 
   const goBack = (): void => {
     reduxAction(dispatcher, "SET_BACK_GRPID", 0, IPC_NONE);
+    reduxAction(
+      dispatcher,
+      "SET_SUBNAV",
+      {
+        type: -1,
+        id: "",
+        data: null
+      },
+      IPC_NONE
+    );
     uxMove(0);
   };
 

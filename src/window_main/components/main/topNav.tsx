@@ -48,6 +48,16 @@ function TopNavItem(props: TopNavItemProps): JSX.Element {
     (tabId: number) => (): void => {
       reduxAction(dispatcher, "SET_TOPNAV", tabId, IPC_NONE);
       reduxAction(dispatcher, "SET_BACK_GRPID", 0, IPC_NONE);
+      reduxAction(
+        dispatcher,
+        "SET_SUBNAV",
+        {
+          type: -1,
+          id: "",
+          data: null
+        },
+        IPC_NONE
+      );
       uxMove(0);
     },
     [dispatcher]
@@ -105,6 +115,16 @@ function TopRankIcon(props: TopRankProps): JSX.Element {
     tabId => (): void => {
       reduxAction(dispatcher, "SET_TOPNAV", tabId, IPC_NONE);
       reduxAction(dispatcher, "SET_BACK_GRPID", 0, IPC_NONE);
+      reduxAction(
+        dispatcher,
+        "SET_SUBNAV",
+        {
+          type: -1,
+          id: "",
+          data: null
+        },
+        IPC_NONE
+      );
       uxMove(0);
     },
     [dispatcher]

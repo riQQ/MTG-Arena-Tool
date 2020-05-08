@@ -6,15 +6,17 @@ import { getCardImage, getRankColorClass } from "../../../shared/util";
 import {
   PACK_SIZES,
   DRAFT_RANKS,
-  DRAFT_RANKS_LOLA
+  DRAFT_RANKS_LOLA,
+  IPC_NONE
 } from "../../../shared/constants";
 import useHoverCard from "../../hooks/useHoverCard";
 import { DraftData } from "../../../types/draft";
 import uxMove from "../../uxMove";
 import db from "../../../shared/database";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
 import { getDraft } from "../../../shared-store";
+import { reduxAction } from "../../../shared-redux/sharedRedux";
 
 interface PickPack {
   pack: number;
@@ -86,6 +88,7 @@ interface DraftViewProps {
 }
 
 export function DraftView(props: DraftViewProps): JSX.Element {
+  const dispatcher = useDispatch();
   const { draft } = props;
   const [pickpack, setPickPack] = React.useState({ pick: 0, pack: 0 });
   const cardSize =
@@ -119,6 +122,16 @@ export function DraftView(props: DraftViewProps): JSX.Element {
   }, [downHandler]);
 
   const goBack = (): void => {
+    reduxAction(
+      dispatcher,
+      "SET_SUBNAV",
+      {
+        type: -1,
+        id: "",
+        data: null
+      },
+      IPC_NONE
+    );
     uxMove(0);
   };
 
