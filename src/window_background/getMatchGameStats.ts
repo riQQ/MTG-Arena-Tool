@@ -46,6 +46,7 @@ export default function getMatchGameStats(): void {
     deck: {
       id: "",
       commandZoneGRPIds: [],
+      companionGRPId: 0,
       mainDeck: [],
       sideboard: [],
       name: "",

@@ -8,6 +8,7 @@ export interface ArenaV3Deck extends BasicDeck {
   cardSkins: CardSkin[];
   cardBack: null | string;
   commandZoneGRPIds: [];
+  companionGRPId: number;
   type: "ArenaV3Deck";
 }
 
@@ -36,6 +37,7 @@ export function isInternalDeck(deck: any): deck is InternalDeck {
 export interface BasicDeck {
   id: string;
   commandZoneGRPIds?: number[];
+  companionGRPId?: number;
   mainDeck: anyCardsList;
   sideboard: anyCardsList;
   name: string;

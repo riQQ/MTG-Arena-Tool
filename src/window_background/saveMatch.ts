@@ -56,6 +56,7 @@ export function completeMatch(
   }
   match.oppDeck = getOpponentDeck();
   match.oppDeck.commandZoneGRPIds = currentMatch.opponent.commanderGrpIds;
+  match.oppDeck.companionGRPId = currentMatch.opponent.companionGRPId;
 
   if (
     (!match.tags || !match.tags.length) &&

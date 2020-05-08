@@ -7,13 +7,38 @@ import CardTile from "../../../shared/CardTile";
 import { DbCardData } from "../../../types/Metadata";
 import Deck from "../../../shared/deck";
 
-function Separator(props: React.PropsWithChildren<any>): JSX.Element {
+interface SeparatorProps {
+  children: React.ReactNode;
+}
+
+function Separator(props: SeparatorProps): JSX.Element {
   const { children } = props;
   return <div className="card_tile_separator">{children}</div>;
 }
 
 function getDeckComponents(deck: Deck, showWildcards = false): JSX.Element[] {
   const components = [];
+  const comp = deck.getCompanion();
+  if (comp) {
+    const companionGrpId = comp;
+    components.push(<Separator key="sep_commander">Companion</Separator>);
+    const cardObj = db.card(companionGrpId || 0);
+    if (cardObj) {
+      components.push(
+        <CardTile
+          indent="a"
+          isHighlighted={false}
+          isSideboard={false}
+          showWildcards={showWildcards}
+          deck={deck}
+          card={cardObj}
+          key={"companioncardtile-" + companionGrpId}
+          quantity={1}
+        />
+      );
+    }
+  }
+
   if (deck.getCommanders() && deck.getCommanders().length > 0) {
     components.push(<Separator key="sep_commander">Commander</Separator>);
 
@@ -102,12 +127,18 @@ function getDeckComponents(deck: Deck, showWildcards = false): JSX.Element[] {
         });
     });
 
-  const sideboardSize = _.sumBy(deck.getSideboard().get(), "quantity");
+  let sideboardSize = _.sumBy(deck.getSideboard().get(), "quantity");
   if (sideboardSize) {
     // draw a separator for the sideboard
     components.push(
       <Separator key="sep_side">{`Sideboard (${sideboardSize})`}</Separator>
     );
+
+    const comp = deck.getCompanion();
+    if (comp) {
+      sideboardSize -= 1;
+      deck.getSideboard().remove(comp);
+    }
 
     // draw the cards
     _(deck.getSideboard().get())

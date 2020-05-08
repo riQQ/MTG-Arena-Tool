@@ -29,6 +29,8 @@ export default function convertDeckFromV3(v3deck: ArenaV3Deck): InternalDeck {
     lastUpdated: v3deck.lastUpdated,
     deckTileId: v3deck.deckTileId,
     description: v3deck.description,
+    commandZoneGRPIds: v3deck.commandZoneGRPIds,
+    companionGRPId: v3deck.companionGRPId,
     format: v3deck.format,
     type: "InternalDeck"
   };

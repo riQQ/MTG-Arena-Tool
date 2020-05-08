@@ -28,11 +28,11 @@ const decksSlice = createSlice({
     setManyStaticDecks: (state, action): void => {
       const newList: string[] = [];
       action.payload.map((deck: InternalDeck) => {
+        globalStore.decks[deck.id] = deck;
         if (globalStore.staticDecks.indexOf(deck.id) === -1) {
           globalStore.staticDecks.push(deck.id);
         }
         if (state.decksIndex.indexOf(deck.id) === -1) {
-          globalStore.decks[deck.id] = deck;
           newList.push(deck.id);
         }
       });

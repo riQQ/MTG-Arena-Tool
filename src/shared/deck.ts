@@ -18,6 +18,7 @@ class Deck {
   private readonly arenaMain: Readonly<v2cardsList>;
   private readonly arenaSide: Readonly<v2cardsList>;
   private commandZoneGRPIds: number[];
+  private companionGRPId: number | null;
   private name: string;
   public id: string;
   public lastUpdated: string;
@@ -47,6 +48,7 @@ class Deck {
     this.arenaMain = Deck.toLoggedList(arenaMain);
     this.arenaSide = Deck.toLoggedList(arenaSide);
     this.commandZoneGRPIds = mtgaDeck.commandZoneGRPIds ?? [];
+    this.companionGRPId = mtgaDeck.companionGRPId ?? null;
     this.name = mtgaDeck.name ?? "";
     this.id = mtgaDeck.id ?? "";
     this.lastUpdated = mtgaDeck.lastUpdated ?? "";
@@ -157,6 +159,13 @@ class Deck {
    */
   getCommanders(): number[] {
     return this.commandZoneGRPIds;
+  }
+
+  /**
+   * Return the raw commandZoneGRPIds array for later use.
+   */
+  getCompanion(): number | null {
+    return this.companionGRPId;
   }
 
   /**
@@ -308,6 +317,7 @@ class Deck {
       tags: this.tags || [],
       custom: this.custom,
       commandZoneGRPIds: this.commandZoneGRPIds,
+      companionGRPId: this.companionGRPId || undefined,
       format: this.format,
       type: "InternalDeck",
       description: this.description

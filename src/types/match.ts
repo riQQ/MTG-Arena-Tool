@@ -97,6 +97,7 @@ export interface InternalPlayer {
   percentile?: number;
   leaderboardPlace?: number;
   commanderGrpIds: any;
+  companionGRPId: number;
   cardsUsed: number[];
 }
 
