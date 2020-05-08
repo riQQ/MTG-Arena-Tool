@@ -337,7 +337,11 @@ export default function DecksTable({
             />
             <div
               className={
-                isTableMode ? "react_table_body" : "react_table_body_no_adjust"
+                tableMode === DECKS_ART_MODE
+                  ? "decks-table-wrapper"
+                  : isTableMode
+                  ? "react_table_body"
+                  : "react_table_body_no_adjust"
               }
               {...getTableBodyProps()}
             >

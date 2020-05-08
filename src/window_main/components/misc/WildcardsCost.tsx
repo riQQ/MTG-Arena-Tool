@@ -17,8 +17,11 @@ const getRarityKey = (
     return rarity as any;
   return undefined;
 };
-export default function WildcardsCost(props: { deck: Deck }): JSX.Element {
-  const { deck } = props;
+export default function WildcardsCost(props: {
+  deck: Deck;
+  shrink?: boolean;
+}): JSX.Element {
+  const { shrink, deck } = props;
   const playerEconomy = useSelector(
     (state: AppState) => state.playerdata.economy
   );
@@ -37,7 +40,13 @@ export default function WildcardsCost(props: { deck: Deck }): JSX.Element {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "row", marginRight: "16px" }}>
+    <div
+      style={
+        shrink
+          ? { display: "flex", fontSize: "14px" }
+          : { display: "flex", flexDirection: "row", marginRight: "16px" }
+      }
+    >
       {CARD_RARITIES.filter(rarity => rarity !== "land").map(
         (cardRarity: string) => {
           const key = getRarityKey(cardRarity);
@@ -48,7 +57,11 @@ export default function WildcardsCost(props: { deck: Deck }): JSX.Element {
               return (
                 <div
                   key={cardRarity + "-" + owned + "-" + missing}
-                  className={"wc_explore_cost wc_" + cardRarity}
+                  className={
+                    (shrink ? "wc_deckstab_cost" : "wc_explore_cost") +
+                    " wc_" +
+                    cardRarity
+                  }
                   title={_.capitalize(cardRarity) + " wildcards needed."}
                 >
                   {(owned > 0 ? owned + "/" : "") + missing}
@@ -59,7 +72,10 @@ export default function WildcardsCost(props: { deck: Deck }): JSX.Element {
         }
       )}
       {drawCost && (
-        <div title="Boosters needed (estimated)" className="bo_explore_cost">
+        <div
+          title="Boosters needed (estimated)"
+          className={shrink ? "bo_deckstab_cost" : "bo_explore_cost"}
+        >
           {Math.round(getBoosterCountEstimate(missingWildcards))}
         </div>
       )}

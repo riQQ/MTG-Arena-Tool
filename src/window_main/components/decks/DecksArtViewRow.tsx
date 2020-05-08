@@ -1,45 +1,17 @@
-import React from "react";
-import { Cell } from "react-table";
-import { CSSTransition } from "react-transition-group";
+import React, { useState } from "react";
 import { getCardArtCrop } from "../../../shared/util";
-import { ArtTile } from "../misc/ArtTile";
-import { MetricText } from "../misc/MetricText";
-import { DecksData, DecksTableRowProps } from "./types";
-
-function DeckArt({ url }: { url: string }): JSX.Element {
-  return <ArtTile style={{ backgroundImage: `url("${url}")` }} />;
-}
-
-function DecksArtViewCell({
-  cell,
-  hover
-}: {
-  cell: Cell<DecksData>;
-  hover: boolean;
-}): JSX.Element {
-  return (
-    <div
-      className="inner_div"
-      style={hover ? { backgroundColor: "rgba(0,0,0,0.4)" } : undefined}
-      {...cell.getCellProps()}
-    >
-      {cell.column.needsTileLabel && (
-        <MetricText
-          style={{
-            paddingRight: "8px",
-            fontSize: "small",
-            whiteSpace: "nowrap",
-            fontWeight: 300,
-            color: "var(--color-light-50)"
-          }}
-        >
-          {cell.column.render("Header")}:
-        </MetricText>
-      )}
-      {cell.render("Cell")}
-    </div>
-  );
-}
+import { DecksTableRowProps } from "./types";
+import { useSpring, animated } from "react-spring";
+import ManaCost from "../misc/ManaCost";
+import {
+  getWinrateClass,
+  formatPercent,
+  formatWinrateInterval,
+  get_deck_missing as getDeckMissing
+} from "../../rendererUtil";
+import { format } from "date-fns";
+import WildcardsCost from "../misc/WildcardsCost";
+import Deck from "../../../shared/deck";
 
 export default function DecksArtViewRow({
   row,
@@ -49,34 +21,86 @@ export default function DecksArtViewRow({
   const onRowClick = (): void => {
     openDeckCallback(deck);
   };
-  const [hover, setHover] = React.useState(false);
+
+  const [hover, setHover] = useState(0);
+  const props = useSpring({
+    backgroundSize: "auto " + Math.round(hover ? 210 : 175) + "px",
+    config: { mass: 5, tension: 2000, friction: 150 }
+  });
+
   const mouseEnter = React.useCallback(() => {
-    setHover(true);
+    setHover(1);
   }, []);
+
   const mouseLeave = React.useCallback(() => {
-    setHover(false);
+    setHover(0);
   }, []);
+
+  // Deck winrates
+  let winrateInterval = "???";
+  let winrateTooltip = "play at least 20 matches to estimate actual winrate";
+  let winrateEditTooltip = "no data yet";
+  if (deck.total > 0) {
+    if (deck.total >= 20) {
+      winrateInterval = formatPercent(deck.interval);
+      winrateTooltip = formatWinrateInterval(deck.winrateLow, deck.winrateHigh);
+    }
+    if (deck.lastEditTotal > 0) {
+      winrateEditTooltip = `${formatPercent(
+        deck.lastEditWinrate
+      )} winrate since ${format(new Date(deck.lastUpdated || 0), "Pp")}`;
+    }
+  }
+
+  const lastTouch = new Date(deck.timeTouched);
+  const missingWildcards = getDeckMissing(new Deck(deck));
+  const totalMissing =
+    missingWildcards.common +
+    missingWildcards.uncommon +
+    missingWildcards.rare +
+    missingWildcards.mythic;
+
   return (
-    <div
-      className={"decks_table_deck_tile"}
+    <animated.div
+      className={"decks-table-deck-tile"}
       onClick={onRowClick}
-      title={"show deck details"}
       onMouseEnter={mouseEnter}
       onMouseLeave={mouseLeave}
+      style={{
+        ...props,
+        backgroundImage: `url(${getCardArtCrop(row.values["deckTileId"])})`
+      }}
     >
-      <CSSTransition classNames="deckTileHover" in={!!hover} timeout={200}>
-        <DeckArt url={getCardArtCrop(row.values["deckTileId"])} />
-      </CSSTransition>
-      {row.cells.map(cell => {
-        return (
-          <DecksArtViewCell
-            key={cell.column.id + "_" + row.index}
-            cell={cell}
-            hover={hover}
-          />
-        );
-      })}
-      <div className="inner_div"> </div>
-    </div>
+      <div className="decks-table-deck-inner">
+        <div className="decks-table-deck-item">{deck.name}</div>
+        <div className="decks-table-deck-item">
+          <ManaCost colors={deck.colors || []} />
+        </div>
+        <div className="decks-table-deck-item">
+          {deck.total > 0 ? (
+            <>
+              {deck.wins}:{deck.losses} (
+              <span className={getWinrateClass(deck.winrate) + "_bright"}>
+                {formatPercent(deck.winrate)}
+              </span>{" "}
+              <i style={{ opacity: 0.6 }}>&plusmn; {winrateInterval}</i>)
+            </>
+          ) : totalMissing > 0 ? (
+            <WildcardsCost deck={new Deck(deck)} shrink={true} />
+          ) : (
+            <span>---</span>
+          )}
+        </div>
+        {totalMissing == 0 ? (
+          <div className="decks-table-deck-item">
+            <relative-time datetime={lastTouch.toISOString()}>
+              {lastTouch.toString()}
+            </relative-time>
+          </div>
+        ) : (
+          <></>
+        )}
+      </div>
+    </animated.div>
   );
 }
