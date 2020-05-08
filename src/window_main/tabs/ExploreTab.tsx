@@ -17,6 +17,7 @@ export default function ExploreTab(): JSX.Element {
   const dispatcher = useDispatch();
   const loading = useSelector((state: AppState) => state.renderer.loading);
   const exploreData = useSelector((state: AppState) => state.explore.data);
+  const [queries, setQueries] = useState(0);
   const exploreFilters = useSelector(
     (state: AppState) => state.explore.filters
   );
@@ -39,7 +40,8 @@ export default function ExploreTab(): JSX.Element {
       filterSkip: 0
     };
     queryExplore(newFilters);
-  }, [queryExplore, queryFilters]);
+    setQueries(queries + 1);
+  }, [queries, queryExplore, queryFilters]);
 
   const scrollQuery = useCallback(() => {
     queryExplore(queryFilters);
@@ -107,7 +109,9 @@ export default function ExploreTab(): JSX.Element {
             })
           ) : !loading ? (
             <div style={{ marginTop: "32px" }} className="message_sub red">
-              Query returned no data.
+              {queries == 0
+                ? "Click Search to begin."
+                : "Query returned no data."}
             </div>
           ) : (
             <></>
