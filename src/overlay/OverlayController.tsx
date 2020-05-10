@@ -15,7 +15,6 @@ import Deck from "../shared/deck";
 import store, { AppState } from "../shared-redux/stores/overlayStore";
 import { MatchData } from "../types/currentMatch";
 import { DraftData } from "../types/draft";
-import { InternalActionLog } from "../types/log";
 import { OverlaySettingsData } from "../types/settings";
 import CardDetailsWindowlet from "./CardDetailsWindowlet";
 import OverlayWindowlet from "./OverlayWindowlet";
@@ -30,15 +29,6 @@ function ipcSend(method: string, arg?: unknown, to = IPC_BACKGROUND): void {
 
 const forceInt = (val: string | null): number =>
   Math.round(parseFloat(val || ""));
-
-function compareLogEntries(
-  a: InternalActionLog,
-  b: InternalActionLog
-): -1 | 0 | 1 {
-  if (a.time < b.time) return -1;
-  if (a.time > b.time) return 1;
-  return 0;
-}
 
 function setOddsCallback(sampleSize: number): void {
   ipcSend("set_odds_samplesize", sampleSize);
@@ -62,7 +52,7 @@ function setOddsCallback(sampleSize: number): void {
  *       - Clock
  */
 export default function OverlayController(): JSX.Element {
-  const [actionLog, setActionLog] = useState<InternalActionLog[]>([]);
+  const [actionLog, setActionLog] = useState<string>("");
   const [arenaState, setArenaState] = useState(ARENA_MODE_IDLE);
   const [editMode, setEditMode] = useState(false);
   const [match, setMatch] = useState<undefined | MatchData>(undefined);
@@ -145,19 +135,9 @@ export default function OverlayController(): JSX.Element {
     setEditMode(_editMode);
   };
 
-  const handleActionLog = useCallback(
-    (event: unknown, arg: InternalActionLog): void => {
-      let newLog = [...actionLog];
-      arg.str = striptags(arg.str, ["log-card", "log-ability"]);
-      newLog.push(arg);
-      if (arg.seat === -99) {
-        newLog = [];
-      }
-      newLog.sort(compareLogEntries);
-      setActionLog(newLog);
-    },
-    [actionLog]
-  );
+  const handleActionLog = useCallback((event: unknown, arg: string): void => {
+    setActionLog(arg);
+  }, []);
 
   const handleSetArenaState = useCallback(
     (event: unknown, arenaState: number): void => {

@@ -12,7 +12,7 @@ import RankIcon from "../misc/RankIcon";
 import db from "../../../shared/database";
 import CardList from "../misc/CardList";
 import CardsList from "../../../shared/cardsList";
-import ActionLog from "./ActionLog";
+import ActionLog from "../../../shared/ActionLog";
 import uxMove from "../../uxMove";
 import { useDispatch } from "react-redux";
 import { reduxAction } from "../../../shared-redux/sharedRedux";

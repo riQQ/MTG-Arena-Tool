@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react";
-import db from "../../../shared/database";
-import useHoverCard from "../../hooks/useHoverCard";
+import db from "./database";
+import useHoverCard from "../window_main/hooks/useHoverCard";
 
 interface ActionLogProps {
   logStr: string;

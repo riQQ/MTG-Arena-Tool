@@ -8,7 +8,6 @@ import {
 } from "../shared/constants";
 import { MatchData } from "../types/currentMatch";
 import { DraftData, DraftState } from "../types/draft";
-import { InternalActionLog } from "../types/log";
 import { SettingsData } from "../types/settings";
 import DraftElements from "./DraftElements";
 import MatchElements from "./MatchElements";
@@ -20,7 +19,7 @@ const DEFAULT_BACKGROUND = "../images/Bedevil-Art.jpg";
 
 export interface OverlayWindowletProps {
   arenaState: number;
-  actionLog: InternalActionLog[];
+  actionLog: string;
   draft?: DraftData;
   draftState: DraftState;
   editMode: boolean;

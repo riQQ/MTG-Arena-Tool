@@ -9,14 +9,13 @@ import {
   OVERLAY_SEEN
 } from "../shared/constants";
 import { MatchData } from "../types/currentMatch";
-import { InternalActionLog } from "../types/log";
 import { OverlaySettingsData } from "../types/settings";
-import ActionLog from "./ActionLog";
+import ActionLog from "../shared/ActionLog";
 import Clock from "./Clock";
 import DeckList from "./DeckList";
 
 export interface MatchElementsProps {
-  actionLog: InternalActionLog[];
+  actionLog: string;
   index: number;
   match: MatchData;
   setOddsCallback: (sampleSize: number) => void;
@@ -102,7 +101,11 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
           ))}
         </div>
       )}
-      {settings.mode === OVERLAY_LOG && <ActionLog actionLog={actionLog} />}
+      {settings.mode === OVERLAY_LOG && (
+        <div className="click-on" style={{ overflowY: "auto" }}>
+          <ActionLog logStr={actionLog} />
+        </div>
+      )}
       {!!visibleDeck && (
         <DeckList
           deck={visibleDeck}

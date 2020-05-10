@@ -4,7 +4,6 @@ import path from "path";
 import { IPC_OVERLAY } from "../shared/constants";
 import globals from "./globals";
 import format from "date-fns/format";
-import { InternalActionLog } from "../types/log";
 import globalStore from "../shared-store";
 
 let currentActionLog = "";
@@ -39,16 +38,16 @@ const actionLog = function(
       //
     }
   }
-
-  const logData: InternalActionLog = {
+  /*
+  const logData = {
     seat: seat,
     time: time.toISOString(),
     str: str,
     grpId: grpId
   };
-
+  */
   //console.log("action_log", { seat: seat, time: time }, str);
-  ipcSend("action_log", logData, IPC_OVERLAY);
+  ipcSend("action_log", currentActionLog, IPC_OVERLAY);
 };
 
 export default actionLog;
