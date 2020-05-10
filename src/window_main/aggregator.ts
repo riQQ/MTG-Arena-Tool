@@ -20,6 +20,7 @@ import { matchesList, getDeck, getDeckName } from "../shared-store";
 import store from "../shared-redux/stores/rendererStore";
 import database from "../shared/database";
 import Colors from "../shared/colors";
+import { InternalDraft } from "../types/draft";
 
 export interface CardWinrateData {
   name: string;
@@ -55,7 +56,7 @@ export function newCardWinrate(grpId: number): CardWinrateData {
   };
 }
 
-export const dateMaxValid = (a: any, b: any): any => {
+export const dateMaxValid = (a: Date, b: Date): Date => {
   const aValid = isValid(a);
   const bValid = isValid(b);
   return (
@@ -140,14 +141,17 @@ export default class Aggregator {
     };
   }
 
-  public static isDraftMatch(match: any): boolean {
-    return (
+  public static isDraftMatch(match: InternalDraft | InternalMatch): boolean {
+    if (
       (match.eventId && match.eventId.includes("Draft")) ||
       (match.type && match.type === "draft")
-    );
+    ) {
+      return true;
+    }
+    return false;
   }
 
-  private static gatherTags(decks: any[]): string[] {
+  private static gatherTags(decks: Partial<InternalDeck>[]): string[] {
     const tagSet = new Set<string>();
     const formatSet = new Set<string>();
     const counts: Record<string, number> = {};
@@ -223,7 +227,7 @@ export default class Aggregator {
     return isAfter(new Date(date), dateFilter);
   }
 
-  filterDeck(deck: any): boolean {
+  filterDeck(deck: InternalDeck): boolean {
     const { deckId } = this.filters;
     if (!deck) return deckId === Aggregator.DEFAULT_DECK;
     return (
@@ -251,7 +255,7 @@ export default class Aggregator {
   }
 
   // Type!
-  filterMatch(match: any): boolean {
+  filterMatch(match: InternalMatch): boolean {
     if (!match) return false;
     const { eventId, showArchived, matchIds } = this.filters;
     if (!showArchived && match.archived) return false;
@@ -337,14 +341,33 @@ export default class Aggregator {
     }
   }
 
-  // Type Warning! Should be of InternalMatch
-  _processMatch(match: any): void {
+  _processMatch(match: InternalMatch): void {
     const statsToUpdate = [this.stats];
     // on play vs draw
-    if (match.onThePlay && match.player) {
-      statsToUpdate.push(
-        match.onThePlay === match.player.seat ? this.playStats : this.drawStats
-      );
+    const hasPlayDrawData = match && match.toolVersion >= 262400;
+    if (hasPlayDrawData) {
+      match.gameStats.forEach(gameStats => {
+        const onThePlay = match.player.seat == gameStats.onThePlay;
+        let toUpdate;
+        if (onThePlay && gameStats) {
+          toUpdate = this.playStats;
+        } else {
+          toUpdate = this.drawStats;
+        }
+
+        toUpdate.wins += gameStats.winner == match.player.seat ? 1 : 0;
+        toUpdate.losses += gameStats.winner == match.player.seat ? 0 : 1;
+        toUpdate.total++;
+        toUpdate.duration += gameStats.time;
+      });
+    } else {
+      if (match.onThePlay && match.player) {
+        statsToUpdate.push(
+          match.onThePlay === match.player.seat
+            ? this.playStats
+            : this.drawStats
+        );
+      }
     }
     // process event data
     if (match.eventId) {
@@ -405,13 +428,14 @@ export default class Aggregator {
       const colors = match.oppDeck.colors || [];
       if (colors?.length) {
         colors.sort();
-        if (!(colors in this.colorStats)) {
-          this.colorStats[colors] = {
+        const colorStr = colors.join(",");
+        if (!(colorStr in this.colorStats)) {
+          this.colorStats[colorStr] = {
             ...Aggregator.getDefaultStats(),
             colors
           };
         }
-        statsToUpdate.push(this.colorStats[colors]);
+        statsToUpdate.push(this.colorStats[colorStr]);
       }
       // process archetype
       const tag = match.tags?.[0] ?? Aggregator.NO_ARCH;
@@ -449,7 +473,7 @@ export default class Aggregator {
     });
   }
 
-  compareDecks(a: any, b: any): number {
+  compareDecks(a: InternalDeck, b: InternalDeck): number {
     const aDate = dateMaxValid(
       this.deckLastPlayed[a.id],
       new Date(a.lastUpdated)
