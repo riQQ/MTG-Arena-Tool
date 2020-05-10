@@ -34,9 +34,13 @@ export default function ResultDetails(props: ResultDetailsProps): JSX.Element {
     // because we are not storing who played first on each game!
     g1OnThePlay = match.player.seat == match.onThePlay;
     g2OnThePlay =
-      match.gameStats[0] && match.gameStats[1] ? !match.gameStats[0].win : -1;
+      match && match.gameStats[0] && match.gameStats[1]
+        ? !match.gameStats[0].win
+        : -1;
     g3OnThePlay =
-      match.gameStats[1] && match.gameStats[2] ? !match.gameStats[1].win : -1;
+      match && match.gameStats[1] && match.gameStats[2]
+        ? !match.gameStats[1].win
+        : -1;
   }
 
   const g1Title =
