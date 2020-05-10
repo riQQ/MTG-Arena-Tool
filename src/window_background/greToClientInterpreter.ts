@@ -27,7 +27,8 @@ import {
   GREMessageType,
   AnnotationType,
   PlayerInfo,
-  GameStateMessage
+  GameStateMessage,
+  ZoneType
 } from "../proto/GreTypes";
 
 import getMatchGameStats from "./getMatchGameStats";
@@ -95,6 +96,10 @@ function getZoneByType(
     }
   });
   return ret;
+}
+
+function getZoneName(type: ZoneType): string {
+  return type.replace("ZoneType_", "");
 }
 
 function getAllAnnotations(): AnnotationInfo[] {
@@ -263,7 +268,9 @@ const AnnotationType_ZoneTransfer = function(ann: Annotations): void {
     actionLog(
       seat,
       globals.logTime,
-      `${text} put ${actionLogGenerateLink(grpId)} in ${zone}`,
+      `${text} put ${actionLogGenerateLink(grpId)} in ${getZoneName(
+        zone || "ZoneType_None"
+      )}`,
       grpId
     );
   }
@@ -288,7 +295,9 @@ const AnnotationType_ZoneTransfer = function(ann: Annotations): void {
     actionLog(
       seat,
       globals.logTime,
-      `${text} returned ${actionLogGenerateLink(affected.grpId)} to ${zone}`,
+      `${text} returned ${actionLogGenerateLink(
+        affected.grpId
+      )} to ${getZoneName(zone || "ZoneType_None")}`,
       affected.grpId
     );
   }
@@ -523,7 +532,9 @@ const AnnotationType_CardRevealed = function(ann: Annotations): void {
     actionLog(
       owner,
       globals.logTime,
-      `revealed ${actionLogGenerateLink(grpId)} from ${zone.type}`,
+      `revealed ${actionLogGenerateLink(grpId)} from ${getZoneName(
+        zone.type || "ZoneType_None"
+      )}`,
       grpId
     );
   });
