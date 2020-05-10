@@ -166,7 +166,9 @@ function Seat(props: SeatProps): JSX.Element {
   let combinedList: number[] = [];
   if (gameDetails) {
     match?.gameStats.forEach((stats: MatchGameStats) => {
-      combinedList = [...combinedList, ...stats.cardsSeen];
+      if (stats) {
+        combinedList = [...combinedList, ...stats.cardsSeen];
+      }
     });
   }
 
