@@ -590,7 +590,7 @@ export default class Aggregator {
           const wins = game.win ? 1 : 0;
           const losses = game.win ? 0 : 1;
           // For each card cast
-          game.cardsCast.forEach(cardCast => {
+          game.cardsCast?.forEach(cardCast => {
             const { grpId, player, turn } = cardCast;
             // Only if we casted it
             if (player == match.player.seat) {
