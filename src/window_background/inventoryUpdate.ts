@@ -6,7 +6,7 @@ import {
   InternalEconomyTransaction
 } from "../types/inventory";
 import { Entry as PostMatchUpdateEntry } from "./onLabel/PostMatchUpdate";
-const sha1 = require("js-sha1");
+import sha1 from "js-sha1";
 
 // REVIEW
 export default function inventoryUpdate(

@@ -11,6 +11,7 @@ import Colors from "./colors";
 import { DEFAULT_TILE } from "./constants";
 import db from "./database";
 import { compare_cards, get_set_code, objectClone } from "./util";
+import sha1 from "js-sha1";
 
 class Deck {
   private mainboard: CardsList;
@@ -344,6 +345,14 @@ class Deck {
     }
 
     return str;
+  }
+
+  /**
+   * Returns this deck's SHA1 hash based on getUniqueString()
+   * @param checkSide whether or not to use the sideboard (default: true)
+   */
+  getHash(checkSide = true): string {
+    return sha1(this.getUniqueString(checkSide));
   }
 }
 

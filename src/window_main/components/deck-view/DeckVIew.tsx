@@ -221,7 +221,7 @@ export function DeckView(props: DeckViewProps): JSX.Element {
     return { deckId: deck.id };
   }, [deck.id, dateFilter, DecksTableState]);
 
-  const { aggFilters } = useAggregatorData({
+  const { aggFilters, setAggFilters } = useAggregatorData({
     aggFiltersArg: initFilters,
     getData: decksList,
     showArchived: false
@@ -259,6 +259,8 @@ export function DeckView(props: DeckViewProps): JSX.Element {
               <CardsWinratesView
                 deck={deck}
                 setRegularView={regularView}
+                aggFilters={aggFilters}
+                setAggFilters={setAggFilters}
                 aggregator={aggregator}
               />
             )}

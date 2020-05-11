@@ -8,7 +8,7 @@ import { ipcSend } from "./backgroundUtil";
 import globals from "./globals";
 
 import { playerDb, playerDbLegacy } from "../shared/db/LocalDatabase";
-import { isEpochTimestamp } from "../shared/util";
+import { isEpochTimestamp, getDeckAfterChange } from "../shared/util";
 import { isV2CardsList, ArenaV3Deck, DeckChange } from "../types/Deck";
 import arenaLogWatcher from "./arena-log-watcher";
 import convertDeckFromV3 from "./convertDeckFromV3";
@@ -17,6 +17,7 @@ import { InternalMatch } from "../types/match";
 import store from "../shared-redux/stores/backgroundStore";
 import { InternalEvent } from "../types/event";
 import { InternalEconomyTransaction } from "../types/inventory";
+import Deck from "../shared/deck";
 
 const ipcLog = (message: string): void => ipcSend("ipc_log", message);
 const ipcPop = (args: {
@@ -119,6 +120,12 @@ export async function loadPlayerConfig(): Promise<void> {
         savedData[id]?.gameStats[0] !== undefined
     )
     .map((id: string) => {
+      // Calculate player deck hash
+      if (savedData[id].playerDeck && !savedData[id].playerDeckHash) {
+        const playerDeck = new Deck(savedData[id].playerDeck);
+        savedData[id].playerDeckHash = playerDeck.getHash();
+      }
+
       savedData[id].date = new Date(savedData[id].date).toString();
       return savedData[id];
     });
@@ -166,6 +173,9 @@ export async function loadPlayerConfig(): Promise<void> {
     const changesList: DeckChange[] = savedData.deck_changes_index
       .filter((id: string) => savedData.deck_changes[id] as DeckChange)
       .map((id: string) => {
+        const current = savedData.deck_changes[id] as DeckChange;
+        const decklist = getDeckAfterChange(current);
+        savedData.deck_changes[id].newDeckHash = decklist.getHash();
         savedData.deck_changes[id].date = new Date(
           savedData.deck_changes[id].date
         ).toISOString();

@@ -21,6 +21,7 @@ import store from "../shared-redux/stores/rendererStore";
 import database from "../shared/database";
 import Colors from "../shared/colors";
 import { InternalDraft } from "../types/draft";
+import Deck from "../shared/deck";
 
 export interface CardWinrateData {
   name: string;
@@ -70,6 +71,7 @@ export interface AggregatorFilters {
   eventId?: string;
   matchIds?: string[];
   deckId?: string | string[];
+  deckVersion?: string | string[];
 }
 
 export interface AggregatorStats {
@@ -90,6 +92,7 @@ export interface AggregatorStats {
 export default class Aggregator {
   // Default filter values
   public static DEFAULT_DECK = "All Decks";
+  public static DEFAULT_DECK_VERSION = "All Versions";
   public static DEFAULT_EVENT = "All Events";
   public static DEFAULT_TAG = "All Tags";
   public static DEFAULT_ARCH = "All Archetypes";
@@ -136,6 +139,7 @@ export default class Aggregator {
       matchIds: undefined,
       eventId: Aggregator.DEFAULT_EVENT,
       deckId: Aggregator.DEFAULT_DECK,
+      deckVersion: Aggregator.DEFAULT_DECK_VERSION,
       date: store.getState().settings.last_date_filter,
       showArchived: false
     };
@@ -200,6 +204,7 @@ export default class Aggregator {
   constructor(filters?: AggregatorFilters) {
     this.filterDate = this.filterDate.bind(this);
     this.filterDeck = this.filterDeck.bind(this);
+    this.filterDeckVersion = this.filterDeckVersion.bind(this);
     this.filterEvent = this.filterEvent.bind(this);
     this.filterMatch = this.filterMatch.bind(this);
     this.updateFilters = this.updateFilters.bind(this);
@@ -225,6 +230,15 @@ export default class Aggregator {
       dateFilter = new Date(filterValue ?? NaN);
     }
     return isAfter(new Date(date), dateFilter);
+  }
+
+  filterDeckVersion(deck: InternalDeck): boolean {
+    const version = new Deck(deck).getHash();
+    const { deckVersion } = this.filters;
+    if (!deck) return deckVersion === Aggregator.DEFAULT_DECK_VERSION;
+    return (
+      deckVersion == Aggregator.DEFAULT_DECK_VERSION || deckVersion == version
+    );
   }
 
   filterDeck(deck: InternalDeck): boolean {
@@ -254,7 +268,6 @@ export default class Aggregator {
     );
   }
 
-  // Type!
   filterMatch(match: InternalMatch): boolean {
     if (!match) return false;
     const { eventId, showArchived, matchIds } = this.filters;
@@ -271,6 +284,11 @@ export default class Aggregator {
 
     const passesPlayerDeckFilter = this.filterDeck(match.playerDeck);
     if (!passesPlayerDeckFilter) return false;
+
+    const passesPlayerDeckVersionFilter = this.filterDeckVersion(
+      match.playerDeck
+    );
+    if (!passesPlayerDeckVersionFilter) return false;
 
     return this.filterDate(match.date);
   }
@@ -310,7 +328,13 @@ export default class Aggregator {
 
     matchesList()
       .filter(this.filterMatch)
-      .map(this._processMatch);
+      .map(match => {
+        if (!match.playerDeckHash) {
+          const playerDeck = new Deck(match.playerDeck);
+          match.playerDeckHash = playerDeck.getHash();
+        }
+        this._processMatch(match);
+      });
 
     [
       this.stats,

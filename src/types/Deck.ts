@@ -82,6 +82,7 @@ export interface DeckChange {
   changesSide: CardObject[];
   previousMain: v2cardsList;
   previousSide: v2cardsList;
+  newDeckHash: string;
 }
 
 // Formats can be added to the logs cosntantly

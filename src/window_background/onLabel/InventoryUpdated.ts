@@ -6,7 +6,7 @@ import {
   InventoryUpdate,
   InternalEconomyTransaction
 } from "../../types/inventory";
-const sha1 = require("js-sha1");
+import sha1 from "js-sha1";
 
 interface EntryJson {
   context: string;

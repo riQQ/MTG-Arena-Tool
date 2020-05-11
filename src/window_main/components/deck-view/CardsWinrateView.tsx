@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useCallback } from "react";
 import Deck from "../../../shared/deck";
 import Button from "../misc/Button";
-import Aggregator from "../../aggregator";
+import Aggregator, { AggregatorFilters } from "../../aggregator";
 import CardTile from "../../../shared/CardTile";
 import db from "../../../shared/database";
 import { CardWinrateData } from "../../aggregator";
 import { getWinrateClass } from "../../rendererUtil";
 import { DbCardData } from "../../../types/Metadata";
-import { compare_cards } from "../../../shared/util";
+import { compare_cards, getDeckAfterChange } from "../../../shared/util";
+import { getDeckChangesList } from "../../../shared-store";
+import { DeckChange } from "../../../types/Deck";
+import ReactSelect from "../../../shared/ReactSelect";
+import { format } from "date-fns";
 
 function getWinrateValue(wins: number, losses: number): number {
   return wins + losses == 0 ? -1 : Math.round((100 / (wins + losses)) * wins);
@@ -81,16 +85,74 @@ function cardWinrateLine(
   );
 }
 
+function sortDeckChanges(a: DeckChange, b: DeckChange): number {
+  const ad = new Date(a.date).getTime();
+  const bd = new Date(b.date).getTime();
+  return ad - bd;
+}
+
 interface CardsWinratesViewProps {
   deck: Deck;
   aggregator: Aggregator;
   setRegularView: { (): void };
+  aggFilters: AggregatorFilters;
+  setAggFilters: (filters: AggregatorFilters) => void;
 }
 
 export default function CardsWinratesView(
   props: CardsWinratesViewProps
 ): JSX.Element {
-  const { aggregator, deck, setRegularView } = props;
+  const { aggregator, setRegularView, aggFilters, setAggFilters } = props;
+  let { deck } = props;
+  const deckChanges = getDeckChangesList(deck.id);
+  if (aggFilters.deckVersion !== Aggregator.DEFAULT_DECK_VERSION) {
+    const change = deckChanges.filter(
+      change => change.newDeckHash == aggFilters.deckVersion
+    )[0];
+    if (change) {
+      deck = getDeckAfterChange(change);
+    }
+  }
+  const deckVersions = Array.from(
+    new Set([
+      "All Versions",
+      ...deckChanges.sort(sortDeckChanges).map(change => change.newDeckHash)
+    ])
+  );
+
+  const deckVersionFormatter = useCallback(
+    (id: string) => {
+      const index = deckVersions.indexOf(id);
+      return id == "All Versions" ? (
+        "All Versions"
+      ) : (
+        <>
+          <div>Version {deckVersions.length - index}</div>
+          <div className="list_deck_name_it">
+            {" (" +
+              format(
+                new Date(
+                  deckChanges.filter(
+                    change => change.newDeckHash == deckVersions[index]
+                  )[0].date
+                ),
+                "dd/MM/yy"
+              ) +
+              ")"}
+          </div>
+        </>
+      );
+    },
+    [deckVersions, deckChanges]
+  );
+
+  const setDeckVersionFilter = useCallback(
+    (version: string) => {
+      // Set deck hash filter
+      setAggFilters({ ...aggFilters, deckVersion: version });
+    },
+    [aggFilters, setAggFilters]
+  );
 
   const winrates = aggregator.getCardsWinrates();
   // console.log(winrates);
@@ -100,6 +162,18 @@ export default function CardsWinratesView(
     <>
       <Button text="Normal View" onClick={setRegularView} />
       <div style={{ display: "flex", flexDirection: "column" }}>
+        <div
+          className="centered_setting_container"
+          style={{ justifyContent: "center" }}
+        >
+          <label>Deck Version:</label>
+          <ReactSelect
+            options={deckVersions}
+            optionFormatter={deckVersionFormatter}
+            current={deckVersions[0]}
+            callback={setDeckVersionFilter}
+          />
+        </div>
         <div className="settings_note" style={{ textAlign: "center" }}>
           All winrates shown correspond to the times when the card in question
           was cast during a game, except for the &quot;Sided out WR&quot;
