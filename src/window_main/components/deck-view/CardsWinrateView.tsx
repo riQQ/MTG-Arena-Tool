@@ -21,7 +21,7 @@ function getWinrateValue(wins: number, losses: number): number {
 interface LineData {
   cardObj: DbCardData;
   quantity: number;
-  index: number;
+  name: string;
   winrate: number;
   initHandWinrate: number;
   sidedIn: number;
@@ -36,7 +36,7 @@ function cardWinrateLineData(
   winrates: Record<number, CardWinrateData>,
   cardObj: DbCardData,
   quantity: number,
-  index: number
+  name: string
 ): LineData {
   const wr = winrates[cardObj.id];
   const winrate = getWinrateValue(wr.wins, wr.losses);
@@ -53,7 +53,7 @@ function cardWinrateLineData(
   return {
     cardObj,
     quantity,
-    index,
+    name,
     winrate,
     initHandWinrate,
     sidedIn: wr.sidedIn,
@@ -69,7 +69,7 @@ function cardWinrateLine(line: LineData): JSX.Element {
   const {
     cardObj,
     quantity,
-    index,
+    name,
     winrate,
     initHandWinrate,
     sidedIn,
@@ -81,7 +81,7 @@ function cardWinrateLine(line: LineData): JSX.Element {
   } = line;
 
   return (
-    <div className="card-wr-line" key={cardObj.id + "-" + index}>
+    <div className="card-wr-line" key={cardObj.id + "-" + name}>
       <div className="card-wr-line-card">
         <CardTile
           indent="c"
@@ -89,7 +89,7 @@ function cardWinrateLine(line: LineData): JSX.Element {
           isSideboard={false}
           showWildcards={false}
           card={cardObj}
-          key={"main-" + index + "-" + cardObj.id}
+          key={"main-" + name + "-" + cardObj.id}
           quantity={quantity}
         />
       </div>
@@ -209,10 +209,10 @@ export default function CardsWinratesView(
   const winrates = useMemo(() => aggregator.getCardsWinrates(), [aggregator]);
   const data = useMemo(
     () =>
-      Object.keys(winrates).map((grpid, index) => {
+      Object.keys(winrates).map(grpid => {
         const cardObj = db.card(grpid);
         return cardObj
-          ? cardWinrateLineData(winrates, cardObj, 1, index)
+          ? cardWinrateLineData(winrates, cardObj, 1, cardObj.name)
           : {
               cardObj: null
             };
@@ -225,8 +225,8 @@ export default function CardsWinratesView(
   const columns = useMemo(
     () => [
       {
-        Header: "Cards",
-        accessor: "index",
+        Header: "Mainboard",
+        accessor: "name",
         class: "card-wr-line-card"
       },
       {
@@ -337,7 +337,7 @@ export default function CardsWinratesView(
                   (card: CardObject) => row.original.cardObj?.id == card.id
                 );
               if (q > 0 && row.original.cardObj !== null) {
-                return cardWinrateLine({...row.original, quantity: q});
+                return cardWinrateLine({ ...row.original, quantity: q });
               }
             }
           })}
@@ -349,7 +349,7 @@ export default function CardsWinratesView(
                     key={"header-" + column.class}
                     className={"card-wr-item " + column.class}
                   >
-                    {column.Header == "Cards" ? "Sideboard" : ""}
+                    {column.Header == "Mainboard" ? "Sideboard" : ""}
                   </div>
                 );
               });
@@ -365,7 +365,7 @@ export default function CardsWinratesView(
                   (card: CardObject) => row.original.cardObj?.id == card.id
                 );
               if (q > 0 && row.original.cardObj !== null) {
-                return cardWinrateLine({...row.original, quantity: q});
+                return cardWinrateLine({ ...row.original, quantity: q });
               }
             }
           })}
