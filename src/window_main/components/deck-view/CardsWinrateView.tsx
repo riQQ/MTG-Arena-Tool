@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import Deck from "../../../shared/deck";
 import Button from "../misc/Button";
 import Aggregator, { AggregatorFilters } from "../../aggregator";
@@ -9,20 +9,35 @@ import { getWinrateClass } from "../../rendererUtil";
 import { DbCardData } from "../../../types/Metadata";
 import { compare_cards, getDeckAfterChange } from "../../../shared/util";
 import { getDeckChangesList } from "../../../shared-store";
-import { DeckChange } from "../../../types/Deck";
+import { DeckChange, CardObject } from "../../../types/Deck";
 import ReactSelect from "../../../shared/ReactSelect";
 import { format } from "date-fns";
+import { useTable, useSortBy } from "react-table";
 
 function getWinrateValue(wins: number, losses: number): number {
   return wins + losses == 0 ? -1 : Math.round((100 / (wins + losses)) * wins);
 }
 
-function cardWinrateLine(
+interface LineData {
+  cardObj: DbCardData;
+  quantity: number;
+  index: number;
+  winrate: number;
+  initHandWinrate: number;
+  sidedIn: number;
+  sidedOut: number;
+  sideInWinrate: number;
+  sideOutWinrate: number;
+  avgTurn: number;
+  avgFirstTurn: number;
+}
+
+function cardWinrateLineData(
   winrates: Record<number, CardWinrateData>,
   cardObj: DbCardData,
   quantity: number,
   index: number
-): JSX.Element {
+): LineData {
   const wr = winrates[cardObj.id];
   const winrate = getWinrateValue(wr.wins, wr.losses);
   const sideInWinrate = getWinrateValue(wr.sideInWins, wr.sideInLosses);
@@ -31,6 +46,40 @@ function cardWinrateLine(
 
   const sum = wr.turnsUsed.reduce((a, b) => a + b, 0);
   const avgTurn = sum / wr.turnsUsed.length || 0;
+
+  const firstSum = wr.turnsFirstUsed.reduce((a, b) => a + b, 0);
+  const avgFirstTurn = firstSum / wr.turnsFirstUsed.length || 0;
+
+  return {
+    cardObj,
+    quantity,
+    index,
+    winrate,
+    initHandWinrate,
+    sidedIn: wr.sidedIn,
+    sidedOut: wr.sidedOut,
+    sideInWinrate,
+    sideOutWinrate,
+    avgTurn,
+    avgFirstTurn
+  };
+}
+
+function cardWinrateLine(line: LineData): JSX.Element {
+  const {
+    cardObj,
+    quantity,
+    index,
+    winrate,
+    initHandWinrate,
+    sidedIn,
+    sidedOut,
+    sideInWinrate,
+    sideOutWinrate,
+    avgTurn,
+    avgFirstTurn
+  } = line;
+
   return (
     <div className="card-wr-line" key={cardObj.id + "-" + index}>
       <div className="card-wr-line-card">
@@ -60,8 +109,8 @@ function cardWinrateLine(
       >
         {initHandWinrate >= 0 ? initHandWinrate + "%" : "-"}
       </div>
-      <div className="card-wr-item card-wr-line-sided-in">{wr.sidedIn}</div>
-      <div className="card-wr-item card-wr-line-sided-out">{wr.sidedOut}</div>
+      <div className="card-wr-item card-wr-line-sided-in">{sidedIn}</div>
+      <div className="card-wr-item card-wr-line-sided-out">{sidedOut}</div>
       <div
         className={
           getWinrateClass(sideInWinrate / 100) +
@@ -80,6 +129,9 @@ function cardWinrateLine(
       </div>
       <div className="card-wr-item card-wr-line-avg-turn">
         {avgTurn.toFixed(2)}
+      </div>
+      <div className="card-wr-item card-wr-line-avg-first">
+        {avgFirstTurn.toFixed(2)}
       </div>
     </div>
   );
@@ -154,10 +206,81 @@ export default function CardsWinratesView(
     [aggFilters, setAggFilters]
   );
 
-  const winrates = aggregator.getCardsWinrates();
-  // console.log(winrates);
+  const winrates = useMemo(() => aggregator.getCardsWinrates(), [aggregator]);
+  const data = useMemo(
+    () =>
+      Object.keys(winrates).map((grpid, index) => {
+        const cardObj = db.card(grpid);
+        return cardObj
+          ? cardWinrateLineData(winrates, cardObj, 1, index)
+          : {
+              cardObj: null
+            };
+      }),
+    [winrates]
+  );
   deck.sortMainboard(compare_cards);
   deck.sortSideboard(compare_cards);
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Cards",
+        accessor: "index",
+        class: "card-wr-line-card"
+      },
+      {
+        Header: "Cast WR",
+        accessor: "winrate",
+        class: "card-wr-line-wr"
+      },
+      {
+        Header: "First Hand WR",
+        accessor: "initHandWinrate",
+        class: "card-wr-line-hand-wr"
+      },
+      {
+        Header: "Sided In",
+        accessor: "sidedIn",
+        class: "card-wr-line-sided-in"
+      },
+      {
+        Header: "Sided Out",
+        accessor: "sidedOut",
+        class: "card-wr-line-sided-out"
+      },
+      {
+        Header: "Sided In WR",
+        accessor: "sideInWinrate",
+        class: "card-wr-line-sided-in-wr"
+      },
+      {
+        Header: "Sided Out WR",
+        accessor: "sideOutWinrate",
+        class: "card-wr-line-sided-out-wr"
+      },
+      {
+        Header: "Avg. turn",
+        accessor: "avgTurn",
+        class: "card-wr-line-avg-turn"
+      },
+      {
+        Header: "Avg. First Turn",
+        accessor: "avgFirstTurn",
+        class: "card-wr-line-avg-first"
+      }
+    ],
+    []
+  );
+
+  const { headerGroups, rows, prepareRow } = useTable(
+    {
+      columns,
+      data
+    },
+    useSortBy
+  );
+
   return (
     <>
       <Button text="Normal View" onClick={setRegularView} />
@@ -181,47 +304,71 @@ export default function CardsWinratesView(
         </div>
         <div className="card-wr-stats">
           <div className="card-wr-line">
-            <div className="card-wr-item card-wr-line-card">Mainboard</div>
-            <div className="card-wr-item card-wr-line-wr">Cast WR</div>
-            <div className="card-wr-item card-wr-line-hand-wr">Hand WR</div>
-            <div className="card-wr-item card-wr-line-sided-in">Sided in</div>
-            <div className="card-wr-item card-wr-line-sided-out">Sided out</div>
-            <div className="card-wr-item card-wr-line-sided-in-wr">
-              Sided in WR
-            </div>
-            <div className="card-wr-item card-wr-line-sided-out-wr">
-              Sided out WR
-            </div>
-            <div className="card-wr-item card-wr-line-avg-turn">Avg. turn</div>
-          </div>
-          {deck
-            .getMainboard()
-            .get()
-            .map((card, index) => {
-              const cardObj = db.card(card.id);
-              if (cardObj && winrates[card.id]) {
-                return cardWinrateLine(winrates, cardObj, card.quantity, index);
-              }
+            {headerGroups.map(headerGroup => {
+              return headerGroup.headers.map((column: any) => {
+                return (
+                  <div
+                    key={"header-" + column.class}
+                    className={"card-wr-item " + column.class}
+                    {...column.getHeaderProps(column.getSortByToggleProps())}
+                  >
+                    {column.Header}
+                    <div
+                      className={
+                        column.isSorted
+                          ? column.isSortedDesc
+                            ? "sort_desc"
+                            : "sort_asc"
+                          : ""
+                      }
+                    />
+                  </div>
+                );
+              });
             })}
+          </div>
+          {rows.map(row => {
+            prepareRow(row);
+            {
+              const q = deck
+                .getMainboard()
+                .countFilter(
+                  "quantity",
+                  (card: CardObject) => row.original.cardObj?.id == card.id
+                );
+              if (q > 0 && row.original.cardObj !== null) {
+                return cardWinrateLine({...row.original, quantity: q});
+              }
+            }
+          })}
           <div className="card-wr-line">
-            <div className="card-wr-item card-wr-line-separator">Sideboard</div>
-            <div className="card-wr-item card-wr-line-wr"></div>
-            <div className="card-wr-item card-wr-line-hand-wr"></div>
-            <div className="card-wr-item card-wr-line-sided-in"></div>
-            <div className="card-wr-item card-wr-line-sided-out"></div>
-            <div className="card-wr-item card-wr-line-sided-in-wr"></div>
-            <div className="card-wr-item card-wr-line-sided-out-wr"></div>
-            <div className="card-wr-item card-wr-line-avg-turn"></div>
-          </div>
-          {deck
-            .getSideboard()
-            .get()
-            .map((card, index) => {
-              const cardObj = db.card(card.id);
-              if (cardObj && winrates[card.id]) {
-                return cardWinrateLine(winrates, cardObj, card.quantity, index);
-              }
+            {headerGroups.map(headerGroup => {
+              return headerGroup.headers.map((column: any) => {
+                return (
+                  <div
+                    key={"header-" + column.class}
+                    className={"card-wr-item " + column.class}
+                  >
+                    {column.Header == "Cards" ? "Sideboard" : ""}
+                  </div>
+                );
+              });
             })}
+          </div>
+          {rows.map(row => {
+            prepareRow(row);
+            {
+              const q = deck
+                .getSideboard()
+                .countFilter(
+                  "quantity",
+                  (card: CardObject) => row.original.cardObj?.id == card.id
+                );
+              if (q > 0 && row.original.cardObj !== null) {
+                return cardWinrateLine({...row.original, quantity: q});
+              }
+            }
+          })}
         </div>
       </div>
     </>

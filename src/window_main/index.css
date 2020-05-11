@@ -4699,7 +4699,16 @@ a:hover {
 .card-wr-line {
     margin-top: 1px;
     display: grid;
-    grid-template-columns: minmax(300px, 40%) minmax(48px, 1fr) minmax(48px, 1fr) minmax(48px, 1fr) minmax(48px, 1fr) minmax(48px, 1fr) minmax(48px, 1fr) minmax(48px, 1fr);
+    grid-template-columns:
+        minmax(300px, 30%)
+        minmax(48px, 1fr)
+        minmax(56px, 1.2fr)
+        minmax(48px, 1fr)
+        minmax(48px, 1fr)
+        minmax(48px, 1fr)
+        minmax(56px, 1.2fr)
+        minmax(48px, 1fr)
+        minmax(56px, 1.2fr);
 }
 
 .card-wr-item {
@@ -4709,6 +4718,10 @@ a:hover {
     font-size: 14px;
     line-height: 32px;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
 }
 
 .card-wr-line-card {
@@ -4741,4 +4754,8 @@ a:hover {
 
 .card-wr-line-avg-turn {
     grid-area: 1 / 8 / 1 / 9;
+}
+
+.card-wr-line-avg-first {
+    grid-area: 1 / 9 / 1 / 10;
 }

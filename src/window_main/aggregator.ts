@@ -28,6 +28,7 @@ export interface CardWinrateData {
   wins: number;
   losses: number;
   turnsUsed: number[];
+  turnsFirstUsed: number[];
   sidedIn: number;
   sidedOut: number;
   sideInWins: number;
@@ -45,6 +46,7 @@ export function newCardWinrate(grpId: number): CardWinrateData {
     wins: 0,
     losses: 0,
     turnsUsed: [],
+    turnsFirstUsed: [],
     sidedIn: 0,
     sidedOut: 0,
     sideInWins: 0,
@@ -596,6 +598,7 @@ export default class Aggregator {
               if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
               // Only once per card cast!
               if (!gameCards.includes(grpId)) {
+                winrates[grpId].turnsFirstUsed.push(Math.ceil(turn / 2));
                 winrates[grpId].wins += wins;
                 winrates[grpId].losses += losses;
 
