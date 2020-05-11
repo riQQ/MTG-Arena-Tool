@@ -37,6 +37,7 @@ export interface CardWinrateData {
   sideOutLosses: number;
   initHandWins: number;
   initHandsLosses: number;
+  mulligans: number;
   colors: { [key: number]: { wins: number; losses: number } };
 }
 
@@ -55,7 +56,8 @@ export function newCardWinrate(grpId: number): CardWinrateData {
     sideOutLosses: 0,
     initHandWins: 0,
     initHandsLosses: 0,
-    colors: {}
+    colors: {},
+    mulligans: 0
   };
 }
 
@@ -622,12 +624,21 @@ export default class Aggregator {
             }
           });
 
-          // Initial hand
-          game.handsDrawn[game.handsDrawn.length - 1]?.forEach(grpId => {
-            // define
-            if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
-            winrates[grpId].initHandWins += wins;
-            winrates[grpId].initHandsLosses += losses;
+          game.handsDrawn?.forEach((hand, index) => {
+            // Initial hand
+            if (index == game.handsDrawn.length - 1) {
+              hand.forEach(grpId => {
+                // define
+                if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
+                winrates[grpId].initHandWins += wins;
+                winrates[grpId].initHandsLosses += losses;
+              });
+            } else {
+              hand.forEach(grpId => {
+                if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
+                winrates[grpId].mulligans++;
+              });
+            }
           });
 
           // Add the previos changes to the current ones

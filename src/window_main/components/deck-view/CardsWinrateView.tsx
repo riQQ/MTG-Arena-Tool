@@ -30,6 +30,7 @@ interface LineData {
   sideOutWinrate: number;
   avgTurn: number;
   avgFirstTurn: number;
+  mulligans: number;
 }
 
 function cardWinrateLineData(
@@ -61,7 +62,8 @@ function cardWinrateLineData(
     sideInWinrate,
     sideOutWinrate,
     avgTurn,
-    avgFirstTurn
+    avgFirstTurn,
+    mulligans: wr.mulligans
   };
 }
 
@@ -77,7 +79,8 @@ function cardWinrateLine(line: LineData): JSX.Element {
     sideInWinrate,
     sideOutWinrate,
     avgTurn,
-    avgFirstTurn
+    avgFirstTurn,
+    mulligans
   } = line;
 
   return (
@@ -109,6 +112,7 @@ function cardWinrateLine(line: LineData): JSX.Element {
       >
         {initHandWinrate >= 0 ? initHandWinrate + "%" : "-"}
       </div>
+      <div className="card-wr-item card-wr-line-mulls">{mulligans}</div>
       <div className="card-wr-item card-wr-line-sided-in">{sidedIn}</div>
       <div className="card-wr-item card-wr-line-sided-out">{sidedOut}</div>
       <div
@@ -238,6 +242,11 @@ export default function CardsWinratesView(
         Header: "First Hand WR",
         accessor: "initHandWinrate",
         class: "card-wr-line-hand-wr"
+      },
+      {
+        Header: "Mulliganed",
+        accessor: "mulligans",
+        class: "card-wr-line-mulls"
       },
       {
         Header: "Sided In",
