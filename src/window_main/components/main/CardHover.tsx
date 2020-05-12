@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import db from "../../../shared/database";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
@@ -38,88 +38,74 @@ function getBackUrl(hoverGrpId: number, quality: string): string {
 }
 
 export default function CardHover(): JSX.Element {
+  const { grpId, opacity, wanted } = useSelector(
+    (state: AppState) => state.hover
+  );
+
   const quality = useSelector(
     (state: AppState) => state.settings.cards_quality
   );
-  const grpId = useSelector((state: AppState) => state.hover.grpId);
-  const opacity = useSelector((state: AppState) => state.hover.opacity);
-  const wanted = useSelector((state: AppState) => state.hover.wanted);
   const hoverSize = useSelector(
     (state: AppState) => state.settings.cards_size_hover_card
   );
   const card = db.card(grpId);
-  const [frontLoaded, setFrontLoaded] = useState(false);
-  const [backLoaded, setBackLoaded] = useState(false);
-
+  const [frontLoaded, setFrontLoaded] = useState(0);
+  const [backLoaded, setBackLoaded] = useState(0);
   const [frontUrl, setFrontUrl] = useState("");
   const [backUrl, setBackUrl] = useState("");
 
   const size = 100 + hoverSize * 15;
-  const getStyle = useCallback(
-    (
-      hoverGrpId: number,
-      hoverSize: number,
-      opacity: number
-    ): React.CSSProperties => {
-      return {
-        width: size + "px",
-        height: size / 0.71808510638 + "px",
-        top: `calc(100% - ${size / 0.71808510638 + 32}px)`,
-        opacity: opacity,
-        backgroundImage: `url(${frontLoaded ? frontUrl : NoCard})`
-      };
-    },
-    [frontUrl, frontLoaded, size]
-  );
 
-  const getStyleDfc = useCallback(
-    (
-      hoverGrpId: number,
-      hoverSize: number,
-      opacity: number
-    ): React.CSSProperties => {
-      const cardObj = db.card(hoverGrpId);
-      if (
-        !(
-          cardObj &&
-          (cardObj.dfc == FACE_DFC_BACK || cardObj.dfc == FACE_DFC_FRONT) &&
-          cardObj.dfcId
-        )
-      ) {
-        opacity = 0;
-      }
+  const styleFront = useMemo((): React.CSSProperties => {
+    return {
+      width: size + "px",
+      height: size / 0.71808510638 + "px",
+      top: `calc(100% - ${size / 0.71808510638 + 32}px)`,
+      opacity: opacity,
+      backgroundImage: `url(${frontLoaded == grpId ? frontUrl : NoCard})`
+    };
+  }, [frontUrl, opacity, grpId, frontLoaded, size]);
 
-      return {
-        width: size + "px",
-        right: size + 48 + "px",
-        height: size / 0.71808510638 + "px",
-        top: `calc(100% - ${size / 0.71808510638 + 32}px)`,
-        opacity: opacity,
-        backgroundImage: `url(${backLoaded ? backUrl : NoCard})`
-      };
-    },
-    [backUrl, backLoaded, size]
-  );
+  const styleDfc = useMemo((): React.CSSProperties => {
+    const cardObj = db.card(grpId);
+    let op = opacity;
+    if (
+      !(
+        cardObj &&
+        (cardObj.dfc == FACE_DFC_BACK || cardObj.dfc == FACE_DFC_FRONT) &&
+        cardObj.dfcId
+      )
+    ) {
+      op = 0;
+    }
+
+    return {
+      width: size + "px",
+      right: size + 48 + "px",
+      height: size / 0.71808510638 + "px",
+      top: `calc(100% - ${size / 0.71808510638 + 32}px)`,
+      opacity: op,
+      backgroundImage: `url(${backLoaded == grpId ? backUrl : NoCard})`
+    };
+  }, [backUrl, opacity, grpId, backLoaded, size]);
 
   useEffect(() => {
     // Reset the image, begin new loading and clear state
     const front = getFrontUrl(grpId, quality);
     const back = getBackUrl(grpId, quality);
-    setFrontLoaded(false);
-    setBackLoaded(false);
-    setFrontUrl("");
-    setBackUrl("");
     const img = new Image();
     img.src = front;
     img.onload = (): void => {
       setFrontUrl(front);
-      setFrontLoaded(true);
+      setFrontLoaded(grpId);
     };
     const imgb = new Image();
     imgb.src = back;
     imgb.onload = (): void => {
-      setBackUrl(back);
-      setBackLoaded(true);
+      if (back) {
+        setBackUrl(back);
+        setBackLoaded(grpId);
+      }
     };
     return (): void => {
       img.onload = (): void => {};
@@ -129,14 +115,8 @@ export default function CardHover(): JSX.Element {
 
   return (
     <>
-      <div
-        style={getStyleDfc(grpId, hoverSize, opacity)}
-        className="card-hover-dfc"
-      />
-      <div
-        style={getStyle(grpId, hoverSize, opacity)}
-        className="card-hover-main"
-      >
+      <div style={styleDfc} className="card-hover-dfc" />
+      <div style={styleFront} className="card-hover-main">
         {card ? (
           <div className="ownership-stars-container">
             <OwnershipStars card={card} wanted={wanted} />
