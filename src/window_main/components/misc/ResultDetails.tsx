@@ -76,7 +76,13 @@ export default function ResultDetails(props: ResultDetailsProps): JSX.Element {
         <div className={g1OnThePlay ? "ontheplaytext" : "onthedrawtext"}>
           {g1OnThePlay ? "P" : "D"}
         </div>
-        <div className={match.gameStats[0].win ? "ontheplay" : "onthedraw"} />
+        <div
+          className={
+            match.gameStats[0] && match.gameStats[0].win
+              ? "ontheplay"
+              : "onthedraw"
+          }
+        />
       </div>
       <div title={g2Title} style={colStyle}>
         {match.gameStats[1] ? (
