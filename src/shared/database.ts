@@ -72,7 +72,7 @@ class Database {
       dbUri = cachePath;
     }
     const defaultDb = fs.readFileSync(dbUri, "utf8");
-/*
+    /*
     try {
       const data = fs.readFileSync(scryfallDataPath, "utf8");
       this.scryfallData = JSON.parse(data);

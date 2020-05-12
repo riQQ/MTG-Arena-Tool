@@ -2,7 +2,12 @@
 import formatDistanceStrict from "date-fns/formatDistanceStrict";
 import { shell } from "electron";
 import { MatchPlayer } from "../types/currentMatch";
-import { CardObject, InternalDeck, v2cardsList, DeckChange } from "../types/Deck";
+import {
+  CardObject,
+  InternalDeck,
+  v2cardsList,
+  DeckChange
+} from "../types/Deck";
 import { InternalPlayer } from "../types/match";
 import { DbCardData } from "../types/Metadata";
 import { InternalRankData } from "../types/rank";

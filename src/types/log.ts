@@ -172,4 +172,3 @@ interface SceneChange extends LogInfoParams {
     playerId: string;
   };
 }
-
