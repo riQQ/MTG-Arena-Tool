@@ -3731,18 +3731,10 @@ a:hover {
     min-width: 128px;
     height: 64px;
     margin: 0px 16px 0px 0px;
-    opacity: 0.66;
     background-image: url('');
     background-size: 200px;
     background-position-x: center;
     background-position-y: -10px;
-    -webkit-transition: .2s ease-out;
-    transition: width opacity;
-}
-
-.list_item_image:hover {
-    opacity: 1;
-    width: 200px;
 }
 
 .list_item_archive {
