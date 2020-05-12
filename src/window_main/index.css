@@ -1670,7 +1670,6 @@ a:hover {
 .main_stats {
     padding: 12px;
     min-width: 240px;
-    width: -webkit-fill-available;
     display: block;
     text-align: center;
 }

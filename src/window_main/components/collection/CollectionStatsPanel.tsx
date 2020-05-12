@@ -92,151 +92,149 @@ export function CollectionStatsPanel({
         <div className={"economy_wc wc_mythic"}></div>
         <div>{formatNumber(playerEconomy.wcMythic)}</div>
       </div>
-      <div className={"flex_item"}>
-        <div className={"main_stats"}>
-          <label>count:</label>
-          <ReactSelect
-            className={"stats_count_select"}
-            style={{
-              margin: "12px auto auto 4px",
-              textAlign: "left",
-              width: "180px",
-              display: "inline-flex"
-            }}
-            options={[ALL_CARDS, SINGLETONS, FULL_SETS]}
-            current={countMode}
-            callback={(mode: string): void => {
-              reduxAction(dispatch, "SET_COUNT_MODE", mode, IPC_NONE);
-            }}
-          />
-          <SetCompletionBar
-            countMode={countMode}
-            setStats={setStats}
-            setIconCode={""}
-            setName={"Total Completion"}
-            isSidebar
-          />
-          {filteredRarities.map(rarityCode => {
-            const rarity = getRarityKey(rarityCode);
-            if (rarity) {
-              const countStats = setStats[rarity];
-              const capitalizedRarity =
-                rarity[0].toUpperCase() + rarity.slice(1) + "s";
-              const globalStyle = getComputedStyle(document.body);
-              return (
-                <CompletionProgressBar
-                  countMode={countMode}
-                  key={rarity}
-                  countStats={countStats}
-                  image={globalStyle.getPropertyValue(`--wc_${rarity}_png`)}
-                  title={capitalizedRarity}
-                  isSidebar
-                />
-              );
-            }
-          })}
-          {boosterMath ? (
-            <>
-              <div
-                className={"deck_name"}
-                style={{ width: "100%" }}
-                title={"set completion estimator"}
-              >
-                Completion* <CalendarSymbol />:
-              </div>
-              <Input
-                label={
-                  <>
-                    <RaritySymbol rarity={"rare"} /> rares/draft:
-                  </>
-                }
-                value={rareDraftFactor}
-                placeholder={"3"}
-                title={"rare picks per draft"}
-                contStyle={inputStyle}
-                callback={(value: string): void => {
-                  reduxAction(
-                    dispatch,
-                    "SET_RARE_DRAFT_FACTOR",
-                    parseFloat(value),
-                    IPC_NONE
-                  );
-                }}
+      <div className={"main_stats"}>
+        <label>count:</label>
+        <ReactSelect
+          className={"stats_count_select"}
+          style={{
+            margin: "12px auto auto 4px",
+            textAlign: "left",
+            width: "180px",
+            display: "inline-flex"
+          }}
+          options={[ALL_CARDS, SINGLETONS, FULL_SETS]}
+          current={countMode}
+          callback={(mode: string): void => {
+            reduxAction(dispatch, "SET_COUNT_MODE", mode, IPC_NONE);
+          }}
+        />
+        <SetCompletionBar
+          countMode={countMode}
+          setStats={setStats}
+          setIconCode={""}
+          setName={"Total Completion"}
+          isSidebar
+        />
+        {filteredRarities.map(rarityCode => {
+          const rarity = getRarityKey(rarityCode);
+          if (rarity) {
+            const countStats = setStats[rarity];
+            const capitalizedRarity =
+              rarity[0].toUpperCase() + rarity.slice(1) + "s";
+            const globalStyle = getComputedStyle(document.body);
+            return (
+              <CompletionProgressBar
+                countMode={countMode}
+                key={rarity}
+                countStats={countStats}
+                image={globalStyle.getPropertyValue(`--wc_${rarity}_png`)}
+                title={capitalizedRarity}
+                isSidebar
               />
-              <Input
-                label={
-                  <>
-                    <RaritySymbol rarity={"mythic"} /> mythics/draft:
-                  </>
-                }
-                value={mythicDraftFactor}
-                placeholder={"0.14"}
-                title={"mythic picks per draft"}
-                contStyle={inputStyle}
-                callback={(value: string): void => {
-                  reduxAction(
-                    dispatch,
-                    "SET_MYTHIC_DRAFT_FACTOR",
-                    parseFloat(value),
-                    IPC_NONE
-                  );
-                }}
-              />
-              <Input
-                label={
-                  <>
-                    <BoosterSymbol /> boosters/draft:
-                  </>
-                }
-                value={boosterWinFactor}
-                placeholder={"1.2"}
-                title={"prize boosters awarded per draft"}
-                contStyle={inputStyle}
-                callback={(value: string): void => {
-                  reduxAction(
-                    dispatch,
-                    "SET_BOOSTER_WIN_FACTOR",
-                    parseFloat(value),
-                    IPC_NONE
-                  );
-                }}
-              />
-              <Input
-                label={
-                  <>
-                    <BoosterSymbol /> future boosters:
-                  </>
-                }
-                value={futureBoosters}
-                placeholder={"0"}
-                title={"expected additional boosters, e.g. seasonal rewards"}
-                contStyle={inputStyle}
-                callback={(value: string): void => {
-                  reduxAction(
-                    dispatch,
-                    "SET_FUTURE_BOOSTERS",
-                    parseFloat(value),
-                    IPC_NONE
-                  );
-                }}
-              />
-              <div
-                className={"message_sub_15 white link"}
-                onClick={(): void => {
-                  shell.openExternal(
-                    "https://www.mtggoldfish.com/articles/collecting-mtg-arena-part-1-of-2"
-                  );
-                }}
-              >
-                *[original by caliban on mtggoldfish]
-              </div>
-            </>
-          ) : (
-            <MediumTextButton onClick={clickCompletionCallback}>
-              Completion Stats
-            </MediumTextButton>
-          )}
-        </div>
+            );
+          }
+        })}
+        {boosterMath ? (
+          <>
+            <div
+              className={"deck_name"}
+              style={{ width: "100%" }}
+              title={"set completion estimator"}
+            >
+              Completion* <CalendarSymbol />:
+            </div>
+            <Input
+              label={
+                <>
+                  <RaritySymbol rarity={"rare"} /> rares/draft:
+                </>
+              }
+              value={rareDraftFactor}
+              placeholder={"3"}
+              title={"rare picks per draft"}
+              contStyle={inputStyle}
+              callback={(value: string): void => {
+                reduxAction(
+                  dispatch,
+                  "SET_RARE_DRAFT_FACTOR",
+                  parseFloat(value),
+                  IPC_NONE
+                );
+              }}
+            />
+            <Input
+              label={
+                <>
+                  <RaritySymbol rarity={"mythic"} /> mythics/draft:
+                </>
+              }
+              value={mythicDraftFactor}
+              placeholder={"0.14"}
+              title={"mythic picks per draft"}
+              contStyle={inputStyle}
+              callback={(value: string): void => {
+                reduxAction(
+                  dispatch,
+                  "SET_MYTHIC_DRAFT_FACTOR",
+                  parseFloat(value),
+                  IPC_NONE
+                );
+              }}
+            />
+            <Input
+              label={
+                <>
+                  <BoosterSymbol /> boosters/draft:
+                </>
+              }
+              value={boosterWinFactor}
+              placeholder={"1.2"}
+              title={"prize boosters awarded per draft"}
+              contStyle={inputStyle}
+              callback={(value: string): void => {
+                reduxAction(
+                  dispatch,
+                  "SET_BOOSTER_WIN_FACTOR",
+                  parseFloat(value),
+                  IPC_NONE
+                );
+              }}
+            />
+            <Input
+              label={
+                <>
+                  <BoosterSymbol /> future boosters:
+                </>
+              }
+              value={futureBoosters}
+              placeholder={"0"}
+              title={"expected additional boosters, e.g. seasonal rewards"}
+              contStyle={inputStyle}
+              callback={(value: string): void => {
+                reduxAction(
+                  dispatch,
+                  "SET_FUTURE_BOOSTERS",
+                  parseFloat(value),
+                  IPC_NONE
+                );
+              }}
+            />
+            <div
+              className={"message_sub_15 white link"}
+              onClick={(): void => {
+                shell.openExternal(
+                  "https://www.mtggoldfish.com/articles/collecting-mtg-arena-part-1-of-2"
+                );
+              }}
+            >
+              *[original by caliban on mtggoldfish]
+            </div>
+          </>
+        ) : (
+          <MediumTextButton onClick={clickCompletionCallback}>
+            Completion Stats
+          </MediumTextButton>
+        )}
       </div>
     </>
   );
