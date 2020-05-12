@@ -4,7 +4,7 @@
 import _ from "lodash";
 import nthLastIndexOf from "./nthLastIndexOf";
 import * as jsonText from "./jsonText";
-const sha1 = require("js-sha1");
+import sha1 from "js-sha1";
 
 const LABEL_JSON_PATTERNS = [
   /\[UnityCrossThreadLogger\](?<timestamp>.*): (?:Match to )?(?<playerId>\w*)(?: to Match)?: (?<label>.*)(?:\r\n|\n)/,

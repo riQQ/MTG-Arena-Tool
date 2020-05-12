@@ -18,7 +18,7 @@ const { RANKED_CONST, RANKED_DRAFT } = Aggregator;
 
 function ColoredWinrate({ stats }: { stats: AggregatorStats }): JSX.Element {
   const colClass = getWinrateClass(stats.winrate);
-  const title = `${stats.wins} matches won : ${stats.losses} matches lost`;
+  const title = `${stats.wins} won : ${stats.losses} lost`;
   return (
     <span className={colClass + "_bright"} title={title}>
       {formatPercent(stats.winrate)}
@@ -53,12 +53,12 @@ function WinrateChart({
               <div
                 className={"mana_curve_column back_green"}
                 style={{ height: getStyleHeight(cwr.wins / curveMax) }}
-                title={`${cwr.wins} matches won`}
+                title={`${cwr.wins} won`}
               />
               <div
                 className={"mana_curve_column back_red"}
                 style={{ height: getStyleHeight(cwr.losses / curveMax) }}
-                title={`${cwr.losses} matches lost`}
+                title={`${cwr.losses} lost`}
               />
             </React.Fragment>
           );
@@ -75,7 +75,7 @@ function WinrateChart({
             <div
               key={index}
               className={"mana_curve_column_number"}
-              title={`${cwr.wins} matches won : ${cwr.losses} matches lost`}
+              title={`${cwr.wins} won : ${cwr.losses} lost`}
             >
               <span className={colClass + "_bright"}>
                 {formatPercent(winRate)}
@@ -222,7 +222,7 @@ export default function MatchResultsStatsPanel({
       <div className={prefixId + "_winrate"}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <div className={"list_deck_winrate"} style={{ margin: "0 auto 0 0" }}>
-            Overall:
+            Overall (matches):
           </div>
           <div className={"list_deck_winrate"} style={{ margin: "0 0 0 auto" }}>
             {`${stats.wins}:${stats.losses} `}(
@@ -266,7 +266,7 @@ export default function MatchResultsStatsPanel({
           })}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <div className={"list_deck_winrate"} style={{ margin: "0 auto 0 0" }}>
-            Play/Draw:
+            Play/Draw (games):
           </div>
           <div className={"list_deck_winrate"} style={{ margin: "0 0 0 auto" }}>
             <ColoredWinrate stats={playStats} />/

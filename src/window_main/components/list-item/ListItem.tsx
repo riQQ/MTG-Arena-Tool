@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { getCardArtCrop } from "../../../shared/util";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
 import { IPC_NONE } from "../../../shared/constants";
+import { useSpring, animated } from "react-spring";
 
 interface ListItemProps extends JSX.ElementChildrenAttribute {
   click: VoidFunction;
@@ -24,35 +25,26 @@ export function ListItem(props: ListItemProps): JSX.Element {
   );
 }
 
-function getHoverStyle(hover: boolean): React.CSSProperties {
-  return hover
-    ? {
-        opacity: "1",
-        width: "200px"
-      }
-    : {
-        opacity: "0.66",
-        width: "128px"
-      };
-}
-
 interface HoverTileProps {
   hover: boolean;
   grpId: number;
 }
 
-// This function is faster outside of the component
-function getStyle(hover: boolean, grpId: number): React.CSSProperties {
-  return {
-    backgroundImage: `url(${getCardArtCrop(grpId)})`,
-    ...getHoverStyle(hover)
-  };
-}
-
 export function HoverTile(props: HoverTileProps): JSX.Element {
   const { hover, grpId } = props;
 
-  return <div className="list_item_image" style={getStyle(hover, grpId)}></div>;
+  const spring = useSpring({
+    opacity: hover ? "1" : "0.66",
+    width: hover ? "195px" : "128px",
+    config: { mass: 1, tension: 235, friction: 25 }
+  });
+
+  return (
+    <animated.div
+      className="list_item_image"
+      style={{ ...spring, backgroundImage: `url(${getCardArtCrop(grpId)})` }}
+    />
+  );
 }
 
 interface ColumnProps extends JSX.ElementChildrenAttribute {

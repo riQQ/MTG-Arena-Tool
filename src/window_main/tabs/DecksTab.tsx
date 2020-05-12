@@ -26,7 +26,6 @@ import {
   getBoosterCountEstimate,
   get_deck_missing as getDeckMissing
 } from "../rendererUtil";
-import uxMove from "../uxMove";
 import { reduxAction } from "../../shared-redux/sharedRedux";
 import store from "../../shared-redux/stores/rendererStore";
 import globalStore, { getDeck, decksList } from "../../shared-store";
@@ -154,7 +153,6 @@ export default function DecksTab({
   });
   const openDeckCallback = React.useCallback(
     (deck: InternalDeck): void => {
-      uxMove(-100);
       reduxAction(dispatcher, "SET_BACK_GRPID", deck.deckTileId, IPC_NONE);
       reduxAction(
         dispatcher,

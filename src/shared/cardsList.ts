@@ -68,12 +68,13 @@ class CardsList {
       throw new Error("quantity must be a number");
     }
     if (merge) {
-      this.list.forEach(card => {
+      for (let index = 0; index < this.list.length; index++) {
+        const card = this.list[index];
         if (card.id == grpId) {
           card.quantity += quantity;
           return card;
         }
-      });
+      }
     }
 
     this.list.push({

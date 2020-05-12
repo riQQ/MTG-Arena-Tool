@@ -34,14 +34,23 @@ export default function ResultDetails(props: ResultDetailsProps): JSX.Element {
     // because we are not storing who played first on each game!
     g1OnThePlay = match.player.seat == match.onThePlay;
     g2OnThePlay =
-      match.gameStats[0] && match.gameStats[1] ? !match.gameStats[0].win : -1;
+      match && match.gameStats[0] && match.gameStats[1]
+        ? !match.gameStats[0].win
+        : -1;
     g3OnThePlay =
-      match.gameStats[1] && match.gameStats[2] ? !match.gameStats[1].win : -1;
+      match && match.gameStats[1] && match.gameStats[2]
+        ? !match.gameStats[1].win
+        : -1;
   }
 
-  const g1Title =
-    (g1OnThePlay ? "On the Play, " : "On the Draw, ") +
-    (match.gameStats[0].win ? "Win" : "Loss");
+  let g1Title;
+  if (match.gameStats[0]) {
+    g1Title =
+      (g2OnThePlay ? "On the Play, " : "On the Draw, ") +
+      (match.gameStats[0].win ? "Win" : "Loss");
+  } else {
+    g1Title = "Not played";
+  }
 
   let g2Title;
   if (match.gameStats[1]) {
@@ -67,7 +76,13 @@ export default function ResultDetails(props: ResultDetailsProps): JSX.Element {
         <div className={g1OnThePlay ? "ontheplaytext" : "onthedrawtext"}>
           {g1OnThePlay ? "P" : "D"}
         </div>
-        <div className={match.gameStats[0].win ? "ontheplay" : "onthedraw"} />
+        <div
+          className={
+            match.gameStats[0] && match.gameStats[0].win
+              ? "ontheplay"
+              : "onthedraw"
+          }
+        />
       </div>
       <div title={g2Title} style={colStyle}>
         {match.gameStats[1] ? (

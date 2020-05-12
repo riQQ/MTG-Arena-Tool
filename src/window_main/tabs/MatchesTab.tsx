@@ -18,7 +18,6 @@ import { isHidingArchived } from "../components/tables/filters";
 import { TagCounts } from "../components/tables/types";
 import { useAggregatorData } from "../components/tables/useAggregatorData";
 import { ipcSend, toggleArchived } from "../rendererUtil";
-import uxMove from "../uxMove";
 import { reduxAction } from "../../shared-redux/sharedRedux";
 import { matchesList, getMatch } from "../../shared-store";
 import store, { AppState } from "../../shared-redux/stores/rendererStore";
@@ -162,7 +161,6 @@ export default function MatchesTab({
 
   const openMatchDetails = React.useCallback(
     (match: InternalMatch): void => {
-      uxMove(-100);
       reduxAction(
         dispatcher,
         "SET_BACK_GRPID",

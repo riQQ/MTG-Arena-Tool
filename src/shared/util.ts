@@ -2,7 +2,7 @@
 import formatDistanceStrict from "date-fns/formatDistanceStrict";
 import { shell } from "electron";
 import { MatchPlayer } from "../types/currentMatch";
-import { CardObject, InternalDeck, v2cardsList } from "../types/Deck";
+import { CardObject, InternalDeck, v2cardsList, DeckChange } from "../types/Deck";
 import { InternalPlayer } from "../types/match";
 import { DbCardData } from "../types/Metadata";
 import { InternalRankData } from "../types/rank";
@@ -17,6 +17,7 @@ import {
   WHITE
 } from "./constants";
 import db from "./database";
+import Deck from "./deck";
 const NO_IMG_URL = "../images/notfound.png";
 
 export function getCardImage(
@@ -575,4 +576,30 @@ export function isRankedEvent(eventId: string): boolean {
     eventId.indexOf("QuickDraft") !== -1 ||
     eventId.indexOf("Ladder") !== -1
   );
+}
+
+export function getDeckAfterChange(change: DeckChange): Deck {
+  const decklist = new Deck({}, change.previousMain, change.previousSide);
+  // Calculate new deck hash based on the changes
+  change.changesMain.map(change => {
+    const q = change.quantity;
+    if (q < 0) {
+      decklist.getMainboard().remove(change.id, Math.abs(q));
+    } else {
+      decklist.getMainboard().add(change.id, q);
+    }
+  });
+  change.changesSide.map(change => {
+    const q = change.quantity;
+    if (q < 0) {
+      decklist.getSideboard().remove(change.id, Math.abs(q));
+    } else {
+      decklist.getSideboard().add(change.id, q);
+    }
+  });
+  decklist.getMainboard().removeZeros(true);
+  decklist.getMainboard().removeDuplicates(true);
+  decklist.getSideboard().removeZeros(true);
+  decklist.getSideboard().removeDuplicates(true);
+  return decklist;
 }

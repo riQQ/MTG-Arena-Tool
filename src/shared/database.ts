@@ -24,23 +24,18 @@ const cachePath: string | null =
 /*
  This is cool for debugging the metadata files, so we can
  test and view the output files without copypasta.
-
+*/
+/*
 const cachePath =
   app || (remote && remote.app)
     ? path.join(
-        (app || remote.app).getPath("userData"),
-        "..",
-        "Electron",
-        "external",
-        "v25-en-database.json"
+        "C:\\Users\\user\\Documents\\GitHub\\MTG-Arena-Tool-Metadata\\dist",
+        "v67-en-database.json"
       )
     : null;
 
 const scryfallDataPath = path.join(
-  (app || remote.app).getPath("userData"),
-  "..",
-  "Electron",
-  "external",
+  "C:\\Users\\user\\Documents\\GitHub\\MTG-Arena-Tool-Metadata\\external",
   "scryfall-cards.json"
 );
 */
@@ -53,6 +48,7 @@ class Database {
   preconDecks: { [id: string]: ArenaV3Deck };
   public metadata: Metadata | undefined;
   season: SeasonAndRankDetail | undefined;
+  public scryfallData: any;
 
   private constructor() {
     this.handleSetDb = this.handleSetDb.bind(this);
@@ -76,14 +72,14 @@ class Database {
       dbUri = cachePath;
     }
     const defaultDb = fs.readFileSync(dbUri, "utf8");
-    /*
+/*
     try {
-      let scryfallData = fs.readFileSync(scryfallDataPath, "utf8");
-      this.scryfallData = JSON.parse(scryfallData);
+      const data = fs.readFileSync(scryfallDataPath, "utf8");
+      this.scryfallData = JSON.parse(data);
     } catch (e) {
       console.log("Error parsing scryfall data", e);
     }
-    */
+*/
 
     this.handleSetDb(null, defaultDb);
   }

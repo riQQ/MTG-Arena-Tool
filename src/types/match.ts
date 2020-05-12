@@ -118,6 +118,7 @@ export interface InternalMatch {
   player: InternalPlayer;
   opponent: InternalPlayer;
   archived?: boolean;
+  playerDeckHash?: string;
   set: string;
   type: "match";
 }

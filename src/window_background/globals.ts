@@ -30,7 +30,7 @@ let actionLogDir = "";
 
 let currentDraft = InternalDraftDefault;
 
-const debugLog = false;
+const debugLog = true;
 
 const debugNet = true;
 

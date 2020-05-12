@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   DATE_ALL_TIME,
   DATE_LAST_30,
@@ -10,7 +10,8 @@ import {
 import ReactSelect from "../shared/ReactSelect";
 import { reduxAction } from "../shared-redux/sharedRedux";
 import { useDispatch } from "react-redux";
-import { showDatepicker } from "./rendererUtil";
+import useDatePicker from "./hooks/useDatePicker";
+import { RangeModifier } from "react-day-picker";
 
 export interface DateFilterProps {
   prefixId: string;
@@ -41,21 +42,33 @@ export default function DateFilter({
   prefixId
 }: DateFilterProps): JSX.Element {
   const dispatch = useDispatch();
+
+  const closeDatePicker = useCallback(
+    (from: Date) => {
+      const filter = from.toISOString();
+      callback(filter);
+      reduxAction(
+        dispatch,
+        "SET_SETTINGS",
+        { last_date_filter: filter },
+        IPC_ALL ^ IPC_RENDERER
+      );
+    },
+    [callback, dispatch]
+  );
+
+  const lastWeek = new Date();
+  lastWeek.setDate(new Date().getDate() - 7);
+  const [, pickerDoShow, pickerElement] = useDatePicker(
+    lastWeek,
+    undefined,
+    closeDatePicker
+  );
+
   const dateSelectCallback = React.useCallback(
     (filter: string): void => {
       if (filter === "Custom") {
-        const lastWeek = new Date();
-        lastWeek.setDate(new Date().getDate() - 7);
-        showDatepicker(lastWeek, (date: Date) => {
-          const filter = date.toISOString();
-          callback(filter);
-          reduxAction(
-            dispatch,
-            "SET_SETTINGS",
-            { last_date_filter: filter },
-            IPC_ALL ^ IPC_RENDERER
-          );
-        });
+        pickerDoShow();
       } else {
         callback(filter);
         reduxAction(
@@ -66,7 +79,7 @@ export default function DateFilter({
         );
       }
     },
-    [callback, dispatch]
+    [callback, pickerDoShow, dispatch]
   );
   current = current ?? DATE_LAST_30;
   const options = [...dateOptions];
@@ -76,6 +89,7 @@ export default function DateFilter({
   }
   return (
     <div className={className + " dateCont"}>
+      {pickerElement}
       <ReactSelect
         className={"filter_panel_select_margin " + prefixId + "_query_date"}
         current={String(current)}

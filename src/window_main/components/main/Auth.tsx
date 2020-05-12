@@ -13,7 +13,7 @@ import {
   IPC_RENDERER
 } from "../../../shared/constants";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
-const sha1 = require("js-sha1");
+import sha1 from "js-sha1";
 
 function clickRememberMe(value: boolean): void {
   reduxAction(

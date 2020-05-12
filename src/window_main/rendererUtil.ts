@@ -36,30 +36,6 @@ export function getTagColor(tag?: string): string {
   );
 }
 
-export function showDatepicker(
-  defaultDate: Date | undefined,
-  onChange: (date: Date) => void | undefined,
-  pickerOptions = {}
-): void {
-  const cont = document.createElement("div");
-  cont.classList.add("dialog_content");
-  cont.style.width = "320px";
-  cont.style.height = "400px";
-  // https://github.com/Pikaday/Pikaday
-  const now = new Date();
-  const picker = new Pikaday({
-    defaultDate,
-    maxDate: now,
-    onSelect: (): void => {
-      const value = picker.getDate();
-      value && onChange && onChange(value);
-    },
-    setDefaultDate: defaultDate !== undefined,
-    ...pickerOptions
-  });
-  cont.appendChild(picker.el);
-}
-
 export function formatPercent(
   value: number,
   config = { maximumSignificantDigits: 2 }

@@ -20,12 +20,15 @@ import { matchesList, getDeck, getDeckName } from "../shared-store";
 import store from "../shared-redux/stores/rendererStore";
 import database from "../shared/database";
 import Colors from "../shared/colors";
+import { InternalDraft } from "../types/draft";
+import Deck from "../shared/deck";
 
 export interface CardWinrateData {
   name: string;
   wins: number;
   losses: number;
   turnsUsed: number[];
+  turnsFirstUsed: number[];
   sidedIn: number;
   sidedOut: number;
   sideInWins: number;
@@ -34,6 +37,7 @@ export interface CardWinrateData {
   sideOutLosses: number;
   initHandWins: number;
   initHandsLosses: number;
+  mulligans: number;
   colors: { [key: number]: { wins: number; losses: number } };
 }
 
@@ -43,6 +47,7 @@ export function newCardWinrate(grpId: number): CardWinrateData {
     wins: 0,
     losses: 0,
     turnsUsed: [],
+    turnsFirstUsed: [],
     sidedIn: 0,
     sidedOut: 0,
     sideInWins: 0,
@@ -51,11 +56,12 @@ export function newCardWinrate(grpId: number): CardWinrateData {
     sideOutLosses: 0,
     initHandWins: 0,
     initHandsLosses: 0,
-    colors: {}
+    colors: {},
+    mulligans: 0
   };
 }
 
-export const dateMaxValid = (a: any, b: any): any => {
+export const dateMaxValid = (a: Date, b: Date): Date => {
   const aValid = isValid(a);
   const bValid = isValid(b);
   return (
@@ -69,6 +75,7 @@ export interface AggregatorFilters {
   eventId?: string;
   matchIds?: string[];
   deckId?: string | string[];
+  deckVersion?: string | string[];
 }
 
 export interface AggregatorStats {
@@ -89,6 +96,7 @@ export interface AggregatorStats {
 export default class Aggregator {
   // Default filter values
   public static DEFAULT_DECK = "All Decks";
+  public static DEFAULT_DECK_VERSION = "All Versions";
   public static DEFAULT_EVENT = "All Events";
   public static DEFAULT_TAG = "All Tags";
   public static DEFAULT_ARCH = "All Archetypes";
@@ -135,19 +143,23 @@ export default class Aggregator {
       matchIds: undefined,
       eventId: Aggregator.DEFAULT_EVENT,
       deckId: Aggregator.DEFAULT_DECK,
+      deckVersion: Aggregator.DEFAULT_DECK_VERSION,
       date: store.getState().settings.last_date_filter,
       showArchived: false
     };
   }
 
-  public static isDraftMatch(match: any): boolean {
-    return (
+  public static isDraftMatch(match: InternalDraft | InternalMatch): boolean {
+    if (
       (match.eventId && match.eventId.includes("Draft")) ||
       (match.type && match.type === "draft")
-    );
+    ) {
+      return true;
+    }
+    return false;
   }
 
-  private static gatherTags(decks: any[]): string[] {
+  private static gatherTags(decks: Partial<InternalDeck>[]): string[] {
     const tagSet = new Set<string>();
     const formatSet = new Set<string>();
     const counts: Record<string, number> = {};
@@ -196,6 +208,7 @@ export default class Aggregator {
   constructor(filters?: AggregatorFilters) {
     this.filterDate = this.filterDate.bind(this);
     this.filterDeck = this.filterDeck.bind(this);
+    this.filterDeckVersion = this.filterDeckVersion.bind(this);
     this.filterEvent = this.filterEvent.bind(this);
     this.filterMatch = this.filterMatch.bind(this);
     this.updateFilters = this.updateFilters.bind(this);
@@ -223,7 +236,16 @@ export default class Aggregator {
     return isAfter(new Date(date), dateFilter);
   }
 
-  filterDeck(deck: any): boolean {
+  filterDeckVersion(deck: InternalDeck): boolean {
+    const version = new Deck(deck).getHash();
+    const { deckVersion } = this.filters;
+    if (!deck) return deckVersion === Aggregator.DEFAULT_DECK_VERSION;
+    return (
+      deckVersion == Aggregator.DEFAULT_DECK_VERSION || deckVersion == version
+    );
+  }
+
+  filterDeck(deck: InternalDeck): boolean {
     const { deckId } = this.filters;
     if (!deck) return deckId === Aggregator.DEFAULT_DECK;
     return (
@@ -250,8 +272,7 @@ export default class Aggregator {
     );
   }
 
-  // Type!
-  filterMatch(match: any): boolean {
+  filterMatch(match: InternalMatch): boolean {
     if (!match) return false;
     const { eventId, showArchived, matchIds } = this.filters;
     if (!showArchived && match.archived) return false;
@@ -267,6 +288,11 @@ export default class Aggregator {
 
     const passesPlayerDeckFilter = this.filterDeck(match.playerDeck);
     if (!passesPlayerDeckFilter) return false;
+
+    const passesPlayerDeckVersionFilter = this.filterDeckVersion(
+      match.playerDeck
+    );
+    if (!passesPlayerDeckVersionFilter) return false;
 
     return this.filterDate(match.date);
   }
@@ -306,7 +332,13 @@ export default class Aggregator {
 
     matchesList()
       .filter(this.filterMatch)
-      .map(this._processMatch);
+      .map(match => {
+        if (!match.playerDeckHash) {
+          const playerDeck = new Deck(match.playerDeck);
+          match.playerDeckHash = playerDeck.getHash();
+        }
+        this._processMatch(match);
+      });
 
     [
       this.stats,
@@ -337,14 +369,33 @@ export default class Aggregator {
     }
   }
 
-  // Type Warning! Should be of InternalMatch
-  _processMatch(match: any): void {
+  _processMatch(match: InternalMatch): void {
     const statsToUpdate = [this.stats];
     // on play vs draw
-    if (match.onThePlay && match.player) {
-      statsToUpdate.push(
-        match.onThePlay === match.player.seat ? this.playStats : this.drawStats
-      );
+    const hasPlayDrawData = match && match.toolVersion >= 262400;
+    if (hasPlayDrawData) {
+      match.gameStats.forEach(gameStats => {
+        const onThePlay = match.player.seat == gameStats.onThePlay;
+        let toUpdate;
+        if (onThePlay && gameStats) {
+          toUpdate = this.playStats;
+        } else {
+          toUpdate = this.drawStats;
+        }
+
+        toUpdate.wins += gameStats.winner == match.player.seat ? 1 : 0;
+        toUpdate.losses += gameStats.winner == match.player.seat ? 0 : 1;
+        toUpdate.total++;
+        toUpdate.duration += gameStats.time;
+      });
+    } else {
+      if (match.onThePlay && match.player) {
+        statsToUpdate.push(
+          match.onThePlay === match.player.seat
+            ? this.playStats
+            : this.drawStats
+        );
+      }
     }
     // process event data
     if (match.eventId) {
@@ -405,13 +456,14 @@ export default class Aggregator {
       const colors = match.oppDeck.colors || [];
       if (colors?.length) {
         colors.sort();
-        if (!(colors in this.colorStats)) {
-          this.colorStats[colors] = {
+        const colorStr = colors.join(",");
+        if (!(colorStr in this.colorStats)) {
+          this.colorStats[colorStr] = {
             ...Aggregator.getDefaultStats(),
             colors
           };
         }
-        statsToUpdate.push(this.colorStats[colors]);
+        statsToUpdate.push(this.colorStats[colorStr]);
       }
       // process archetype
       const tag = match.tags?.[0] ?? Aggregator.NO_ARCH;
@@ -449,7 +501,7 @@ export default class Aggregator {
     });
   }
 
-  compareDecks(a: any, b: any): number {
+  compareDecks(a: InternalDeck, b: InternalDeck): number {
     const aDate = dateMaxValid(
       this.deckLastPlayed[a.id],
       new Date(a.lastUpdated)
@@ -540,7 +592,7 @@ export default class Aggregator {
           const wins = game.win ? 1 : 0;
           const losses = game.win ? 0 : 1;
           // For each card cast
-          game.cardsCast.forEach(cardCast => {
+          game.cardsCast?.forEach(cardCast => {
             const { grpId, player, turn } = cardCast;
             // Only if we casted it
             if (player == match.player.seat) {
@@ -548,6 +600,7 @@ export default class Aggregator {
               if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
               // Only once per card cast!
               if (!gameCards.includes(grpId)) {
+                winrates[grpId].turnsFirstUsed.push(Math.ceil(turn / 2));
                 winrates[grpId].wins += wins;
                 winrates[grpId].losses += losses;
 
@@ -571,12 +624,21 @@ export default class Aggregator {
             }
           });
 
-          // Initial hand
-          game.handsDrawn[game.handsDrawn.length - 1]?.forEach(grpId => {
-            // define
-            if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
-            winrates[grpId].initHandWins += wins;
-            winrates[grpId].initHandsLosses += losses;
+          game.handsDrawn?.forEach((hand, index) => {
+            // Initial hand
+            if (index == game.handsDrawn.length - 1) {
+              hand.forEach(grpId => {
+                // define
+                if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
+                winrates[grpId].initHandWins += wins;
+                winrates[grpId].initHandsLosses += losses;
+              });
+            } else {
+              hand.forEach(grpId => {
+                if (!winrates[grpId]) winrates[grpId] = newCardWinrate(grpId);
+                winrates[grpId].mulligans++;
+              });
+            }
           });
 
           // Add the previos changes to the current ones

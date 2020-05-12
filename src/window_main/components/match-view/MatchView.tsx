@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import fs from "fs";
 import path from "path";
 import { InternalMatch, InternalPlayer } from "../../../types/match";
@@ -12,8 +12,7 @@ import RankIcon from "../misc/RankIcon";
 import db from "../../../shared/database";
 import CardList from "../misc/CardList";
 import CardsList from "../../../shared/cardsList";
-import ActionLog from "./ActionLog";
-import uxMove from "../../uxMove";
+import ActionLog from "../../../shared/ActionLog";
 import { useDispatch } from "react-redux";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
 import { IPC_NONE } from "../../../shared/constants";
@@ -45,17 +44,7 @@ export function MatchView(props: MatchViewProps): JSX.Element {
 
   const goBack = (): void => {
     reduxAction(dispatcher, "SET_BACK_GRPID", 0, IPC_NONE);
-    reduxAction(
-      dispatcher,
-      "SET_SUBNAV",
-      {
-        type: -1,
-        id: "",
-        data: null
-      },
-      IPC_NONE
-    );
-    uxMove(0);
+    reduxAction(dispatcher, "SET_NAV_INDEX", 0, IPC_NONE);
   };
 
   const openActionLog = (): void => {
@@ -65,6 +54,11 @@ export function MatchView(props: MatchViewProps): JSX.Element {
   const openMatch = (): void => {
     setView(VIEW_MATCH);
   };
+
+  useEffect(() => {
+    match.id;
+    setView(VIEW_MATCH);
+  }, [match.id]);
   /*
   const mulliganType =
     match.eventId === "Lore_WAR3_Singleton" ||
@@ -166,7 +160,9 @@ function Seat(props: SeatProps): JSX.Element {
   let combinedList: number[] = [];
   if (gameDetails) {
     match?.gameStats.forEach((stats: MatchGameStats) => {
-      combinedList = [...combinedList, ...stats.cardsSeen];
+      if (stats) {
+        combinedList = [...combinedList, ...stats.cardsSeen];
+      }
     });
   }
 

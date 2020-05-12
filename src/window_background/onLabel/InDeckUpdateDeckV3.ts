@@ -8,6 +8,7 @@ import { getDeck, deckChangeExists } from "../../shared-store";
 import { IPC_RENDERER } from "../../shared/constants";
 import { reduxAction } from "../../shared-redux/sharedRedux";
 import globals from "../globals";
+import Deck from "../../shared/deck";
 
 interface Entry extends LogEntry {
   json: () => ArenaV3Deck;
@@ -23,6 +24,7 @@ export default function InDeckUpdateDeckV3(entry: Entry): void {
   if (!json) return;
 
   const entryDeck = convertDeckFromV3(json);
+  const newDeck = new Deck(entryDeck);
   const _deck = getDeck(json.id);
 
   const changeId = entry.hash;
@@ -33,7 +35,8 @@ export default function InDeckUpdateDeckV3(entry: Entry): void {
     changesMain: [],
     changesSide: [],
     previousMain: _deck?.mainDeck || [],
-    previousSide: _deck?.sideboard || []
+    previousSide: _deck?.sideboard || [],
+    newDeckHash: newDeck.getHash()
   };
 
   // Check Mainboard
