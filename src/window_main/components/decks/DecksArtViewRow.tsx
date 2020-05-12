@@ -28,6 +28,7 @@ export default function DecksArtViewRow({
 
   const [hover, setHover] = useState(0);
   const props = useSpring({
+    filter: "brightness(" + (hover ? "1.1" : "1.0") + ")",
     backgroundSize: "auto " + Math.round(hover ? 210 : 175) + "px",
     config: { mass: 5, tension: 2000, friction: 150 }
   });
