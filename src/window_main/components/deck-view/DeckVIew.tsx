@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { InternalDeck, CardObject } from "../../../types/Deck";
 import ManaCost from "../misc/ManaCost";
 import { MANA_COLORS, IPC_NONE } from "../../../shared/constants";
@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from "react-redux";
 import db from "../../../shared/database";
 import ShareButton from "../misc/ShareButton";
 import CraftingCost from "./CraftingCost";
-import uxMove from "../../uxMove";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
 import { getDeck, decksList } from "../../../shared-store";
 import VisualDeckView from "./VisualDeckView";
@@ -142,17 +141,7 @@ export function DeckView(props: DeckViewProps): JSX.Element {
 
   const goBack = (): void => {
     reduxAction(dispatcher, "SET_BACK_GRPID", 0, IPC_NONE);
-    reduxAction(
-      dispatcher,
-      "SET_SUBNAV",
-      {
-        type: -1,
-        id: "",
-        data: null
-      },
-      IPC_NONE
-    );
-    uxMove(0);
+    reduxAction(dispatcher, "SET_NAV_INDEX", 0, IPC_NONE);
   };
 
   const deckWinratesView = (): void => {
@@ -170,6 +159,11 @@ export function DeckView(props: DeckViewProps): JSX.Element {
   const regularView = (): void => {
     setDeckView(VIEW_REGULAR);
   };
+
+  useEffect(() => {
+    deck.id;
+    setDeckView(VIEW_REGULAR);
+  }, [deck.id]);
 
   const arenaExport = (): void => {
     const list = deck.getExportArena();

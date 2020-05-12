@@ -27,7 +27,6 @@ import { compareDesc } from "date-fns";
 import { useDispatch } from "react-redux";
 import { InternalMatch } from "../../../types/match";
 import { InternalDraft } from "../../../types/draft";
-import uxMove from "../../uxMove";
 import { reduxAction } from "../../../shared-redux/sharedRedux";
 import { getMatch, draftExists, getDraft } from "../../../shared-store";
 
@@ -150,7 +149,6 @@ function EventSubRows({
 
   const openMatch = React.useCallback(
     (match: InternalMatch): void => {
-      uxMove(-100);
       reduxAction(
         dispatcher,
         "SET_BACK_GRPID",
@@ -172,7 +170,6 @@ function EventSubRows({
 
   const openDraft = React.useCallback(
     (id: string | number): void => {
-      uxMove(-100);
       reduxAction(
         dispatcher,
         "SET_SUBNAV",

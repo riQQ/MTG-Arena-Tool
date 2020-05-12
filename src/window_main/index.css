@@ -618,7 +618,6 @@ span.top_nav_item_text {
     display: flex;
     width: calc(300%);
     height: 100%;
-    -webkit-transition: left .1s ease-in-out-expo;
 }
 
 .deck_tile {

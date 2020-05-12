@@ -41,6 +41,7 @@ const rendererSlice = createSlice({
     },
     topArtist: "Bedevil by Seb McKinnon",
     topNav: 0,
+    navIndex: 0,
     updateState: ""
   },
   reducers: {
@@ -79,13 +80,22 @@ const rendererSlice = createSlice({
       state.shareDialog.url = action.payload;
     },
     setSubNav: (state, action): void => {
+      if (action.payload.type == -1) {
+        state.navIndex = 0;
+      } else {
+        state.navIndex = 1;
+      }
       state.subNav = action.payload;
     },
     setTopArtist: (state, action): void => {
       state.topArtist = action.payload;
     },
     setTopNav: (state, action): void => {
+      state.navIndex = 0;
       state.topNav = action.payload;
+    },
+    setNavIndex: (state, action): void => {
+      state.navIndex = action.payload;
     },
     setUpdateState: (state, action): void => {
       state.updateState = action.payload;

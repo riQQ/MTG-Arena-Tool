@@ -11,7 +11,6 @@ import {
 } from "../../../shared/constants";
 import useHoverCard from "../../hooks/useHoverCard";
 import { DraftData } from "../../../types/draft";
-import uxMove from "../../uxMove";
 import db from "../../../shared/database";
 import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../../../shared-redux/stores/rendererStore";
@@ -60,7 +59,7 @@ function DraftCard(props: DraftCardProps): JSX.Element {
       height: size / 0.71808510638 + "px",
       backgroundImage: `url(${getCardImage(grpId, cardQuality)})`
     };
-  }, [grpId, size]);
+  }, [grpId, cardQuality, size]);
 
   const RANK_SOURCE = card?.source == 0 ? DRAFT_RANKS : DRAFT_RANKS_LOLA;
   return (
@@ -122,17 +121,8 @@ export function DraftView(props: DraftViewProps): JSX.Element {
   }, [downHandler]);
 
   const goBack = (): void => {
-    reduxAction(
-      dispatcher,
-      "SET_SUBNAV",
-      {
-        type: -1,
-        id: "",
-        data: null
-      },
-      IPC_NONE
-    );
-    uxMove(0);
+    reduxAction(dispatcher, "SET_NAV_INDEX", 0, IPC_NONE);
+    reduxAction(dispatcher, "SET_BACK_GRPID", 0, IPC_NONE);
   };
 
   const onSliderChange = useCallback(

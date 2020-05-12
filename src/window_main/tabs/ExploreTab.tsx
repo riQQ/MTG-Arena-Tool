@@ -9,7 +9,6 @@ import Button from "../components/misc/Button";
 import Checkbox from "../components/misc/Checkbox";
 import Input from "../components/misc/Input";
 import { ipcSend } from "../rendererUtil";
-import uxMove from "../uxMove";
 import { reduxAction } from "../../shared-redux/sharedRedux";
 import { ExploreQuery } from "../../shared-redux/slices/exploreSlice";
 
@@ -49,7 +48,6 @@ export default function ExploreTab(): JSX.Element {
 
   const openRow = useCallback(
     (row: any): void => {
-      uxMove(-100);
       const deck = {
         mainDeck: row.mainDeck,
         sideboard: row.sideboard,

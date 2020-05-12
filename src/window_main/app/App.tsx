@@ -1,5 +1,5 @@
 import { remote } from "electron";
-import React from "react";
+import React, { useMemo, CSSProperties, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { LOGIN_WAITING, LOGIN_OK, IPC_NONE } from "../../shared/constants";
@@ -21,6 +21,7 @@ import {
   reduxAction,
   initializeRendererReduxIPC
 } from "../../shared-redux/sharedRedux";
+import { animated, useSpring } from "react-spring";
 
 initializeRendererReduxIPC(store);
 
@@ -29,6 +30,7 @@ function App(): JSX.Element {
   const topArtist = useSelector((state: AppState) => state.renderer.topArtist);
   const offline = useSelector((state: AppState) => state.renderer.offline);
   const loading = useSelector((state: AppState) => state.renderer.loading);
+  const navIndex = useSelector((state: AppState) => state.renderer.navIndex);
   const topNav = useSelector((state: AppState) => state.renderer.topNav);
   const subNavType = useSelector(
     (state: AppState) => state.renderer.subNav.type
@@ -72,6 +74,10 @@ function App(): JSX.Element {
     }, 350);
   }, [dispatch]);
 
+  const spring = useSpring({
+    left: navIndex * -100 + "%"
+  });
+
   return (
     <>
       <BackgroundImage />
@@ -91,13 +97,13 @@ function App(): JSX.Element {
           {loginState == LOGIN_OK ? (
             <div className="wrapper">
               <div className="overflow_ux_main">
-                <div className="moving_ux">
+                <animated.div className="moving_ux" style={spring}>
                   {getOpenNav(topNav, offline)}
                   <div className="ux_item">
                     {getOpenSub(subNavType, subNavId, subNavData)}
                   </div>
                   <div className="ux_item"></div>
-                </div>
+                </animated.div>
               </div>
             </div>
           ) : (

@@ -14,7 +14,6 @@ import {
   LOGIN_WAITING,
   SETTINGS_ABOUT
 } from "../../shared/constants";
-import uxMove from "../uxMove";
 import { reduxAction } from "../../shared-redux/sharedRedux";
 
 export default function ipcListeners(dispatcher: any): void {
@@ -98,8 +97,8 @@ export default function ipcListeners(dispatcher: any): void {
   ipc.on(
     "force_open_settings",
     (event: IpcRendererEvent, arg?: number): void => {
-      uxMove(0);
       reduxAction(dispatcher, "SET_TOPNAV", MAIN_SETTINGS, IPC_NONE);
+      reduxAction(dispatcher, "SET_NAV_INDEX", 0, IPC_NONE);
       if (arg === -1) {
         ipcSend("save_user_settings", { last_open_tab: MAIN_SETTINGS });
       } else {
@@ -114,7 +113,7 @@ export default function ipcListeners(dispatcher: any): void {
   ipc.on(
     "force_open_overlay_settings",
     (event: IpcRendererEvent, arg: number): void => {
-      uxMove(0);
+      reduxAction(dispatcher, "SET_NAV_INDEX", 0, IPC_NONE);
       reduxAction(dispatcher, "SET_TOPNAV", MAIN_SETTINGS, IPC_NONE);
       ipcSend("save_user_settings", {
         last_open_tab: MAIN_SETTINGS,
@@ -125,7 +124,7 @@ export default function ipcListeners(dispatcher: any): void {
   );
 
   ipc.on("force_open_about", (): void => {
-    uxMove(0);
+    reduxAction(dispatcher, "SET_NAV_INDEX", 0, IPC_NONE);
     reduxAction(dispatcher, "SET_TOPNAV", MAIN_SETTINGS, IPC_NONE);
     ipcSend("save_user_settings", {
       last_open_tab: MAIN_SETTINGS,

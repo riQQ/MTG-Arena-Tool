@@ -24,7 +24,6 @@ import {
 } from "../../shared-store";
 import { useSelector, useDispatch } from "react-redux";
 import Button from "../components/misc/Button";
-import uxMove from "../uxMove";
 import { reduxAction } from "../../shared-redux/sharedRedux";
 import { SUB_MATCH, IPC_NONE } from "../../shared/constants";
 import { addMonths } from "date-fns";
@@ -315,7 +314,6 @@ export default function TimelineTab(): JSX.Element {
 
   const openCurrentMatch = useCallback(() => {
     if (hoverMatch) {
-      uxMove(-100);
       reduxAction(
         dispatcher,
         "SET_BACK_GRPID",

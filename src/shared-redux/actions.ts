@@ -30,6 +30,7 @@ actions["SET_POPUP"] = rendererSlice.actions.setPopup;
 actions["SET_SHARE_DIALOG"] = rendererSlice.actions.setShareDialog;
 actions["SET_SHARE_DIALOG_OPEN"] = rendererSlice.actions.setShareDialogOpen;
 actions["SET_SHARE_DIALOG_URL"] = rendererSlice.actions.setShareDialogUrl;
+actions["SET_NAV_INDEX"] = rendererSlice.actions.setNavIndex;
 actions["SET_SUBNAV"] = rendererSlice.actions.setSubNav;
 actions["SET_TOPARTIST"] = rendererSlice.actions.setTopArtist;
 actions["SET_TOPNAV"] = rendererSlice.actions.setTopNav;
