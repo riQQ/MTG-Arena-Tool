@@ -587,7 +587,7 @@ export function getDeckAfterChange(change: DeckChange): Deck {
   const decklist = new Deck({}, change.previousMain, change.previousSide);
   // Calculate new deck hash based on the changes
   change.changesMain.map(change => {
-    const q = change.quantity;
+    const q = parseInt(change.quantity + "") || 0;
     if (q < 0) {
       decklist.getMainboard().remove(change.id, Math.abs(q));
     } else {
@@ -595,7 +595,7 @@ export function getDeckAfterChange(change: DeckChange): Deck {
     }
   });
   change.changesSide.map(change => {
-    const q = change.quantity;
+    const q = parseInt(change.quantity + "") || 0;
     if (q < 0) {
       decklist.getSideboard().remove(change.id, Math.abs(q));
     } else {
