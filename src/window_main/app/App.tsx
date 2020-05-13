@@ -1,8 +1,14 @@
 import { remote } from "electron";
-import React, { useMemo, CSSProperties, useEffect } from "react";
+import anime from "animejs";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { Provider, useDispatch, useSelector } from "react-redux";
-import { LOGIN_WAITING, LOGIN_OK, IPC_NONE } from "../../shared/constants";
+import {
+  LOGIN_WAITING,
+  LOGIN_OK,
+  IPC_NONE,
+  EASING_DEFAULT
+} from "../../shared/constants";
 import ErrorBoundary from "./ErrorBoundary";
 import { TopNav } from "../components/main/topNav";
 import { forceOpenAbout, getOpenNav, getOpenSub } from "../tabControl";
@@ -21,7 +27,6 @@ import {
   reduxAction,
   initializeRendererReduxIPC
 } from "../../shared-redux/sharedRedux";
-import { animated, useSpring } from "react-spring";
 
 initializeRendererReduxIPC(store);
 
@@ -74,9 +79,16 @@ function App(): JSX.Element {
     }, 350);
   }, [dispatch]);
 
-  const spring = useSpring({
-    left: navIndex * -100 + "%"
-  });
+  useEffect(() => {
+    setTimeout(() => {
+      anime({
+        targets: ".moving_ux",
+        left: navIndex * -100 + "%",
+        easing: EASING_DEFAULT,
+        duration: 350
+      });
+    }, 10);
+  }, [navIndex]);
 
   return (
     <>
@@ -97,13 +109,13 @@ function App(): JSX.Element {
           {loginState == LOGIN_OK ? (
             <div className="wrapper">
               <div className="overflow_ux_main">
-                <animated.div className="moving_ux" style={spring}>
+                <div className="moving_ux">
                   {getOpenNav(topNav, offline)}
                   <div className="ux_item">
                     {getOpenSub(subNavType, subNavId, subNavData)}
                   </div>
                   <div className="ux_item"></div>
-                </animated.div>
+                </div>
               </div>
             </div>
           ) : (
