@@ -32,7 +32,7 @@ let currentDraft = InternalDraftDefault;
 
 const debugLog = false;
 
-const debugNet = true;
+const debugNet = false;
 
 let duringDraft = false;
 
