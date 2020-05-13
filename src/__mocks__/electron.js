@@ -9,6 +9,7 @@ module.exports = {
   },
   remote: {
     app: {
+      getVersion: () => "1.0.0",
       getPath: jest.fn()
     },
     screen: {

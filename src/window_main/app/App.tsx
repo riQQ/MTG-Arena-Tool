@@ -30,7 +30,7 @@ import {
 
 initializeRendererReduxIPC(store);
 
-function App(): JSX.Element {
+export function App(): JSX.Element {
   const loginState = useSelector((state: AppState) => state.login.loginState);
   const topArtist = useSelector((state: AppState) => state.renderer.topArtist);
   const offline = useSelector((state: AppState) => state.renderer.offline);
