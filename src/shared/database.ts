@@ -108,6 +108,7 @@ class Database {
   updateCache(data: string): void {
     try {
       if (cachePath) {
+        console.log("Saved metadata to " + cachePath);
         fs.writeFileSync(cachePath, data);
       }
     } catch (e) {
@@ -259,7 +260,7 @@ class Database {
   }
 
   get version(): number {
-    return this.metadata ? this.metadata.version : 0;
+    return parseInt((this.metadata ? this.metadata.version : 0) + "");
   }
 
   card(id?: number | string): DbCardData | undefined {

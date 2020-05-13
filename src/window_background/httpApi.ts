@@ -42,13 +42,14 @@ import { reduxAction } from "../shared-redux/sharedRedux";
 
 let httpQueue: async.AsyncQueue<HttpTask>;
 
-export function initHttpQueue(): void {
+export function initHttpQueue(): async.AsyncQueue<HttpTask> {
   httpQueue = async.queue(asyncWorker);
   if (globals.debugNet) {
     httpQueue.drain(() => {
       ipcLog("httpQueue empty, asyncWorker now idle");
     });
   }
+  return httpQueue;
 }
 
 export function isIdle(): boolean {

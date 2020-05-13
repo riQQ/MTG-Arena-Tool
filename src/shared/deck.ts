@@ -352,6 +352,10 @@ class Deck {
    * @param checkSide whether or not to use the sideboard (default: true)
    */
   getHash(checkSide = true): string {
+    this.getMainboard().removeDuplicates(true);
+    this.getSideboard().removeDuplicates(true);
+    this.getMainboard().removeZeros(true);
+    this.getSideboard().removeZeros(true);
     return sha1(this.getUniqueString(checkSide));
   }
 }
