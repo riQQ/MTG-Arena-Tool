@@ -15,7 +15,8 @@
       // Import non-ES modules as default imports.
       "esModuleInterop": true,
       "jsx": "react",
-      "downlevelIteration": true
+      "downlevelIteration": true,
+      "types": ["react", "jest"]
     },
     "include": [
       "src"
