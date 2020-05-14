@@ -4,7 +4,6 @@ import Deck from "../deck";
 import { v2cardsList } from "../../types/Deck";
 import db from "../database";
 import { compare_cards } from "../util";
-import * as httpApi from "../../window_background/httpApi";
 
 describe("deck", () => {
   describe("constructor", () => {
