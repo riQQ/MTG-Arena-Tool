@@ -302,13 +302,6 @@ function OverlaySettingsSection(props: SectionProps): JSX.Element {
         ].includes(settings.mode)}
       />
       <Toggle
-        text={"Show hover cards"}
-        value={settings.cards_overlay}
-        callback={(val: boolean): void =>
-          saveOverlaySettings(current, val, "cards_overlay")
-        }
-      />
-      <Toggle
         text={"Show type counts"}
         value={settings.type_counts}
         callback={(val: boolean): void =>

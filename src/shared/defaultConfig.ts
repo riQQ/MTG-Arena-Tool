@@ -20,7 +20,6 @@ export const overlayCfg = {
   alpha: 1,
   alpha_back: 1,
   bounds: { width: 300, height: 600, x: 0, y: 0 },
-  cards_overlay: true,
   clock: false,
   draw_odds: true,
   deck: true,

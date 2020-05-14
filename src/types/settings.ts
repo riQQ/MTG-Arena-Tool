@@ -9,7 +9,6 @@ export interface OverlaySettingsData {
   alpha: number;
   alpha_back: number;
   bounds: { width: number; height: number; x: number; y: number };
-  cards_overlay: boolean;
   clock: boolean;
   draw_odds: boolean;
   deck: boolean;
