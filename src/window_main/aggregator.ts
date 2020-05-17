@@ -375,7 +375,7 @@ export default class Aggregator {
     const hasPlayDrawData = match && match.toolVersion >= 262400;
     if (hasPlayDrawData) {
       match.gameStats.forEach(gameStats => {
-        const onThePlay = match.player.seat == gameStats.onThePlay;
+        const onThePlay = match.player.seat == gameStats?.onThePlay;
         let toUpdate;
         if (onThePlay && gameStats) {
           toUpdate = this.playStats;
@@ -389,7 +389,7 @@ export default class Aggregator {
         toUpdate.duration += gameStats.time;
       });
     } else {
-      if (match.onThePlay && match.player) {
+      if (match && match.onThePlay && match.player) {
         statsToUpdate.push(
           match.onThePlay === match.player.seat
             ? this.playStats
