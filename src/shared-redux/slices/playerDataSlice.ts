@@ -1,7 +1,9 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, SliceCaseReducers } from "@reduxjs/toolkit";
 import { differenceInDays } from "date-fns";
+import { GameState } from "../../types/GameState";
 
-const playerDataSlice = createSlice({
+
+const playerDataSlice = createSlice<GameState, SliceCaseReducers<GameState>>({
   name: "playerdata",
   initialState: {
     playerId: "",
@@ -91,8 +93,8 @@ const playerDataSlice = createSlice({
     },
     addCardsList: (state, action): void => {
       action.payload.forEach((grpId: number) => {
+        state.cards.cards[grpId] = state.cards.cards[grpId] + 1 || 1;
         state.cardsNew[grpId] = state.cardsNew[grpId] + 1 || 1;
-        state.cards.cards[grpId] = state.cards.cards[grpId] + 1;
       });
     },
     addCardsKeys: (state, action): void => {
