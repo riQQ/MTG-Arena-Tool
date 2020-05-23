@@ -10,8 +10,7 @@ export function EconomyHeader(): JSX.Element {
     (state: AppState) => state.playerdata.economy
   );
   const total = playerEconomy.boosters.reduce(
-    (accumulator: number, booster: { count: number }) =>
-      accumulator + booster.count,
+    (accumulator: number, booster: number) => accumulator + booster,
     0
   );
   // TODO: remove this any cast once renderer-util is a typescript file.
