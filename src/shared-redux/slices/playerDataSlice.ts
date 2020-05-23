@@ -64,40 +64,40 @@ const playerDataSlice = createSlice<GameState, SliceCaseReducers<GameState>>({
     }
   },
   reducers: {
-    setPlayerId: (state, action): void => {
+    setPlayerId: (state: GameState, action): void => {
       state.arenaId = action.payload;
     },
-    setPlayerName: (state, action): void => {
+    setPlayerName: (state: GameState, action): void => {
       state.playerName = action.payload;
     },
-    setArenaVersion: (state, action): void => {
+    setArenaVersion: (state: GameState, action): void => {
       state.arenaVersion = action.payload;
     },
-    setRank: (state, action): void => {
+    setRank: (state: GameState, action): void => {
       state.rank = action.payload;
     },
-    setEconomy: (state, action): void => {
+    setEconomy: (state: GameState, action): void => {
       Object.assign(state.economy, action.payload);
     },
-    setTagColors: (state, action): void => {
+    setTagColors: (state: GameState, action): void => {
       Object.assign(state.tagsColors, action.payload);
     },
-    editTagColor: (state, action): void => {
+    editTagColor: (state: GameState, action): void => {
       const { tag, color } = action.payload;
       state.tagsColors = { ...state.tagsColors, [tag]: color };
     },
-    addCard: (state, action): void => {
+    addCard: (state: GameState, action): void => {
       const grpId = action.payload;
       state.cards.cards[grpId] = state.cards.cards[grpId] + 1 || 1;
       state.cardsNew[grpId] = state.cardsNew[grpId] + 1 || 1;
     },
-    addCardsList: (state, action): void => {
+    addCardsList: (state: GameState, action): void => {
       action.payload.forEach((grpId: number) => {
         state.cards.cards[grpId] = state.cards.cards[grpId] + 1 || 1;
-        state.cardsNew[grpId] = state.cardsNew[grpId] + 1 || 1;
+        state.cardsNew[grpId] = state.cardsNew[grpId] + 1;
       });
     },
-    addCardsKeys: (state, action): void => {
+    addCardsKeys: (state: GameState, action): void => {
       const now = Date.now();
       const json = action.payload;
       const newCards = { ...state.cards };
@@ -117,7 +117,7 @@ const playerDataSlice = createSlice<GameState, SliceCaseReducers<GameState>>({
       });
       state.cards = newCards;
     },
-    addCardsFromStore: (state, action): void => {
+    addCardsFromStore: (state: GameState, action): void => {
       Object.assign(state.cards, action.payload);
       const json = action.payload;
       const newCards = { ...state.cardsNew };
@@ -130,13 +130,13 @@ const playerDataSlice = createSlice<GameState, SliceCaseReducers<GameState>>({
       });
       state.cardsNew = newCards;
     },
-    addDeckTag: (state, action): void => {
+    addDeckTag: (state: GameState, action): void => {
       const { tag, deck } = action.payload;
       const tags = state.deckTags[deck] || [];
       if (tags.indexOf(tag) == -1) tags.push(tag);
       state.deckTags[deck] = tags;
     },
-    removeDeckTag: (state, action): void => {
+    removeDeckTag: (state: GameState, action): void => {
       const { tag, deck } = action.payload;
       const tags = state.deckTags[deck] || [];
       if (tags.includes(tag)) {
@@ -144,13 +144,13 @@ const playerDataSlice = createSlice<GameState, SliceCaseReducers<GameState>>({
       }
       state.deckTags[deck] = tags;
     },
-    setDeckTags: (state, action): void => {
+    setDeckTags: (state: GameState, action): void => {
       state.deckTags = action.payload;
     },
-    setPlayerDb: (state, action): void => {
+    setPlayerDb: (state: GameState, action): void => {
       state.playerDbPath = action.payload;
     },
-    setAppDb: (state, action): void => {
+    setAppDb: (state: GameState, action): void => {
       state.appDbPath = action.payload;
     }
   }
