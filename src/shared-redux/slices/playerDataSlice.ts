@@ -2,6 +2,10 @@ import { createSlice, SliceCaseReducers } from "@reduxjs/toolkit";
 import { differenceInDays } from "date-fns";
 import { GameState } from "../../types/GameState";
 
+const incrementCardCount = (state: GameState, grpId: number) => {
+  state.cards.cards[grpId] = state.cards.cards[grpId] + 1 || 1;
+  state.cardsNew[grpId] = state.cardsNew[grpId] + 1 || 1;
+};
 
 const playerDataSlice = createSlice<GameState, SliceCaseReducers<GameState>>({
   name: "playerdata",
@@ -87,14 +91,11 @@ const playerDataSlice = createSlice<GameState, SliceCaseReducers<GameState>>({
       state.tagsColors = { ...state.tagsColors, [tag]: color };
     },
     addCard: (state: GameState, action): void => {
-      const grpId = action.payload;
-      state.cards.cards[grpId] = state.cards.cards[grpId] + 1 || 1;
-      state.cardsNew[grpId] = state.cardsNew[grpId] + 1 || 1;
+      incrementCardCount(state, action.payload);
     },
     addCardsList: (state: GameState, action): void => {
       action.payload.forEach((grpId: number) => {
-        state.cards.cards[grpId] = state.cards.cards[grpId] + 1 || 1;
-        state.cardsNew[grpId] = state.cardsNew[grpId] + 1;
+        incrementCardCount(state, grpId);
       });
     },
     addCardsKeys: (state: GameState, action): void => {
