@@ -32,7 +32,7 @@ const playerDataState = {
     currentLevel: 0,
     currentExp: 0,
     currentOrbCount: 0,
-    boosters: []
+    boosters: [] as number[]
   },
   rank: {
     constructed: {
