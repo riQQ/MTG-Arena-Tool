@@ -91,7 +91,7 @@ export interface PlayerInventory {
   sealedTokens: number;
   wcTrackPosition: number;
   vaultProgress: number;
-  boosters: number[];
+  boosters: { collationId: number; count: number }[];
   vanityItems: {
     pets: Pet[];
     avatars: Avatar[];
