@@ -132,9 +132,7 @@ export function getCollectionStats(
   Object.keys(db.sets).forEach(setName => {
     const setStats = new SetStats(setName);
     setStats.boosters = playerEconomy.boosters
-      .filter(
-        ({ collationId }) => db.sets[setName]?.collation === collationId
-      )
+      .filter(({ collationId }) => db.sets[setName]?.collation === collationId)
       .reduce(
         (
           accumulator: number,
