@@ -193,22 +193,24 @@ export default function SectionData(): JSX.Element {
         </div>
       </div>
       <Toggle
-        text="Read entire Arena log during launch"
-        value={!settings.skip_firstpass}
+        text="Skip reading the Arena log during launch"
+        value={settings.skip_firstpass}
         callback={firstPassCallback}
       />
       <div style={{ paddingLeft: "35px" }} className="settings_note">
         <i>
           <p>
-            Enabling this ensures that mtgatool will not miss any data still
+            Disabling this ensures that mtgatool will not miss any data still
             available in your Arena log, even when mtgatool is launched while
             Arena is running <b>(Recommended)</b>.
           </p>
           <p>
-            Disabling this will make mtgatool launch more quickly by skipping
-            your preexisting Arena log and only reading new log data.{" "}
+            Enabling it will make MTG Arena Tool launch more quickly by skipping
+            your preexisting Arena log and only reading new incoming logs data
+            as you play.{" "}
             <b>
-              This may miss data if you launch mtgatool during an Arena session.
+              Toll will miss some data like decks and previous matches if you
+              launch mtgatool during a play session.
             </b>
           </p>
         </i>
