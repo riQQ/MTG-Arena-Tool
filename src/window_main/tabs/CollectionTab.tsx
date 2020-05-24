@@ -111,7 +111,7 @@ function getCollectionData(): CardsData[] {
       });
     });
   return db.cardList
-    .filter(card => card.collectible)
+    .filter(card => card.collectible && card.dfc !== 7 && card.dfc !== 5)
     .map(
       (card): CardsData => {
         const RANK_SOURCE = card.source == 0 ? DRAFT_RANKS : DRAFT_RANKS_LOLA;
