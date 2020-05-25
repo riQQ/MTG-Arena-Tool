@@ -162,6 +162,12 @@ export default function DeckList(props: DeckListProps): JSX.Element {
     if (isCardGroupedLands) {
       card = card.id;
     }
+
+    let fullCard = card;
+    if (card?.id && !isCardGroupedLands) {
+      fullCard = db.card(card.id);
+    }
+
     let quantity = card.quantity;
     if (settings.mode === OVERLAY_MIXED) {
       const odds = (card.chance !== undefined ? card.chance : "0") + "%";
@@ -179,12 +185,8 @@ export default function DeckList(props: DeckListProps): JSX.Element {
       });
     } else if (settings.mode === OVERLAY_DRAFT) {
       const rank = getRank(card.id);
-      quantity = card.source == 0 ? DRAFT_RANKS[rank] : DRAFT_RANKS_LOLA[rank];
-    }
-
-    let fullCard = card;
-    if (card?.id && !isCardGroupedLands) {
-      fullCard = db.card(card.id);
+      quantity =
+        fullCard.source == 0 ? DRAFT_RANKS[rank] : DRAFT_RANKS_LOLA[rank];
     }
 
     if (settings.mode === OVERLAY_DRAFT) {
