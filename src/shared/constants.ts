@@ -742,7 +742,7 @@ export const DRAFT_RANKS_LOLA = [
   "D",
   "D-",
   "F"
-];
+] as const;
 
 export const CARD_TYPE_CODES = [
   "cre",
