@@ -126,7 +126,9 @@ export async function loadPlayerConfig(): Promise<void> {
         savedData[id].playerDeckHash = playerDeck.getHash();
       }
 
-      savedData[id].date = new Date(savedData[id].date).toString();
+      savedData[id].date = savedData[id].date
+        ? new Date(savedData[id].date).toISOString()
+        : new Date(0).toISOString();
       return savedData[id];
     });
 
@@ -195,7 +197,7 @@ export async function loadPlayerConfig(): Promise<void> {
     const economyList: InternalEconomyTransaction[] = savedData.economy_index
       .filter((id: string) => savedData[id])
       .map((id: string) => {
-        savedData[id].date = new Date(savedData[id].date).toString();
+        savedData[id].date = new Date(savedData[id].date).toISOString();
         return savedData[id];
       });
 
