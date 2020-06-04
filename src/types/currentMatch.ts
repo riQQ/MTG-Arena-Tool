@@ -5,14 +5,14 @@ import {
   ZoneType,
   ZoneData,
   PlayerData,
-  Result
+  Result,
 } from "./greInterpreter";
 import {
   GREToClientMessage,
   AnnotationInfo,
   TurnInfo,
-  GameInfo
-} from "../proto/GreTypes";
+  GameInfo,
+} from "../assets/proto/GreTypes";
 import { InternalDeck } from "./Deck";
 
 export interface MatchPlayer {
@@ -88,7 +88,7 @@ export const matchDataDefault: MatchData = {
   game: 0,
   priorityTimers: {
     last: 0,
-    timers: []
+    timers: [],
   },
   latestMessage: 0,
   msgId: 0,
@@ -109,7 +109,7 @@ export const matchDataDefault: MatchData = {
     chancePla: 0,
     chanceSor: 0,
     deckSize: 0,
-    cardsLeft: 0
+    cardsLeft: 0,
   },
   results: [],
   playerChances: {
@@ -127,7 +127,7 @@ export const matchDataDefault: MatchData = {
     chancePla: 0,
     chanceSor: 0,
     deckSize: 0,
-    cardsLeft: 0
+    cardsLeft: 0,
   },
   playerCardsLeft: new Deck(),
   oppArchetype: "",
@@ -156,8 +156,8 @@ export const matchDataDefault: MatchData = {
     deckConstraintInfo: {
       minDeckSize: 0,
       maxDeckSize: 0,
-      maxSideboardSize: 0
-    }
+      maxSideboardSize: 0,
+    },
   },
   gameStage: "",
   turnInfo: {
@@ -168,7 +168,7 @@ export const matchDataDefault: MatchData = {
     turnNumber: 0,
     priorityPlayer: 0,
     nextPhase: "Phase_None",
-    nextStep: "Step_None"
+    nextStep: "Step_None",
   },
   playerCardsUsed: [],
   oppCardsUsed: [],
@@ -186,7 +186,7 @@ export const matchDataDefault: MatchData = {
     tier: 1,
     commanderGrpIds: [],
     percentile: 0,
-    leaderboardPlace: 0
+    leaderboardPlace: 0,
   },
   opponent: {
     seat: 2,
@@ -201,8 +201,8 @@ export const matchDataDefault: MatchData = {
     tier: 1,
     commanderGrpIds: [],
     percentile: 0,
-    leaderboardPlace: 0
-  }
+    leaderboardPlace: 0,
+  },
 };
 
 export interface DeckChanges {

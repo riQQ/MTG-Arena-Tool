@@ -4,7 +4,7 @@ import {
   ARENA_MODE_IDLE,
   ARENA_MODE_MATCH,
   COLORS_ALL,
-  OVERLAY_DRAFT_MODES
+  OVERLAY_DRAFT_MODES,
 } from "../shared/constants";
 import { MatchData } from "../types/currentMatch";
 import { DraftData, DraftState } from "../types/draft";
@@ -13,9 +13,12 @@ import DraftElements from "./DraftElements";
 import MatchElements from "./MatchElements";
 import { getEditModeClass, useEditModeOnRef } from "./overlayUtil";
 import { useSelector } from "react-redux";
-import { AppState } from "../shared-redux/stores/overlayStore";
+import { AppState } from "../shared/redux/stores/overlayStore";
 
-const DEFAULT_BACKGROUND = "../images/Bedevil-Art.jpg";
+import css from "./index.css";
+import sharedCss from "../shared/shared.css";
+import ResizeIcon from "../assets/images/resize.svg";
+import DEFAULT_BACKGROUND from "../assets/images/Bedevil-Art.jpg";
 
 export interface OverlayWindowletProps {
   arenaState: number;
@@ -35,7 +38,7 @@ export interface OverlayWindowletProps {
 }
 
 function isOverlayDraftMode(mode: number): boolean {
-  return OVERLAY_DRAFT_MODES.some(draftMode => draftMode === mode);
+  return OVERLAY_DRAFT_MODES.some((draftMode) => draftMode === mode);
 }
 
 /**
@@ -61,7 +64,7 @@ export default function OverlayWindowlet(
     setDraftStateCallback,
     setOddsCallback,
     settings,
-    turnPriority
+    turnPriority,
   } = props;
 
   const containerRef = useRef(null);
@@ -90,19 +93,18 @@ export default function OverlayWindowlet(
     (editMode && arenaState === ARENA_MODE_IDLE);
   const isVisible =
     overlaySettings.show && (currentModeApplies || overlaySettings.show_always);
-  const tileStyle = parseInt(settings.card_tile_style + "");
+
   let elements = <></>;
   const commonProps = {
     index,
     settings: overlaySettings,
-    tileStyle
   };
   if (draft && isOverlayDraftMode(overlaySettings.mode)) {
     const props = {
       ...commonProps,
       draft,
       draftState,
-      setDraftStateCallback
+      setDraftStateCallback,
     };
     elements = <DraftElements {...props} />;
   } else if (match) {
@@ -111,28 +113,27 @@ export default function OverlayWindowlet(
       actionLog,
       match,
       setOddsCallback,
-      turnPriority
+      turnPriority,
     };
     elements = <MatchElements {...props} />;
   } else {
     elements = (
       <div
-        className="outer_wrapper elements_wrapper"
+        className={`${css.outerWrapper} elements_wrapper`}
         style={{ opacity: overlaySettings.alpha.toString() }}
       >
         {!!overlaySettings.title && (
-          <div className="overlay_deckname">Overlay {index + 1}</div>
+          <div className={css.overlayDeckname}>Overlay {index + 1}</div>
         )}
       </div>
     );
   }
 
-  const backgroundImage =
-    "url(" +
-    (settings.back_url && settings.back_url !== "default"
+  const backgroundImage = `url(${
+    settings.back_url && settings.back_url !== "default"
       ? settings.back_url
-      : DEFAULT_BACKGROUND) +
-    ")";
+      : DEFAULT_BACKGROUND
+  })`;
 
   const backgroundColor = settings.overlay_back_color;
   const backgroundShade = useSelector(
@@ -142,7 +143,7 @@ export default function OverlayWindowlet(
   const bgStyle: React.CSSProperties = {
     left: "0px",
     right: "0px",
-    opacity: overlaySettings.alpha_back.toString()
+    opacity: overlaySettings.alpha_back.toString(),
   };
 
   // This needs its own setting, like a checkbox or something
@@ -157,7 +158,7 @@ export default function OverlayWindowlet(
   const borderAlpha = (overlaySettings.alpha_back * 1.5).toString();
   return (
     <div
-      className={"overlay_container " + getEditModeClass(editMode)}
+      className={`${css.overlayContainer} ${getEditModeClass(editMode)}`}
       id={"overlay_" + (index + 1)}
       ref={containerRef}
       style={{
@@ -167,39 +168,38 @@ export default function OverlayWindowlet(
         height: overlaySettings.bounds.height + "px",
         width: overlaySettings.bounds.width + "px",
         left: overlaySettings.bounds.x + "px",
-        top: overlaySettings.bounds.y + "px"
+        top: overlaySettings.bounds.y + "px",
       }}
     >
-      <div className="outer_wrapper">
+      <div className={css.outerWrapper}>
         <div
-          className={"main_wrapper " + (solidBg ? "after_hidden" : "")}
+          className={`${css.mainWrapper} ${solidBg ? css.afterHidden : ""}`}
           style={bgStyle}
         >
           {!solidBg && backgroundShade ? (
-            <div className="wrapper_after"></div>
+            <div className={sharedCss.wrapperAfter}></div>
           ) : (
             <></>
           )}
         </div>
       </div>
       {overlaySettings.top && (
-        <div className="outer_wrapper top_nav_wrapper">
-          <div
-            className="button overlay_icon click-on"
+        <div className={`${css.outerWrapper} ${css.topNavWrapper}`}>
+          <ResizeIcon
+            fill={`var(--color-${COLORS_ALL[index]})`}
+            className={`${sharedCss.button} ${css.overlayIcon} ${css.clickOn}`}
             onClick={handleToggleEditMode}
             style={{
-              backgroundColor: `var(--color-${COLORS_ALL[index]})`,
-              marginRight: "auto"
+              marginRight: "auto",
             }}
-            title={settings.shortcut_editmode}
           />
           <div
-            className="button settings click-on"
+            className={`${sharedCss.button} ${sharedCss.settings} ${css.clickOn}`}
             onClick={handleClickSettings}
             style={{ margin: 0 }}
           />
           <div
-            className="button close click-on"
+            className={`${sharedCss.button} ${sharedCss.close} ${css.clickOn}`}
             onClick={handleClickClose}
             style={{ marginRight: "4px" }}
           />

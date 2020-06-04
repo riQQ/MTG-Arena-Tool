@@ -1,14 +1,16 @@
 import React, { useCallback } from "react";
 import {
-  MANA,
   OVERLAY_DRAFT,
   OVERLAY_DRAFT_BREW,
-  PACK_SIZES
+  PACK_SIZES,
 } from "../shared/constants";
 import Deck from "../shared/deck";
 import { DraftData, DraftState } from "../types/draft";
 import { OverlaySettingsData } from "../types/settings";
 import DeckList from "./DeckList";
+
+import css from "./index.css";
+import ManaCost from "../renderer/components/misc/ManaCost";
 
 const packSizeMap: { [key: string]: number } = PACK_SIZES;
 
@@ -18,7 +20,6 @@ export interface DraftElementsProps {
   index: number;
   settings: OverlaySettingsData;
   setDraftStateCallback: (state: DraftState) => void;
-  tileStyle: number;
 }
 
 /**
@@ -26,14 +27,7 @@ export interface DraftElementsProps {
  * window set in one of the draft-related modes.
  */
 export default function DraftElements(props: DraftElementsProps): JSX.Element {
-  const {
-    draft,
-    draftState,
-    index,
-    setDraftStateCallback,
-    settings,
-    tileStyle
-  } = props;
+  const { draft, draftState, index, setDraftStateCallback, settings } = props;
   const packSize = packSizeMap[draft.set] || 14;
 
   const handleDraftPrev = useCallback((): void => {
@@ -78,7 +72,7 @@ export default function DraftElements(props: DraftElementsProps): JSX.Element {
   let mainTitle = "Overlay " + (index + 1);
   let subTitle = "";
   let pack = [];
-  let pick = "";
+  let pick = 0;
   let pickName = "Pack " + (packN + 1) + " - Pick " + (pickN + 1);
   if (isCurrent) {
     pickName += " - Current";
@@ -89,7 +83,7 @@ export default function DraftElements(props: DraftElementsProps): JSX.Element {
     pick = draft[key].pick;
   } else if (isCurrent) {
     pack = draft.currentPack;
-    pick = "";
+    pick = 0;
   }
   if (settings.mode === OVERLAY_DRAFT) {
     visibleDeck = new Deck({ name: pickName }, pack);
@@ -105,29 +99,33 @@ export default function DraftElements(props: DraftElementsProps): JSX.Element {
 
   return (
     <div
-      className="outer_wrapper elements_wrapper"
+      className={`${css.outerWrapper} elements_wrapper`}
       style={{ opacity: settings.alpha.toString() }}
     >
       {!!settings.title && (
-        <div className="overlay_deckname">
+        <div className={css.overlayDeckname}>
           {mainTitle}
           {settings.mode === OVERLAY_DRAFT && (
             <div
-              className="overlay_draft_container"
+              className={css.overlayDraftContainer}
               style={settings.top ? { top: "32px" } : undefined}
             >
-              <div className="draft_prev click-on" onClick={handleDraftPrev} />
-              <div className="draft_title" />
-              <div className="draft_next click-on" onClick={handleDraftNext} />
+              <div
+                className={`${css.draftPrev} ${css.clickOn}`}
+                onClick={handleDraftPrev}
+              />
+              <div className={css.draftTitle} />
+              <div
+                className={`${css.draftNext} ${css.clickOn}`}
+                onClick={handleDraftNext}
+              />
             </div>
           )}
         </div>
       )}
       {!!settings.title && !!visibleDeck && (
-        <div className="overlay_deckcolors">
-          {visibleDeck.colors.get().map((color: number) => (
-            <div className={"mana_s20 mana_" + MANA[color]} key={color} />
-          ))}
+        <div className={css.overlayDeckcolors}>
+          <ManaCost colors={visibleDeck.colors.get()} />
         </div>
       )}
       {!!visibleDeck && (
@@ -136,7 +134,6 @@ export default function DraftElements(props: DraftElementsProps): JSX.Element {
           subTitle={subTitle}
           highlightCardId={pick}
           settings={settings}
-          tileStyle={tileStyle}
         />
       )}
     </div>

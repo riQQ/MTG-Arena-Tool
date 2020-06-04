@@ -8,17 +8,17 @@ import {
   DECKS_ART_MODE,
   COLLECTION_CARD_MODE,
   MATCHES_LIST_MODE,
-  CARD_TILE_FLAT,
-  OVERLAY_LEFT,
   OVERLAY_SEEN,
   OVERLAY_DRAFT,
   OVERLAY_FULL,
-  OVERLAY_LOG
+  OVERLAY_LOG,
+  OVERLAY_MIXED,
 } from "./constants";
+import { SettingsData } from "../types/settings";
 
 export const overlayCfg = {
   alpha: 1,
-  alpha_back: 1,
+  alpha_back: 0.7,
   bounds: { width: 300, height: 600, x: 0, y: 0 },
   clock: false,
   draw_odds: true,
@@ -33,7 +33,8 @@ export const overlayCfg = {
   sideboard: false,
   title: true,
   top: true,
-  type_counts: false
+  type_counts: false,
+  autosize: false,
 };
 
 const primaryBounds: Electron.Rectangle = remote
@@ -41,7 +42,7 @@ const primaryBounds: Electron.Rectangle = remote
   : { width: 800, height: 600, x: 0, y: 0 };
 
 const defaultConfig = {
-  windowBounds: { width: 800, height: 600, x: 0, y: 0 },
+  windowBounds: { width: 900, height: 700, x: 0, y: 0 },
   cards: { cards_time: 0, cards_before: {}, cards: {} },
   cardsNew: {},
   settings: {
@@ -50,7 +51,7 @@ const defaultConfig = {
     last_settings_overlay_section: 0,
     sound_priority: false,
     sound_priority_volume: 1,
-    cards_quality: "small",
+    cards_quality: "normal",
     startup: true,
     close_to_tray: true,
     send_data: true,
@@ -61,7 +62,7 @@ const defaultConfig = {
     export_format: "$Name,$Count,$Rarity,$SetName,$Collector",
     back_color: "rgba(0,0,0,0.3)",
     back_shadow: true,
-    overlay_back_color: "rgba(0,0,0,0.0)",
+    overlay_back_color: "#000000ff",
     back_url: "",
     right_panel_width: 300,
     right_panel_width_sub: 300,
@@ -76,10 +77,10 @@ const defaultConfig = {
     collectionTableMode: COLLECTION_CARD_MODE,
     matchesTableState: undefined,
     matchesTableMode: MATCHES_LIST_MODE,
-    card_tile_style: CARD_TILE_FLAT,
     skip_firstpass: false,
     overlay_scale: 100,
     overlay_ontop: true,
+    overlay_overview: true,
     overlayHover: { x: 0, y: 0 },
     enable_keyboard_shortcuts: true,
     shortcut_overlay_1: "Alt+Shift+1",
@@ -97,99 +98,53 @@ const defaultConfig = {
         ...overlayCfg,
         bounds: {
           ...primaryBounds,
-          width: 300,
-          height: 600
+          width: 280,
+          height: 600,
         },
-        mode: OVERLAY_LEFT,
-        clock: true
+        mode: OVERLAY_MIXED,
+        autosize: true,
+        clock: false,
+        alpha: 1,
+        alpha_back: 0.4,
+        lands: true,
       },
       {
         ...overlayCfg,
         bounds: {
           ...primaryBounds,
-          width: 300,
+          width: 280,
           height: 600,
-          x: primaryBounds.x + 310
+          x: primaryBounds.x + 300,
         },
         mode: OVERLAY_SEEN,
-        clock: false
+        autosize: true,
+        clock: false,
+        alpha: 1,
+        alpha_back: 0.4,
       },
       {
         ...overlayCfg,
         bounds: { ...primaryBounds, width: 300, height: 600 },
         mode: OVERLAY_DRAFT,
         clock: false,
-        show: false
+        show: false,
       },
       {
         ...overlayCfg,
         bounds: { ...primaryBounds, width: 300, height: 600 },
         mode: OVERLAY_LOG,
         clock: false,
-        show: false
+        show: false,
       },
       {
         ...overlayCfg,
         bounds: { ...primaryBounds, width: 300, height: 600 },
         mode: OVERLAY_FULL,
-        show: false
-      }
-    ]
-  },
-  seasonal_rank: {},
-  seasonal: {},
-  economy_index: [],
-  economy: {
-    gold: 0,
-    gems: 0,
-    vault: 0,
-    wcTrack: 0,
-    wcCommon: 0,
-    wcUncommon: 0,
-    wcRare: 0,
-    wcMythic: 0,
-    trackName: "",
-    trackTier: 0,
-    currentLevel: 0,
-    currentExp: 0,
-    currentOrbCount: 0,
-    boosters: []
-  },
-  rank: {
-    constructed: {
-      rank: "",
-      tier: 0,
-      step: 0,
-      won: 0,
-      lost: 0,
-      drawn: 0,
-      percentile: 0,
-      leaderboardPlace: 0,
-      seasonOrdinal: 0
-    },
-    limited: {
-      rank: "",
-      tier: 0,
-      step: 0,
-      won: 0,
-      lost: 0,
-      drawn: 0,
-      percentile: 0,
-      leaderboardPlace: 0,
-      seasonOrdinal: 0
-    }
-  },
-  deck_changes: {},
-  deck_changes_index: [],
-  courses_index: [],
-  matches_index: [],
-  draft_index: [],
-  decks: {},
-  decks_tags: {},
-  decks_last_used: [],
-  static_decks: [],
-  static_events: [],
-  tags_colors: {}
+        autosize: true,
+        show: false,
+      },
+    ],
+  } as SettingsData,
 };
 
 export default defaultConfig;

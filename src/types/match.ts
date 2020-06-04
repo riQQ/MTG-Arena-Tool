@@ -103,11 +103,12 @@ export interface InternalPlayer {
 
 export interface InternalMatch {
   draws: number;
+  arenaId: string;
   playerDeck: InternalDeck;
   oppDeck: InternalDeck;
   tags: any;
   date: string;
-  lastPushedDate?: string;
+  lastPushedDate: string;
   onThePlay: number;
   eventId: string;
   bestOf: number;

@@ -3,7 +3,7 @@
 import Deck from "../deck";
 import { v2cardsList } from "../../types/Deck";
 import db from "../database";
-import { compare_cards } from "../util";
+import { compareCards } from "../utils/compareCards";
 
 describe("deck", () => {
   describe("constructor", () => {
@@ -18,39 +18,39 @@ describe("deck", () => {
           mainDeck: [
             {
               id: 66091,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66089,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66091,
-              quantity: 2
+              quantity: 2,
             },
             {
               id: 67224,
-              quantity: 1
-            }
+              quantity: 1,
+            },
           ],
           sideboard: [
             {
               id: 66091,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66089,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 67224,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66091,
-              quantity: 2
-            }
-          ]
+              quantity: 2,
+            },
+          ],
         }),
         new Deck(
           {},
@@ -63,120 +63,121 @@ describe("deck", () => {
           mainDeck: [
             {
               id: 66091,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66089,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 67224,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66091,
-              quantity: 2
-            }
+              quantity: 2,
+            },
           ],
           sideboard: [
             {
               id: 66091,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66089,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66091,
-              quantity: 2
+              quantity: 2,
             },
             {
               id: 67224,
-              quantity: 1
-            }
+              quantity: 1,
+            },
           ],
           arenaMain: [
             {
               id: 66091,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66089,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66091,
-              quantity: 2
+              quantity: 2,
             },
             {
               id: 67224,
-              quantity: 1
-            }
+              quantity: 1,
+            },
           ],
           arenaSide: [
             {
               id: 66091,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66089,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 67224,
-              quantity: 1
+              quantity: 1,
             },
             {
               id: 66091,
-              quantity: 2
-            }
-          ]
-        })
+              quantity: 2,
+            },
+          ],
+        }),
       ];
-      decks.forEach(deck => {
+      decks.forEach((deck) => {
         const saved = deck.getSave(true);
         expect(saved.arenaMain).toEqual([
           {
             id: 66091,
-            quantity: 1
+            quantity: 1,
           },
           {
             id: 66089,
-            quantity: 1
+            quantity: 1,
           },
           {
             id: 66091,
-            quantity: 2
+            quantity: 2,
           },
           {
             id: 67224,
-            quantity: 1
-          }
+            quantity: 1,
+          },
         ]);
         expect(saved.arenaSide).toEqual([
           {
             id: 66091,
-            quantity: 1
+            quantity: 1,
           },
           {
             id: 66089,
-            quantity: 1
+            quantity: 1,
           },
           {
             id: 67224,
-            quantity: 1
+            quantity: 1,
           },
           {
             id: 66091,
-            quantity: 2
-          }
+            quantity: 2,
+          },
         ]);
       });
     });
 
     describe("original order", () => {
       function savedOrder(mainboard: number[]): Readonly<v2cardsList> {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return new Deck({}, mainboard).getSave(true).arenaMain!;
       }
 
@@ -184,8 +185,8 @@ describe("deck", () => {
         expect(savedOrder([66091, 66091, 66091])).toEqual([
           {
             id: 66091,
-            quantity: 3
-          }
+            quantity: 3,
+          },
         ]);
       });
 
@@ -193,16 +194,16 @@ describe("deck", () => {
         expect(savedOrder([66091, 66089, 66091])).toEqual([
           {
             id: 66091,
-            quantity: 1
+            quantity: 1,
           },
           {
             id: 66089,
-            quantity: 1
+            quantity: 1,
           },
           {
             id: 66091,
-            quantity: 1
-          }
+            quantity: 1,
+          },
         ]);
       });
 
@@ -212,12 +213,12 @@ describe("deck", () => {
         expect(savedOrder([66091, 67224])).toEqual([
           {
             id: 66091,
-            quantity: 1
+            quantity: 1,
           },
           {
             id: 67224,
-            quantity: 1
-          }
+            quantity: 1,
+          },
         ]);
       });
     });
@@ -228,36 +229,36 @@ describe("deck", () => {
       // Any meaningful sort order will take the non-adjacent duplicates and put
       // them together, guaranteeing a change.
       const deck = new Deck({}, [66091, 66089, 66091], [66089, 66091, 66089]);
-      deck.sortMainboard(compare_cards);
-      deck.sortSideboard(compare_cards);
+      deck.sortMainboard(compareCards);
+      deck.sortSideboard(compareCards);
       const saved = deck.getSave(true);
       expect(saved.arenaMain).toEqual([
         {
           id: 66091,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66089,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66091,
-          quantity: 1
-        }
+          quantity: 1,
+        },
       ]);
       expect(saved.arenaSide).toEqual([
         {
           id: 66089,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66091,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66089,
-          quantity: 1
-        }
+          quantity: 1,
+        },
       ]);
     });
   });
@@ -271,44 +272,44 @@ describe("deck", () => {
         [66091, 66089, 66091, 66091, 67224],
         [66091, 66089, 67224, 66091, 66091]
       );
-      deck.sortMainboard(compare_cards);
-      deck.sortSideboard(compare_cards);
+      deck.sortMainboard(compareCards);
+      deck.sortSideboard(compareCards);
       const saved = deck.clone().getSave(true);
       expect(saved.arenaMain).toEqual([
         {
           id: 66091,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66089,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66091,
-          quantity: 2
+          quantity: 2,
         },
         {
           id: 67224,
-          quantity: 1
-        }
+          quantity: 1,
+        },
       ]);
       expect(saved.arenaSide).toEqual([
         {
           id: 66091,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66089,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 67224,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66091,
-          quantity: 2
-        }
+          quantity: 2,
+        },
       ]);
     });
   });
@@ -324,38 +325,38 @@ describe("deck", () => {
       expect(save).toHaveProperty("arenaMain", [
         {
           id: 66091,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66089,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66091,
-          quantity: 2
+          quantity: 2,
         },
         {
           id: 67224,
-          quantity: 1
-        }
+          quantity: 1,
+        },
       ]);
       expect(save).toHaveProperty("arenaSide", [
         {
           id: 66091,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66089,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 67224,
-          quantity: 1
+          quantity: 1,
         },
         {
           id: 66091,
-          quantity: 2
-        }
+          quantity: 2,
+        },
       ]);
     });
 
@@ -372,9 +373,10 @@ describe("deck", () => {
 
     it("returns a copy", () => {
       const deck = new Deck({}, [66091]);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       deck.getSave(true).arenaMain![0].quantity++;
       expect(deck.getSave(true).arenaMain).toEqual([
-        { id: 66091, quantity: 1 }
+        { id: 66091, quantity: 1 },
       ]);
     });
   });
@@ -393,7 +395,7 @@ describe("deck", () => {
         70262,
         68570,
         70262,
-        70390
+        70390,
       ];
       const mainB = [
         73132,
@@ -406,7 +408,7 @@ describe("deck", () => {
         70262,
         70640,
         73132,
-        70390
+        70390,
       ];
       const side = [68576, 70267, 70267, 68576, 68576];
       const hashTestA = new Deck({}, mainA, side);

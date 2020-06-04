@@ -1,5 +1,5 @@
 import React from "react";
-import CardTile from "../shared/CardTile";
+import CardTile, { LandsTile, CardTileQuantity } from "../shared/CardTile";
 import Colors from "../shared/colors";
 import {
   DRAFT_RANKS,
@@ -8,45 +8,23 @@ import {
   OVERLAY_FULL,
   OVERLAY_LEFT,
   OVERLAY_MIXED,
-  OVERLAY_ODDS
+  OVERLAY_ODDS,
+  LANDS_HACK,
 } from "../shared/constants";
 import db from "../shared/database";
 import Deck from "../shared/deck";
-import DeckManaCurve from "../shared/DeckManaCurve";
-import DeckTypesStats from "../shared/DeckTypesStats";
+import DeckManaCurve from "../shared/ManaCurve";
+import DeckTypesStats from "../shared/TypesStats";
 import OwnershipStars from "../shared/OwnershipStars";
-import {
-  compare_cards as compareCards,
-  get_card_type_sort as getCardTypeSort,
-  objectClone
-} from "../shared/util";
+import { compareCards } from "../shared/utils/compareCards";
 import { Chances } from "../types/Chances";
 import { CardObject } from "../types/Deck";
 import { OverlaySettingsData } from "../types/settings";
 import SampleSizePanel from "./SampleSizePanel";
+import { getCardTypeSort } from "../shared/utils/getCardTypeSort";
 
-const landsCard = {
-  id: 100,
-  name: "Lands",
-  set: "",
-  artid: 0,
-  type: "Special",
-  cost: [],
-  cmc: 0,
-  rarity: "",
-  cid: 0,
-  frame: [1, 2, 3, 4, 5],
-  artist: "",
-  dfc: "None",
-  collectible: false,
-  craftable: false,
-  images: {
-    art_crop: "../images/type_land.png"
-  },
-  dfcId: 0
-};
-
-function getRank(cardId: string): number {
+import css from "./index.css";
+function getRank(cardId: number): number {
   const cardObj = db.card(cardId);
   return cardObj?.rank || 0;
 }
@@ -97,9 +75,8 @@ function compareDraftPicks(a: CardObject, b: CardObject): -1 | 0 | 1 {
 export interface DeckListProps {
   deck: Deck;
   subTitle: string;
-  highlightCardId?: string;
+  highlightCardId?: number;
   settings: OverlaySettingsData;
-  tileStyle: number;
   cardOdds?: Chances;
   setOddsCallback?: (sampleSize: number) => void;
 }
@@ -109,13 +86,11 @@ export default function DeckList(props: DeckListProps): JSX.Element {
     deck,
     subTitle,
     settings,
-    tileStyle,
     highlightCardId,
     cardOdds,
-    setOddsCallback
+    setOddsCallback,
   } = props;
   if (!deck) return <></>;
-
   const deckClone = deck.clone();
 
   let sortFunc = compareCards;
@@ -134,94 +109,108 @@ export default function DeckList(props: DeckListProps): JSX.Element {
     [OVERLAY_FULL, OVERLAY_LEFT, OVERLAY_ODDS, OVERLAY_MIXED].includes(
       settings.mode
     );
-  if (shouldDoGroupLandsHack) {
-    let landsNumber = 0;
-    let landsChance = 0;
-    const landsColors = new Colors();
-    mainCards.get().forEach((card: CardObject) => {
-      const cardObj = db.card(card.id);
-      if (cardObj && cardObj.type.includes("Land", 0)) {
-        landsNumber += card.quantity;
-        landsChance += card.chance !== undefined ? card.chance : 0;
-        if (cardObj.frame) {
-          landsColors.addFromArray(cardObj.frame);
-        }
+
+  let landsNumber = 0;
+  let landsChance = 0;
+  const landsColors = new Colors();
+  mainCards.get().forEach((card: CardObject) => {
+    const cardObj = db.card(card.id);
+    if (cardObj && cardObj.type.includes("Land", 0)) {
+      landsNumber += card.quantity;
+      landsChance += card.chance !== undefined ? card.chance : 0;
+      if (cardObj.frame) {
+        landsColors.addFromArray(cardObj.frame);
       }
+    }
+  });
+  const landsFrame = landsColors.get();
+
+  let landsQuantity: CardTileQuantity = landsNumber;
+  if (settings.mode === OVERLAY_MIXED) {
+    landsQuantity = {
+      quantity: landsNumber,
+      odds: landsChance + "%",
+    };
+  } else if (settings.mode === OVERLAY_ODDS) {
+    landsQuantity = ((landsChance || 0) / 100).toLocaleString([], {
+      style: "percent",
+      maximumSignificantDigits: 2,
     });
-    const groupedLandsCard = objectClone(landsCard);
-    groupedLandsCard.quantity = landsNumber;
-    groupedLandsCard.chance = landsChance;
-    groupedLandsCard.frame = landsColors.get();
-    mainCards.add(groupedLandsCard, landsNumber, true);
+  }
+
+  if (shouldDoGroupLandsHack) {
+    mainCards.add(LANDS_HACK, 1, true);
   }
   mainCards.get().sort(sortFunc);
-  mainCards.get().forEach((card: any, index: number) => {
-    // TODO remove group lands hack
-    const isCardGroupedLands =
-      card && card.id && card.id.id && card.id.id === 100;
-    if (isCardGroupedLands) {
-      card = card.id;
-    }
-
-    let fullCard = card;
-    if (card?.id && !isCardGroupedLands) {
-      fullCard = db.card(card.id);
-    }
-
-    let quantity = card.quantity;
-    if (settings.mode === OVERLAY_MIXED) {
-      const odds = (card.chance !== undefined ? card.chance : "0") + "%";
-      const q = card.quantity;
-      if (!settings.lands || (settings.lands && odds !== "0%")) {
-        quantity = {
-          quantity: q,
-          odds: odds
-        };
-      }
-    } else if (settings.mode === OVERLAY_ODDS) {
-      quantity = ((card.chance || 0) / 100).toLocaleString([], {
-        style: "percent",
-        maximumSignificantDigits: 2
-      });
-    } else if (settings.mode === OVERLAY_DRAFT) {
-      const rank = getRank(card.id);
-      quantity =
-        fullCard.source == 0 ? DRAFT_RANKS[rank] : DRAFT_RANKS_LOLA[rank];
-    }
-
-    if (settings.mode === OVERLAY_DRAFT) {
+  mainCards.get().forEach((card: CardObject, index: number) => {
+    if (card.id === LANDS_HACK) {
       mainCardTiles.push(
-        <div
-          className="overlay_card_quantity"
-          key={"maincardtile_owned_" + index + "_" + card.id}
-        >
-          <OwnershipStars card={fullCard} />
-        </div>
+        <LandsTile
+          key={"maincardtile_" + index + "_lands"}
+          quantity={landsQuantity}
+          frame={landsFrame}
+        />
       );
-    } else if (
-      shouldDoGroupLandsHack &&
-      fullCard &&
-      fullCard.type &&
-      fullCard.type.includes("Land", 0)
-    ) {
-      // skip land cards while doing group lands hack
-      return;
-    }
+    } else {
+      let quantity: CardTileQuantity = card.quantity;
+      const fullCard = db.card(card.id);
 
-    const dfcCard = card?.dfcId ? db.card(card.dfcId) : undefined;
-    mainCardTiles.push(
-      <CardTile
-        card={fullCard}
-        dfcCard={dfcCard}
-        key={"maincardtile_" + card.id}
-        indent="a"
-        isSideboard={false}
-        quantity={quantity}
-        showWildcards={false}
-        deck={deck}
-        isHighlighted={card.id === highlightCardId}
-      />
-    );
+      if (fullCard) {
+        if (settings.mode === OVERLAY_MIXED) {
+          const odds = (card.chance !== undefined ? card.chance : "0") + "%";
+          const q = card.quantity;
+          if (!settings.lands || (settings.lands && odds !== "0%")) {
+            quantity = {
+              quantity: q,
+              odds: odds,
+            };
+          }
+        } else if (settings.mode === OVERLAY_ODDS) {
+          quantity = ((card.chance || 0) / 100).toLocaleString([], {
+            style: "percent",
+            maximumSignificantDigits: 2,
+          });
+        } else if (settings.mode === OVERLAY_DRAFT) {
+          const rank = getRank(card.id);
+          quantity =
+            fullCard.source == 0 ? DRAFT_RANKS[rank] : DRAFT_RANKS_LOLA[rank];
+        }
+
+        if (settings.mode === OVERLAY_DRAFT) {
+          mainCardTiles.push(
+            <div
+              className={css.overlayCardQuantity}
+              key={"maincardtile_owned_" + index + "_" + card.id}
+            >
+              <OwnershipStars card={fullCard} />
+            </div>
+          );
+        } else if (
+          shouldDoGroupLandsHack &&
+          fullCard &&
+          fullCard.type &&
+          fullCard.type.includes("Land", 0)
+        ) {
+          // skip land cards while doing group lands hack
+          return;
+        }
+
+        const dfcCard = card?.dfcId ? db.card(card.dfcId) : undefined;
+        mainCardTiles.push(
+          <CardTile
+            card={fullCard}
+            dfcCard={dfcCard}
+            key={"maincardtile_" + card.id}
+            indent="a"
+            isSideboard={false}
+            quantity={quantity}
+            showWildcards={false}
+            deck={deck}
+            isHighlighted={card.id === highlightCardId}
+          />
+        );
+      }
+    }
   });
 
   const sideboardCardTiles: JSX.Element[] = [];
@@ -237,7 +226,7 @@ export default function DeckList(props: DeckListProps): JSX.Element {
             ? "0%"
             : {
                 quantity: card.quantity,
-                odds: "0%"
+                odds: "0%",
               }
           : card.quantity;
       let fullCard = card;
@@ -265,11 +254,13 @@ export default function DeckList(props: DeckListProps): JSX.Element {
   }
 
   return (
-    <div className="overlay_decklist click-on">
-      <div className="decklist_title">{subTitle}</div>
+    <div className={`${css.overlayDecklist} ${css.clickOn}`}>
+      <div className={css.decklistTitle}>{subTitle}</div>
       {!!settings.deck && mainCardTiles}
       {!!settings.sideboard && sideboardCardTiles.length && (
-        <div className="decklist_title">Sideboard ({sideboardCards} cards)</div>
+        <div className={css.decklistTitle}>
+          Sideboard ({sideboardCards} cards)
+        </div>
       )}
       {!!settings.sideboard && sideboardCardTiles}
       {!!settings.type_counts && <DeckTypesStats deck={deck} />}

@@ -8,7 +8,7 @@ export interface AetherizedCard {
 export interface InventoryDelta {
   gemsDelta: number;
   goldDelta: number;
-  boosterDelta: { count: number }[];
+  boosterDelta: { collationId: number; count: number }[];
   cardsAdded: number[];
   decksAdded: [];
   starterDecksAdded: [];
@@ -30,7 +30,7 @@ interface InventoryUpdateBase {
   aetherizedCards: AetherizedCard[];
   xpGained: number;
   trackName: string;
-  trackTier: number;
+  trackTier: string;
   trackDiff: {
     currentLevel: number;
     oldLevel: number;
@@ -53,6 +53,7 @@ export interface InventoryUpdate extends InventoryUpdateBase {
 export interface InternalEconomyTransaction
   extends Partial<InventoryUpdateBase> {
   id: string;
+  arenaId: string;
   date: string;
   context: string;
   originalContext?: string;

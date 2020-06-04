@@ -3,15 +3,17 @@ import {
   CardObject,
   InternalDeck,
   isV2CardsList,
-  v2cardsList
+  v2cardsList,
 } from "../types/Deck";
 import { DbCardData } from "../types/Metadata";
 import CardsList from "./cardsList";
 import Colors from "./colors";
 import { DEFAULT_TILE } from "./constants";
 import db from "./database";
-import { compare_cards, get_set_code, objectClone } from "./util";
+import { compareCards } from "./utils/compareCards";
 import sha1 from "js-sha1";
+import getSetCode from "./utils/getSetCode";
+import { objectClone } from "./utils/objectClone";
 
 class Deck {
   private mainboard: CardsList;
@@ -71,7 +73,7 @@ class Deck {
         list.map(({ id, quantity }: CardObject) =>
           Object.freeze({
             id,
-            quantity
+            quantity,
           })
         )
       );
@@ -183,7 +185,7 @@ class Deck {
       deckTileId: this.tile,
       tags: this.tags,
       custom: this.custom,
-      commandZoneGRPIds: this.commandZoneGRPIds
+      commandZoneGRPIds: this.commandZoneGRPIds,
     };
 
     return new Deck(
@@ -224,7 +226,7 @@ class Deck {
   getExportTxt(): string {
     let str = "";
     const mainList = this.mainboard.removeDuplicates(false);
-    mainList.forEach(function(card) {
+    mainList.forEach(function (card) {
       const grpid = card.id;
       const cardName = (db.card(grpid) as DbCardData).name;
 
@@ -234,7 +236,7 @@ class Deck {
     str += "\r\n";
 
     const sideList = this.sideboard.removeDuplicates(false);
-    sideList.forEach(function(card) {
+    sideList.forEach(function (card) {
       const grpid = card.id;
       const cardName = (db.card(grpid) as DbCardData).name;
 
@@ -250,7 +252,7 @@ class Deck {
   getExportArena(): string {
     let str = "";
     const listMain = this.mainboard.removeDuplicates(false);
-    listMain.forEach(function(card) {
+    listMain.forEach(function (card) {
       let grpid = card.id;
       let cardObj = db.card(grpid) as DbCardData;
 
@@ -264,14 +266,14 @@ class Deck {
       const cardCn = cardObj.cid;
       const cardQ = card.measurable ? card.quantity : 1;
 
-      const setCode = db.sets[cardSet].arenacode ?? get_set_code(cardSet);
+      const setCode = db.sets[cardSet].arenacode ?? getSetCode(cardSet);
       str += `${cardQ} ${cardName} (${setCode}) ${cardCn}\r\n`;
     });
 
     str += "\r\n";
 
     const listSide = this.sideboard.removeDuplicates(false);
-    listSide.forEach(function(card) {
+    listSide.forEach(function (card) {
       let grpid = card.id;
       let cardObj = db.card(grpid) as DbCardData;
 
@@ -285,7 +287,7 @@ class Deck {
       const cardCn = cardObj.cid;
       const cardQ = card.measurable ? card.quantity : 1;
 
-      const setCode = db.sets[cardSet].arenacode || get_set_code(cardSet);
+      const setCode = db.sets[cardSet].arenacode || getSetCode(cardSet);
       str += `${cardQ} ${cardName} (${setCode}) ${cardCn}\r\n`;
     });
 
@@ -308,7 +310,7 @@ class Deck {
       sideboard: this.sideboard.get(),
       ...(includeAsLogged && {
         arenaMain: this.arenaMain,
-        arenaSide: this.arenaSide
+        arenaSide: this.arenaSide,
       }),
       name: this.name,
       id: this.id,
@@ -321,7 +323,7 @@ class Deck {
       companionGRPId: this.companionGRPId || undefined,
       format: this.format,
       type: "InternalDeck",
-      description: this.description
+      description: this.description,
     };
   }
 
@@ -330,16 +332,16 @@ class Deck {
    * @param checkSide whether or not to use the sideboard (default: true)
    */
   getUniqueString(checkSide = true): string {
-    this.sortMainboard(compare_cards);
-    this.sortSideboard(compare_cards);
+    this.sortMainboard(compareCards);
+    this.sortSideboard(compareCards);
 
     let str = "";
-    this.mainboard.get().forEach(card => {
+    this.mainboard.get().forEach((card) => {
       str += card.id + "," + card.quantity + ",";
     });
 
     if (checkSide) {
-      this.sideboard.get().forEach(card => {
+      this.sideboard.get().forEach((card) => {
         str += card.id + "," + card.quantity + ",";
       });
     }

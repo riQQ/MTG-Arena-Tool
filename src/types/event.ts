@@ -29,7 +29,8 @@ export interface InternalEvent {
   archived?: boolean;
   CurrentEventState: string | number;
   custom: boolean;
-  date: number;
+  date: string;
+  arenaId: string;
   InternalEventName: string;
   ModuleInstanceData: ModuleInstanceData;
   type: "Event";
@@ -124,7 +125,7 @@ export enum Rank {
   Gold,
   Platinum,
   Diamond,
-  Mythic
+  Mythic,
 }
 
 export interface SeasonAndRankDetail {

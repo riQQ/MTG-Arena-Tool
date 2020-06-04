@@ -1,20 +1,20 @@
-# See https://eslint.org/docs/user-guide/configuring#eslintignore for more about ignoring files.
-
 # dependencies
-src/window_background/messages_pb.js
+src/background/messages_pb.js
 
 # assets
-src/images/*
-src/sounds/*
-src/fonts/*
+/assets
 
 # development
 /lib
-/.pnp
-.pnp.js
-
-# testing
-/coverage
+webpack.common.js
+webpack.dev.background.js
+webpack.dev.js
+webpack.dev.main.js
+webpack.dev.overlay.js
+webpack.dev.renderer.js
+webpack.dev.updater.js
+webpack.post.js
+webpack.prod.js
 
 # production
 /build

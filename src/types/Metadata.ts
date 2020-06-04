@@ -3,7 +3,7 @@ import { CARD_RARITIES } from "../shared/constants";
 export interface Metadata {
   cards: { [id: number]: DbCardData };
   ok: boolean;
-  version: number;
+  version: string;
   language: string;
   updated: number;
   events: { [id: string]: string };
@@ -32,15 +32,16 @@ export interface DbCardData {
   collectible: boolean;
   craftable: boolean;
   booster: boolean;
-  dfcId?: number;
+  dfcId?: boolean | number;
   rank: number;
-  rank_values: number[] | string[];
-  rank_controversy: string;
+  rank_values: string[] | number[] | number;
+  rank_controversy?: number[] | number;
   images: ImageLinks;
   reprints: boolean | number[];
-  source: number;
+  isPrimary: boolean;
   side?: boolean;
   ceil?: number | null;
+  source?: number;
 }
 
 export type Rarity = typeof CARD_RARITIES[number];
@@ -50,7 +51,7 @@ interface ImageLinks {
 }
 
 export interface CardSet {
-  collation: number;
+  collation: number | boolean;
   scryfall: string;
   code: string;
   arenacode: string;
@@ -66,8 +67,8 @@ export interface Archetype {
 }
 
 interface ArchetypeAverage {
-  mainDeck: { [id: string]: number };
-  sideboard: { [id: string]: string };
+  mainDeck: any; // Record<string, number>
+  sideboard: any; // Record<string, number>
 }
 
 export interface RewardsDate {

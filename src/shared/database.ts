@@ -9,12 +9,13 @@ import {
   Archetype,
   DbCardData,
   CardSet,
-  RewardsDate
+  RewardsDate,
 } from "../types/Metadata";
-import { ArenaV3Deck } from "../types/Deck";
 import { SeasonAndRankDetail, Rank, RankInfo } from "../types/event";
 import { STANDARD_CUTOFF_DATE } from "./constants";
 import format from "date-fns/format";
+
+import defaultDatabase from "../assets/resources/database.json";
 
 const cachePath: string | null =
   app || (remote && remote.app)
@@ -45,8 +46,7 @@ class Database {
   private static instance: Database;
   rewards_daily_ends: Date;
   rewards_weekly_ends: Date;
-  preconDecks: { [id: string]: ArenaV3Deck };
-  public metadata: Metadata | undefined;
+  public metadata: Metadata;
   season: SeasonAndRankDetail | undefined;
   public scryfallData: any;
 
@@ -54,24 +54,24 @@ class Database {
     this.handleSetDb = this.handleSetDb.bind(this);
     this.handleSetRewardResets = this.handleSetRewardResets.bind(this);
     this.handleSetSeason = this.handleSetSeason.bind(this);
-    this.handleSetPreconDecks = this.handleSetPreconDecks.bind(this);
 
     if (ipc) {
       ipc.on("set_db", this.handleSetDb);
       ipc.on("set_reward_resets", this.handleSetRewardResets);
       ipc.on("set_season", this.handleSetSeason);
-      ipc.on("set_precon_decks", this.handleSetPreconDecks);
     }
 
     this.rewards_daily_ends = new Date();
     this.rewards_weekly_ends = new Date();
-    this.preconDecks = {};
 
-    let dbUri = `${__dirname}/../resources/database.json`;
+    // tsc fails if not asserting
+    this.metadata = defaultDatabase as Metadata;
+
     if (cachePath && fs.existsSync(cachePath)) {
-      dbUri = cachePath;
+      const dbString = fs.readFileSync(cachePath, "utf8");
+      this.handleSetDb(null, dbString);
     }
-    const defaultDb = fs.readFileSync(dbUri, "utf8");
+
     /*
     try {
       const data = fs.readFileSync(scryfallDataPath, "utf8");
@@ -79,9 +79,7 @@ class Database {
     } catch (e) {
       console.log("Error parsing scryfall data", e);
     }
-*/
-
-    this.handleSetDb(null, defaultDb);
+    */
   }
 
   static getInstance(): Database {
@@ -135,20 +133,6 @@ class Database {
     }
   }
 
-  handleSetPreconDecks(
-    _event: IpcRendererEvent | null,
-    arg: ArenaV3Deck[]
-  ): void {
-    if (!arg || !arg.length) return;
-    try {
-      this.preconDecks = {};
-      arg.forEach(deck => (this.preconDecks[deck.id] = deck));
-      // console.log(this.preconDecks);
-    } catch (e) {
-      console.log("Error parsing JSON:", arg);
-    }
-  }
-
   get abilities(): { [id: number]: string } {
     return this.metadata ? this.metadata.abilities : {};
   }
@@ -163,7 +147,7 @@ class Database {
 
   get cardIds(): number[] {
     return this.cards
-      ? Object.keys(this.cards).map(k => parseInt(k))
+      ? Object.keys(this.cards).map((k) => parseInt(k))
       : ([] as number[]);
   }
 
@@ -253,7 +237,7 @@ class Database {
 
   get standardSetCodes(): string[] {
     return this.sortedSetCodes.filter(
-      code =>
+      (code) =>
         this.sets[code].collation !== -1 &&
         new Date(this.sets[code].release) > new Date(STANDARD_CUTOFF_DATE)
     );
@@ -312,7 +296,7 @@ class Database {
       if (!this.season.constructedRankInfo) return 0;
       rankInfo = this.season.constructedRankInfo;
     }
-    rankInfo.forEach(ri => {
+    rankInfo.forEach((ri) => {
       if (ri.rankClass === rank && ri.level === tier) {
         return ri.steps;
       }
@@ -322,7 +306,7 @@ class Database {
 
   cardFromArt(artId: number | string): DbCardData | boolean {
     const numArtId = typeof artId === "number" ? artId : parseInt(artId);
-    const matches = this.cardList.filter(card => card.artid === numArtId);
+    const matches = this.cardList.filter((card) => card.artid === numArtId);
     return matches.length ? matches[0] : false;
   }
 }

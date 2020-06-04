@@ -1,25 +1,28 @@
 import { ipcRenderer as ipc, webFrame } from "electron";
-import { Howl, Howler } from "howler";
 import React, { useCallback, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import striptags from "striptags";
+import { Howl, Howler } from "howler";
+import { useSelector, useDispatch } from "react-redux";
+import { reduxAction } from "../shared/redux/sharedRedux";
 import {
   ARENA_MODE_IDLE,
   IPC_BACKGROUND,
   IPC_RENDERER,
   IPC_OVERLAY,
   IPC_MAIN,
-  IPC_ALL
+  IPC_ALL,
 } from "../shared/constants";
 import Deck from "../shared/deck";
-import store, { AppState } from "../shared-redux/stores/overlayStore";
+import { AppState } from "../shared/redux/stores/overlayStore";
 import { MatchData } from "../types/currentMatch";
 import { DraftData } from "../types/draft";
 import { OverlaySettingsData } from "../types/settings";
 import CardDetailsWindowlet from "./CardDetailsWindowlet";
 import OverlayWindowlet from "./OverlayWindowlet";
-import { reduxAction } from "../shared-redux/sharedRedux";
-const sound = new Howl({ src: ["../sounds/blip.mp3"] });
+import Overview from "./overview";
+import css from "./index.css";
+
+import blipSound from "../assets/sounds/blip.mp3";
+const sound = new Howl({ src: [blipSound] });
 
 const byId = (id: string): HTMLElement | null => document.getElementById(id);
 
@@ -61,13 +64,18 @@ export default function OverlayController(): JSX.Element {
   const [turnPriority, setTurnPriority] = useState(1);
   const settings = useSelector((state: AppState) => state.settings);
   const [lastBeep, setLastBeep] = useState(Date.now());
+  const [matchEnd, setMatchEnd] = useState<any | null>(null);
+  const isOverviewOpen = useSelector(
+    (state: AppState) => state.overlay.isOverviewOpen
+  );
+  const dispatcher = useDispatch();
 
   const {
     overlay_scale: overlayScale,
     overlayHover,
     overlays,
     sound_priority: soundPriority,
-    sound_priority_volume: soundPriorityVolume
+    sound_priority_volume: soundPriorityVolume,
   } = settings;
 
   useEffect(() => {
@@ -94,7 +102,7 @@ export default function OverlayController(): JSX.Element {
   );
 
   // Note: no useCallback because of dependency on deep overlays state
-  const handleSetEditMode = (event: unknown, _editMode: boolean): void => {
+  const handleSetEditMode = (_event: unknown, _editMode: boolean): void => {
     // Save current windowlet dimensions before we leave edit mode
     if (editMode && !_editMode) {
       // Compute current dimensions of overlay windowlets in DOM
@@ -110,37 +118,39 @@ export default function OverlayController(): JSX.Element {
               width: forceInt(overlayDiv.style.width),
               height: forceInt(overlayDiv.style.height),
               x: forceInt(overlayDiv.style.left),
-              y: forceInt(overlayDiv.style.top)
+              y: forceInt(overlayDiv.style.top),
             };
           }
           return { ...overlay, bounds };
         }
       );
       // Compute current dimensions of hover card windowlet in DOM
-      const hoverDiv = byId("overlay_hover");
+      const hoverDiv = byId(css.overlayHover);
       const newOverlayHover =
         (hoverDiv && {
           x: forceInt(hoverDiv.style.left),
-          y: forceInt(hoverDiv.style.top)
+          y: forceInt(hoverDiv.style.top),
         }) ||
         overlayHover;
 
       reduxAction(
-        store.dispatch,
-        "SET_SETTINGS",
-        { overlays: newOverlays, overlayHover: newOverlayHover },
+        dispatcher,
+        {
+          type: "SET_SETTINGS",
+          arg: { overlays: newOverlays, overlayHover: newOverlayHover },
+        },
         IPC_ALL ^ IPC_OVERLAY
       );
     }
     setEditMode(_editMode);
   };
 
-  const handleActionLog = useCallback((event: unknown, arg: string): void => {
+  const handleActionLog = useCallback((_event: unknown, arg: string): void => {
     setActionLog(arg);
   }, []);
 
   const handleSetArenaState = useCallback(
-    (event: unknown, arenaState: number): void => {
+    (_event: unknown, arenaState: number): void => {
       setArenaState(arenaState);
     },
     []
@@ -148,7 +158,7 @@ export default function OverlayController(): JSX.Element {
 
   // Note: no useCallback because of dependency on deep overlays state
   const handleClose = (
-    event: unknown,
+    _event: unknown,
     arg: { action: boolean | -1; index: number }
   ): void => {
     const { action, index } = arg;
@@ -157,26 +167,25 @@ export default function OverlayController(): JSX.Element {
     const newOverlays = [...overlays];
     newOverlays[index] = {
       ...overlays[index], // old overlay
-      show // new setting
+      show, // new setting
     };
 
     reduxAction(
-      store.dispatch,
-      "SET_SETTINGS",
-      { overlays: newOverlays },
+      dispatcher,
+      { type: "SET_SETTINGS", arg: { overlays: newOverlays } },
       IPC_ALL ^ IPC_OVERLAY
     );
   };
 
   const handleSetDraftCards = useCallback(
-    (event: unknown, draft: DraftData): void => {
+    (_event: unknown, draft: DraftData): void => {
       setDraft(draft);
       setDraftState({ packN: draft.packNumber, pickN: draft.pickNumber });
     },
     []
   );
 
-  const handleSetMatch = useCallback((event: unknown, arg: string): void => {
+  const handleSetMatch = useCallback((_event: unknown, arg: string): void => {
     const newMatch = JSON.parse(arg);
     newMatch.oppCards = new Deck(newMatch.oppCards);
     newMatch.playerCardsLeft = new Deck(newMatch.playerCardsLeft);
@@ -187,7 +196,7 @@ export default function OverlayController(): JSX.Element {
 
   const handleSetTurn = useCallback(
     (
-      event: unknown,
+      _event: unknown,
       arg: { playerSeat: number; turnPriority: number }
     ): void => {
       const { playerSeat, turnPriority: priority } = arg;
@@ -199,6 +208,27 @@ export default function OverlayController(): JSX.Element {
     [handleBeep, soundPriority, turnPriority]
   );
 
+  const handleMatchEnd = useCallback(
+    (_event: unknown, arg: string) => {
+      const matchData = JSON.parse(arg);
+      setMatchEnd(matchData);
+      reduxAction(
+        dispatcher,
+        { type: "SET_OVERVIEW_OPEN", arg: true },
+        IPC_MAIN
+      );
+    },
+    [dispatcher]
+  );
+
+  const clearMatchEnd = useCallback(() => {
+    reduxAction(
+      dispatcher,
+      { type: "SET_OVERVIEW_OPEN", arg: false },
+      IPC_MAIN
+    );
+  }, [dispatcher]);
+
   // register all IPC listeners
   useEffect(() => {
     ipc.on("action_log", handleActionLog);
@@ -208,6 +238,7 @@ export default function OverlayController(): JSX.Element {
     ipc.on("set_draft_cards", handleSetDraftCards);
     ipc.on("set_match", handleSetMatch);
     ipc.on("set_turn", handleSetTurn);
+    ipc.on("match_end", handleMatchEnd);
 
     return (): void => {
       // unregister all IPC listeners
@@ -218,6 +249,7 @@ export default function OverlayController(): JSX.Element {
       ipc.removeListener("set_draft_cards", handleSetDraftCards);
       ipc.removeListener("set_match", handleSetMatch);
       ipc.removeListener("set_turn", handleSetTurn);
+      ipc.removeListener("match_end", handleMatchEnd);
     };
   });
 
@@ -232,7 +264,7 @@ export default function OverlayController(): JSX.Element {
     settings,
     setDraftStateCallback: setDraftState,
     setOddsCallback,
-    turnPriority
+    turnPriority,
   };
 
   const cardDetailsProps = {
@@ -242,13 +274,13 @@ export default function OverlayController(): JSX.Element {
     odds: match ? match.playerCardsOdds : undefined,
     overlayHover,
     overlayScale,
-    settings
+    settings,
   };
 
   return (
-    <div className="overlay_master_wrapper">
+    <div className={css.overlayMasterWrapper}>
       {!!overlays &&
-        overlays.map((overlaySettings: OverlaySettingsData, index: number) => {
+        overlays.map((_overlaySettings: OverlaySettingsData, index: number) => {
           const overlayProps = {
             handleClickSettings: (): void => {
               ipcSend("renderer_show");
@@ -262,7 +294,7 @@ export default function OverlayController(): JSX.Element {
               handleClose(null, { action: -1, index });
             },
             index,
-            ...commonProps
+            ...commonProps,
           };
           return (
             <OverlayWindowlet
@@ -271,6 +303,11 @@ export default function OverlayController(): JSX.Element {
             />
           );
         })}
+      {isOverviewOpen && matchEnd ? (
+        <Overview closeCallback={clearMatchEnd} matchData={matchEnd} />
+      ) : (
+        <></>
+      )}
       <CardDetailsWindowlet {...cardDetailsProps} />
     </div>
   );

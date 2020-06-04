@@ -27,7 +27,7 @@ body {
     width: 24px;
     height: 24px;
     background-size: contain;
-    background-image: url("../../icons/icon.png");
+    background-image: url(../assets/icons/icon.png);
     opacity: 0.8;
     -webkit-transition: all 0.25s ease-in-out;
 }
@@ -48,20 +48,6 @@ body {
     background-color: rgba(0, 0, 0, 0);
     -webkit-transition: all 0.2s ease-in;
 }
-
-/*
-.overlay_container:after {
-    background: url(../images/background_overlay.png);
-    content: ' ';
-    top: 0;
-    left: 0;
-    width: calc(100% - 0px);
-    height: calc(100% - 0px);
-    position: absolute;
-    background-size: 100% 100%;
-    z-index: 1;
-}
-*/
 
 .editable {
     border: 2px var(--color-g) dashed !important;
@@ -114,7 +100,7 @@ body {
 .overlay_separator {
     padding: 4px;
     height: 16px;
-    background: url(../images/separator_spr.png) center no-repeat;
+    background: url(../assets/images/separator_spr.png) center no-repeat;
 }
 
 .hover_fade-enter {
@@ -138,6 +124,17 @@ body {
 }
 
 .main_hover {
+    pointer-events: none;
+    align-self: right;
+    width: 340px;
+    height: 473px;
+    opacity: 1;
+    display: block;
+    margin-right: 24px;
+    margin-bottom: 12px;
+    -webkit-border-radius: 4.75% / 3.5%;
+    box-shadow: 0px 15px 30px 0px rgba(0, 0, 0, 0.5);
+    -webkit-transition: all 0.2s ease-in;
     margin-bottom: 0px !important;
     margin-right: 0px !important;
 }
@@ -264,7 +261,7 @@ body {
 }
 
 .clock_elapsed {
-    justify-content: center;
+    justify-content: space-around;
     display: flex;
     margin-left: 32px;
     width: calc(100% - 64px);
@@ -313,7 +310,7 @@ body {
 .odds_prev {
     position: absolute;
     cursor: pointer;
-    background: url(../images/prev.png) no-repeat center;
+    background: url(../assets/images/prev.png) no-repeat center;
     z-index: 51;
     display: block;
     opacity: 0.5;
@@ -329,7 +326,7 @@ body {
 .odds_next {
     cursor: pointer;
     position: absolute;
-    background: url(../images/next.png) no-repeat center;
+    background: url(../assets/images/next.png) no-repeat center;
     z-index: 51;
     opacity: 0.5;
     align-self: flex-end;
@@ -382,28 +379,28 @@ body {
     width: 18px;
     height: 18px;
     display: inline-block;
-    background: center no-repeat url("../images/quantity_blue.png");
+    background: center no-repeat url(../assets/images/quantity_blue.png);
 }
 
 .inventory_card_quantity_green {
     width: 18px;
     height: 18px;
     display: inline-block;
-    background: center no-repeat url("../images/quantity_green.png");
+    background: center no-repeat url(../assets/images/quantity_green.png);
 }
 
 .inventory_card_quantity_gray {
     width: 18px;
     height: 18px;
     display: inline-block;
-    background: center no-repeat url("../images/quantity_gray.png");
+    background: center no-repeat url(../assets/images/quantity_gray.png);
 }
 
 .inventory_card_quantity_orange {
     width: 18px;
     height: 18px;
     display: inline-block;
-    background: center no-repeat url("../images/quantity_orange.png");
+    background: center no-repeat url(../assets/images/quantity_orange.png);
 }
 
 .lands_div {
@@ -428,74 +425,6 @@ body {
     overflow: hidden;
 }
 
-.mana_curve_container {
-    margin: 6px auto;
-    max-width: 630px;
-    padding-left: 12px;
-    padding-right: 12px;
-    width: calc(100% - 24px);
-}
-
-.mana_curve {
-    display: flex;
-    align-items: flex-end;
-    height: 96px;
-    margin: 0px 4px;
-    padding-bottom: 4px;
-    border-bottom: 2px solid rgba(250, 229, 210, 0.8);
-    width: 100%;
-}
-
-.mana_curve_column {
-    color: #fae5d2;
-    justify-content: space-around;
-    width: -webkit-fill-available;
-    flex-direction: column;
-    margin: 0px 4px;
-    display: flex;
-    flex-direction: column;
-    background-color: rgba(250, 229, 210, 0.8);
-}
-
-.mana_curve_number {
-    opacity: 1;
-    position: relative;
-    height: 0px;
-    top: calc(50% - 8px);
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    text-shadow: 3px 3px 3px #000000ad;
-    font-family: Beleren;
-}
-
-.mana_curve_numbers {
-    display: flex;
-    align-items: flex-end;
-    height: 24px;
-    width: 100%;
-}
-
-.mana_curve_costs {
-    display: flex;
-    align-items: flex-start;
-    width: 100%;
-
-}
-
-.mana_curve_column_number {
-    font-size: 12px;
-    line-height: 20px;
-    text-align: center;
-    color: #FAE5D2;
-    width: 100%;
-    font-family: "belerenbold";
-}
-
-.mana_curve_column span {
-  align-self: flex-end;
-}
-
 .types_container {
     margin: 6px auto;
     max-width: 630px;
@@ -506,50 +435,10 @@ body {
     justify-content: space-between;
 }
 
-.type_icon_cont {
-    display: flex;
-    flex-direction: column;
-}
-
 .type_icon {
     width: 32px;
     height: 32px;
     margin-bottom: 8px;
-}
-
-.type_art { background-image: url(../images/type_artifact.png); }
-.type_cre { background-image: url(../images/type_creature.png); }
-.type_enc { background-image: url(../images/type_enchantment.png); }
-.type_ins { background-image: url(../images/type_instant.png); }
-.type_lan { background-image: url(../images/type_land.png); }
-.type_pla { background-image: url(../images/type_planeswalker.png); }
-.type_sor { background-image: url(../images/type_sorcery.png); }
-
-.pie_container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 16px auto;
-    height: 160px;
-}
-
-.pie_container_outer {
-    width: 100%;
-    display: flex;
-    flex-direction: initial;
-    align-items: center;
-    margin: 16px auto;
-    height: 160px;
-}
-
-.pie_container span, .wildcards_cost span , .types_container span {
-    text-align: center;
-    display: block;
-    margin-bottom: 12px;
-    font-family:  var(--main-font-name);
-    font-size: 16px;
-    color: #FAE5D2;
 }
 
 .pie {
@@ -563,10 +452,9 @@ body {
     margin: auto auto auto 8px;
     border-radius: 50%;
     cursor: pointer;
-    -webkit-mask: url(../images/resize.svg);
 }
 
-.button.overlay_icon {
+.overlay_icon {
     width: 16px;
     height: 16px;
     background-repeat: no-repeat;
@@ -579,6 +467,7 @@ body {
     flex-direction: row !important;
     height: 32px !important;
     justify-content: flex-end !important;
+    display: flex;
 }
 
 .overlay_text {
@@ -592,3 +481,22 @@ body {
     line-height: 32px;
     top: calc(50% - 16px);
 }
+
+.flex_end {
+    justify-content: flex-end;
+}
+
+.draft_title {
+    margin: 16px auto;
+    line-height: 20px;
+    vertical-align: middle;
+    text-align: center;
+    font-family:  var(--main-font-name-it);
+    font-size: 20px;
+    color: var(--color-light);
+}
+
+.after_hidden:after {
+    opacity: 0;
+}
+  

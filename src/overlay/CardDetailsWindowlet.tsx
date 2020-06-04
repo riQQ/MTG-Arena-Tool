@@ -1,14 +1,25 @@
 import React, { useRef } from "react";
 import { useSelector } from "react-redux";
 import { CSSTransition } from "react-transition-group";
-import { ARENA_MODE_DRAFT } from "../shared/constants";
+import { ARENA_MODE_DRAFT, LANDS_HACK } from "../shared/constants";
 import db from "../shared/database";
-import { DraftRatings, DraftRatingsLola } from "../shared/DraftRatings";
-import { getCardImage } from "../shared/util";
+import { DraftRatings, DraftRatingsLola } from "./DraftRatings";
+import { getCardImage } from "../shared/utils/getCardArtCrop";
 import { Chances } from "../types/Chances";
 import { SettingsData } from "../types/settings";
-import { AppState } from "../shared-redux/stores/rendererStore";
+import { AppState } from "../shared/redux/stores/rendererStore";
 import { getEditModeClass, useEditModeOnRef } from "./overlayUtil";
+
+import sharedCss from "../shared/shared.css";
+import css from "./index.css";
+
+const manaClasses: Record<string, string> = {
+  w: sharedCss.manaW,
+  u: sharedCss.manaU,
+  b: sharedCss.manaB,
+  r: sharedCss.manaR,
+  g: sharedCss.manaG,
+};
 
 function GroupedLandsDetails(props: { odds: Chances }): JSX.Element {
   const { landW, landU, landB, landR, landG } = props.odds;
@@ -16,18 +27,20 @@ function GroupedLandsDetails(props: { odds: Chances }): JSX.Element {
     (state: AppState) => state.settings.cards_size_hover_card
   );
 
-  const manaChanceDiv = function(value: number, color: string): JSX.Element {
+  const manaChanceDiv = function (value: number, color: string): JSX.Element {
     return (
-      <div className="mana_cont">
+      <div className={css.manaCont}>
         {value + "%"}
-        <div className={"mana_s16 flex_end mana_" + color} />
+        <div
+          className={`${sharedCss.manaS16} ${css.flexEnd} ${manaClasses[color]}`}
+        />
       </div>
     );
   };
   return (
     <div
       style={{ width: 100 - 34 + hoverCardSize * 15 + "px" }}
-      className="lands_div"
+      className={css.landsDiv}
     >
       {!!landW && manaChanceDiv(landW, "w")}
       {!!landU && manaChanceDiv(landU, "u")}
@@ -67,7 +80,7 @@ export default function CardDetailsWindowlet(
     odds,
     overlayHover,
     overlayScale,
-    settings
+    settings,
   } = props;
   const grpId = useSelector((state: AppState) => state.hover.grpId);
   const opacity = useSelector((state: AppState) => state.hover.opacity);
@@ -81,25 +94,25 @@ export default function CardDetailsWindowlet(
   const card = db.card(grpId);
 
   // TODO remove group lands hack
-  const isCardGroupedLands = grpId === 100 && odds;
+  const isCardGroupedLands = grpId === LANDS_HACK && odds;
   // TODO support split cards
   const imgProps = {
     alt: card?.name ?? "",
-    className: "main_hover",
+    className: css.mainHover,
     src: getCardImage(card, cardQuality),
     style: {
       width: size + "px",
       height: size / SCALAR + "px",
-      opacity
-    }
+      opacity,
+    },
   };
   const containerRef = useRef(null);
   useEditModeOnRef(editMode, containerRef, overlayScale);
 
   return (
     <div
-      className={"overlay_hover_container " + getEditModeClass(editMode)}
-      id={"overlay_hover"}
+      className={css.overlayHoverContainer + " " + getEditModeClass(editMode)}
+      id={css.overlayHover}
       ref={containerRef}
       style={{
         opacity: editMode ? "1" : undefined,
@@ -108,7 +121,7 @@ export default function CardDetailsWindowlet(
           : `${window.innerWidth / 2 - size / 2}px`,
         top: overlayHover
           ? `${overlayHover.y}px`
-          : `${window.innerHeight - size / SCALAR - 50}px`
+          : `${window.innerHeight - size / SCALAR - 50}px`,
       }}
     >
       {editMode ? (
@@ -121,15 +134,18 @@ to stop editing overlay positions`}
         </div>
       ) : (
         <CSSTransition
-          classNames="hover_fade"
-          in={!!card || (isCardGroupedLands && grpId === 100 && opacity > 0)}
+          classNames={"hover_fade"}
+          in={
+            !!card ||
+            (isCardGroupedLands && grpId === LANDS_HACK && opacity > 0)
+          }
           timeout={200}
           unmountOnExit
         >
           <div style={{ display: "flex" }}>
             {!!card && !isCardGroupedLands && <img {...imgProps} />}
             {!!card && arenaState === ARENA_MODE_DRAFT && opacity > 0 && (
-              <div className="main_hover_ratings">
+              <div className={css.mainHoverRatings}>
                 {card.source == 0 ? (
                   <DraftRatings card={card} />
                 ) : (

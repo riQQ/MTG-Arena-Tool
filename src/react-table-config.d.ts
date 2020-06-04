@@ -2,6 +2,9 @@ import "react-table";
 
 declare module "react-table" {
   // take this file as-is, or comment out the sections that don't apply to your plugin configuration
+  export interface ColumnInterface<TransactionData> {
+    defaultVisiblee?: boolean;
+  }
 
   export interface TableOptions<D extends object>
     extends UseExpandedOptions<D>,
@@ -48,6 +51,8 @@ declare module "react-table" {
     percentFormatOptions?: any;
     divideBy100?: boolean;
     needsTileLabel?: boolean;
+    disableFilters?: boolean;
+    disableSortBy?: boolean;
   }
 
   export interface ColumnInstance<D extends object = {}>
@@ -55,7 +60,16 @@ declare module "react-table" {
       UseFiltersColumnProps<D>,
       UseGroupByColumnProps<D>,
       UseSortByColumnProps<D>,
-      UseTableColumnProps<D> {}
+      UseTableColumnProps<D> {
+    gridWidth?: string;
+    mayToggle?: boolean;
+    defaultVisible?: boolean;
+    percentFormatOptions?: any;
+    divideBy100?: boolean;
+    needsTileLabel?: boolean;
+    disableFilters?: boolean;
+    disableSortBy?: boolean;
+  }
 
   export interface Cell<D extends object = {}>
     extends UseTableCellProps<D>,
