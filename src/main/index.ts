@@ -337,9 +337,9 @@ function startApp(): void {
         break;
 
       default:
-        if (to == IPC_BACKGROUND) background?.webContents.send(method, arg);
-        if (to == IPC_RENDERER) mainWindow?.webContents.send(method, arg);
-        if (to === IPC_OVERLAY) overlay?.webContents.send(method, arg);
+        if (to & IPC_BACKGROUND) background?.webContents.send(method, arg);
+        if (to & IPC_RENDERER) mainWindow?.webContents.send(method, arg);
+        if (to & IPC_OVERLAY) overlay?.webContents.send(method, arg);
         break;
     }
   });

@@ -47,8 +47,8 @@ const defaultConfig = {
   cardsNew: {},
   settings: {
     last_open_tab: MAIN_HOME,
-    last_settings_section: 1,
-    last_settings_overlay_section: 0,
+    settings_section: 1,
+    settings_overlay_section: 0,
     sound_priority: false,
     sound_priority_volume: 1,
     cards_quality: "normal",
