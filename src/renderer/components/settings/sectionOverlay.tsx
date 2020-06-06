@@ -412,9 +412,25 @@ export default function SectionOverlay(): JSX.Element {
 
   const overlayScaleDebouce = useMemo(() => {
     return _.debounce((value: number) => {
+      const oldScale = store.getState().settings.overlay_scale;
+      const multiplier = oldScale / value;
+      const oldOverlays = store.getState().settings.overlays;
+      const newOverlays = oldOverlays.map((o) => {
+        return {
+          ...o,
+          bounds: {
+            ...o.bounds,
+            x: o.bounds.x * multiplier,
+            y: o.bounds.y * multiplier,
+          },
+        };
+      });
       reduxAction(
         store.dispatch,
-        { type: "SET_SETTINGS", arg: { overlay_scale: value } },
+        {
+          type: "SET_SETTINGS",
+          arg: { overlay_scale: value, overlays: newOverlays },
+        },
         IPC_ALL ^ IPC_RENDERER
       );
     }, 1000);
