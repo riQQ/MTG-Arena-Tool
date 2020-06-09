@@ -171,7 +171,9 @@ function syncUserData(data: any): void {
     doc.id = id;
     delete doc._id;
     // This was my problem!
-    doc.timestamp = doc.timestamp * 1000;
+    if (!isEpochTimestamp(doc.timestamp)) {
+      doc.timestamp = doc.timestamp * 1000;
+    }
     newSeasonal.push(doc);
     playerDb.upsert("seasonal", id, doc);
     return doc;
