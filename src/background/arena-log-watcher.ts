@@ -227,7 +227,7 @@ function onLogEntryFound(entry: any): void {
 // (in my testing)
 /* eslint-disable-next-line complexity */
 function entrySwitch(entry: LogEntry): void {
-  // console.log(entry, entry.json());
+  //console.log(entry, entry.json());
   switch (entry.label) {
     case "GreToClientEvent":
       Labels.GreToClient(entry);
@@ -265,6 +265,28 @@ function entrySwitch(entry: LogEntry): void {
       Labels.MythicRatingUpdated(entry);
       break;
     */
+
+    case "Draft.Notify":
+      Labels.InDraftNotify(entry);
+      break;
+
+    case "Draft.MakeHumanDraftPick":
+      if (entry.arrow == "==>") {
+        Labels.outMakeHumanDraftPick(entry);
+      } else if (entry.arrow == "<==") {
+        Labels.InMakeHumanDraftPick(entry);
+      }
+      break;
+
+    case "Client.SceneChange":
+      Labels.onClientSceneChange(entry);
+      break;
+
+    case "Event.JoinPodmaking":
+      if (entry.arrow == "==>") {
+        Labels.InEventJoinPodMaking(entry);
+      }
+      break;
 
     case "Event.GetPlayerCoursesV2":
       if (entry.arrow == "<==") {
