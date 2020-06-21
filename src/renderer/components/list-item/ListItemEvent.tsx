@@ -41,6 +41,7 @@ function DraftRares({ event }: { event: EventTableData }): JSX.Element {
     if (draft?.pickedCards) {
       const pool = [...draft.pickedCards];
       draftRares = pool
+        .slice(0, 6)
         .map((cardId: string | number) => db.card(cardId))
         .filter(
           (card: DbCardData | undefined) =>
