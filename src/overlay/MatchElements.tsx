@@ -54,6 +54,7 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
   const fullSettings = useSelector((state: AppState) => state.settings);
 
   // Auto adjust
+  let doAutoSize = false;
   if (
     settings &&
     settings.autosize &&
@@ -65,6 +66,7 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
     bounds.height > 0 &&
     bounds.height !== settings.bounds.height
   ) {
+    doAutoSize = true;
     const newOverlays = [...fullSettings.overlays];
     newOverlays[index] = {
       ...fullSettings.overlays[index], // old overlay
@@ -130,7 +132,7 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
       className={`${css.outerWrapper} elements_wrapper`}
       style={{ opacity: settings.alpha.toString() }}
     >
-      <div ref={ref} style={{ height: `inherit` }}>
+      <div ref={ref} style={doAutoSize ? {} : { height: `inherit` }}>
         {!!settings.title && (
           <div className={css.overlayDeckname}>{mainTitle}</div>
         )}
