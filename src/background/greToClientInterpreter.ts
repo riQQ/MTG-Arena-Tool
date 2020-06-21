@@ -895,10 +895,10 @@ function getPlayerUsedCards(): number[] {
               if (obj.abilityOriginalCardGrpIds && obj.abilities) {
                 // For each original grpId (no duplicates)
                 const origCards = useSet(obj.abilityOriginalCardGrpIds);
-                console.log("set: ", origCards);
+                //console.log("set: ", origCards);
                 origCards.forEach((setCardId) => {
                   const cardObj = db.card(setCardId);
-                  console.log("> " + setCardId, cardObj);
+                  //console.log("> " + setCardId, cardObj);
                   if (cardObj) {
                     // Count the number of times this card is in the parent
                     // This assumes abilities appear just once per card, so
@@ -1009,14 +1009,12 @@ function checkForStartingLibrary(gameState?: GameStateMessage): boolean {
 
 function checkTurnDiff(turnInfo: TurnInfo): void {
   const currentMatch = globalStore.currentMatch;
-  const gameNumber = currentMatch.gameInfo.gameNumber || 0;
   const currentTurnInfo = currentMatch.turnInfo;
   const currentPriority = currentMatch.currentPriority;
   if (
     turnInfo.turnNumber &&
     turnInfo.turnNumber == 1 &&
-    turnInfo.activePlayer &&
-    gameNumber == 1
+    turnInfo.activePlayer
   ) {
     setOnThePlay(turnInfo.activePlayer);
   }
