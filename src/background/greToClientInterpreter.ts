@@ -1226,7 +1226,7 @@ export function GREMessage(message: GREToClientMessage, time: Date): void {
     "ZoneType_Library",
     globalStore.currentMatch.playerSeat
   );
-  if (zoneLibrary) {
+  if (zoneLibrary && zoneLibrary.objectInstanceIds) {
     const iids = zoneLibrary.objectInstanceIds;
     let i = iids.length - 1;
     const onBottom = [];
