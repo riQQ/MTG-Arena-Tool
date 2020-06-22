@@ -601,7 +601,7 @@ function createUpdaterWindow(): BrowserWindow {
       nodeIntegration: true,
     },
   });
-  win.loadURL(path.join(__dirname, "updater/index.html"));
+  win.loadURL("file://" + path.join(__dirname, "updater", "index.html"));
 
   return win;
 }
@@ -620,7 +620,7 @@ function createBackgroundWindow(): BrowserWindow {
       nodeIntegration: true,
     },
   });
-  win.loadURL(path.join(__dirname, "background/index.html"));
+  win.loadURL("file://" + path.join(__dirname, "background", "index.html"));
   win.on("closed", onBackClosed);
 
   return win;
@@ -644,7 +644,7 @@ function createOverlayWindow(): BrowserWindow {
       nodeIntegration: true,
     },
   });
-  overlay.loadURL(path.join(__dirname, "overlay/index.html"));
+  overlay.loadURL("file://" + path.join(__dirname, "overlay", "index.html"));
 
   if (process.platform !== "linux") {
     // https://electronjs.org/docs/api/browser-window#winsetignoremouseeventsignore-options
@@ -668,7 +668,7 @@ function createMainWindow(): BrowserWindow {
       nodeIntegration: true,
     },
   });
-  win.loadURL(path.join(__dirname, "renderer/index.html"));
+  win.loadURL("file://" + path.join(__dirname, "renderer", "index.html"));
   win.on("closed", onMainClosed);
 
   let iconPath = iconTray;
