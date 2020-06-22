@@ -391,6 +391,7 @@ async function logLoop(): Promise<void> {
       text: "Log file name has changed.",
       time: 1000,
     });
+    console.log("Log file name has changed.");
     return;
   }
   if (fs.existsSync(logUri)) {
@@ -400,11 +401,13 @@ async function logLoop(): Promise<void> {
         text: "No log file found. Please include the file name too.",
         time: 1000,
       });
+      console.log("No log file found. Please include the file name too.");
       return;
     }
   } else {
     ipcSend("no_log", logUri);
     ipcSend("popup", { text: "No log file found.", time: 1000 });
+    console.log("No log file found.");
     return;
   }
 
@@ -416,6 +419,7 @@ async function logLoop(): Promise<void> {
 
   if (size == undefined) {
     // Something went wrong obtaining the file size, try again later
+    console.log("LogLoop(): Size undefined", size);
     return;
   }
 
@@ -481,7 +485,9 @@ async function logLoop(): Promise<void> {
   if (!detailedLogs) return;
 
   for (const key in parsedData) {
-    ipcSend("ipc_log", `Initial log parse: ${key}=${parsedData[key]}`);
+    const str = `Initial log parse: ${key}=${parsedData[key]}`;
+    console.log(str);
+    ipcSend("ipc_log", str);
   }
 
   prevLogSize = size;
@@ -496,6 +502,7 @@ async function logLoop(): Promise<void> {
       { type: "SET_CAN_LOGIN", arg: false },
       IPC_RENDERER
     );
+    console.log("Player.log contains no player data");
     return;
   } else {
     reduxAction(
