@@ -9,6 +9,7 @@ import { IPC_BACKGROUND, IPC_RENDERER } from "../shared/constants";
 import globals from "./globals";
 
 import { create, all, MathJsStatic } from "mathjs";
+import debugLog from "../shared/debugLog";
 const config = { precision: 2000 };
 const math: MathJsStatic = create(all, config) as MathJsStatic;
 
@@ -17,7 +18,7 @@ export function ipcSend(method: string, arg?: any, to = IPC_RENDERER): void {
   if (method == "ipc_log") {
     //
   }
-  //console.log("IPC SEND", method, arg, to);
+  //debugLog("IPC SEND", method, arg, to);
   ipc.send("ipc_switch", method, IPC_BACKGROUND, arg, to);
 }
 
@@ -105,9 +106,9 @@ export function parseWotcTimeFallback(dateStr: string): Date {
     return parseWotcTime(dateStr);
   } catch (e) {
     if (e instanceof DateParseError) {
-      console.error(
-        "DateParseError: using new Date() fallback. Retain original date string.",
-        e
+      debugLog(
+        `DateParseError: using new Date() fallback. Retain original date strin; ${e}`,
+        "error"
       );
       return new Date();
     } else {
