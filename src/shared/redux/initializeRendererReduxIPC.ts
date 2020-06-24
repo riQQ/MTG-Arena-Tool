@@ -2,6 +2,7 @@ import { EnhancedStore } from "@reduxjs/toolkit";
 import electron, { IpcRendererEvent } from "electron";
 import { actions, ActionKeys } from "./actions";
 import debugLog from "../debugLog";
+import logInitialMessage from "../utils/logInitialMessage";
 const ipcRenderer = electron.ipcRenderer;
 
 /**
@@ -11,6 +12,7 @@ const ipcRenderer = electron.ipcRenderer;
  * @param store Redux store (EnhancedStore)
  */
 export default function initializeRendererReduxIPC(store: EnhancedStore): void {
+  logInitialMessage();
   ipcRenderer.on(
     "redux-action",
     (_event: IpcRendererEvent, type: ActionKeys, arg: string) => {
