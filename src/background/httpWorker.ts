@@ -136,7 +136,7 @@ export function asyncWorker(task: HttpTask, callback: HttpTaskCallback): void {
   const _headers: any = { ...task };
   _headers.token = globals.store.getState().appsettings.token;
   const options = getRequestOptions(task);
-  if (globals.debugNet && task.method !== "notifications") {
+  if (task.method !== "notifications") {
     //ipcLog("SEND >> " + task.method + ", " + _headers.reqId + ", " + _headers.token);
     debugLog("SEND", _headers);
   }
@@ -167,11 +167,15 @@ export function asyncWorker(task: HttpTask, callback: HttpTaskCallback): void {
       });
       res.on("end", function () {
         try {
-          if (globals.debugNet && task.method !== "notifications") {
+          const parsedResult = JSON.parse(results);
+          if (
+            (globals.debugNet && task.method !== "notifications") ||
+            (parsedResult && parsedResult.error) ||
+            (parsedResult && parsedResult.ok == false)
+          ) {
             //ipcLog("RECV << " + task.method + ", " + results.slice(0, 100));
             debugLog("RECV > " + results);
           }
-          const parsedResult = JSON.parse(results);
           // TODO remove this hack for get_database_version
           if (parsedResult && task.method === "get_database_version") {
             parsedResult.ok = true;
