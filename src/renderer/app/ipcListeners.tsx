@@ -278,4 +278,12 @@ export default function ipcListeners(dispatcher: Dispatch<AnyAction>): void {
       debugLog(`Error parsing JSON: ${arg}`);
     }
   });
+
+  ipc.on("detailed_logs", function (_event: IpcRendererEvent) {
+    reduxAction(
+      dispatcher,
+      { type: "SET_DETAILED_LOGS_DIALOG", arg: true },
+      IPC_NONE
+    );
+  });
 }

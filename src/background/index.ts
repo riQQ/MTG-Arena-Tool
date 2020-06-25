@@ -463,6 +463,7 @@ async function logLoop(): Promise<void> {
         { type: "SET_CAN_LOGIN", arg: false },
         IPC_RENDERER
       );
+      ipcSend("detailed_logs");
       detailedLogs = false;
     }
 

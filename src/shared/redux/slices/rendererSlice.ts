@@ -47,6 +47,7 @@ const initialRendererState = {
     data: {},
     id: "",
   } as ShareDialog,
+  detailedLogsDialog: true,
   subNav: {
     type: -1,
     id: "",
@@ -81,6 +82,12 @@ const rendererSlice = createSlice({
       action: PayloadAction<string>
     ): void => {
       state.backgroundImage = action.payload;
+    },
+    setDetailedLogsDialog: (
+      state: RendererState,
+      action: PayloadAction<boolean>
+    ): void => {
+      state.detailedLogsDialog = action.payload;
     },
     setLoading: (
       state: RendererState,
@@ -192,6 +199,7 @@ export const {
   setBackgroundColor,
   setBackgroundGrpId,
   setBackgroundImage,
+  setDetailedLogsDialog,
   setLoading,
   setNoLog,
   setOffline,
