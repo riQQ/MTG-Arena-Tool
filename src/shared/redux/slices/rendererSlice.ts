@@ -47,7 +47,7 @@ const initialRendererState = {
     data: {},
     id: "",
   } as ShareDialog,
-  detailedLogsDialog: true,
+  detailedLogsDialog: false,
   subNav: {
     type: -1,
     id: "",
