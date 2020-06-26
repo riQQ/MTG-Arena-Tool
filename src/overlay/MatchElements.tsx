@@ -63,26 +63,27 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
     settings.mode !== OVERLAY_DRAFT_BREW &&
     settings.mode !== OVERLAY_LOG &&
     bounds &&
-    bounds.height > 0 &&
-    bounds.height !== settings.bounds.height
+    bounds.height > 0
   ) {
     doAutoSize = true;
-    const newOverlays = [...fullSettings.overlays];
-    newOverlays[index] = {
-      ...fullSettings.overlays[index], // old overlay
-      bounds: {
-        ...settings.bounds,
-        height: bounds.height,
-      },
-    };
+    if (bounds.height !== settings.bounds.height) {
+      const newOverlays = [...fullSettings.overlays];
+      newOverlays[index] = {
+        ...fullSettings.overlays[index], // old overlay
+        bounds: {
+          ...settings.bounds,
+          height: bounds.height,
+        },
+      };
 
-    // Send to ipc, dispatching here creates an overflow.
-    ipc.send(
-      "redux-action",
-      "SET_SETTINGS",
-      JSON.stringify({ overlays: newOverlays }),
-      IPC_ALL
-    );
+      // Send to ipc, dispatching here creates an overflow.
+      ipc.send(
+        "redux-action",
+        "SET_SETTINGS",
+        JSON.stringify({ overlays: newOverlays }),
+        IPC_ALL
+      );
+    }
   }
 
   let cleanName = match.opponent && match.opponent.name;
@@ -132,7 +133,11 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
       className={`${css.outerWrapper} elements_wrapper`}
       style={{ opacity: settings.alpha.toString() }}
     >
-      <div ref={ref} style={doAutoSize ? {} : { height: `inherit` }}>
+      <div
+        ref={ref}
+        className={css.flexColumn}
+        style={doAutoSize ? {} : { height: `inherit` }}
+      >
         {!!settings.title && (
           <div className={css.overlayDeckname}>{mainTitle}</div>
         )}
@@ -156,12 +161,14 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
           </div>
         )}
         {!!visibleDeck && (
-          <DeckList
-            deck={visibleDeck}
-            subTitle={subTitle}
-            settings={settings}
-            setOddsCallback={setOddsCallback}
-          />
+          <div className={css.clickOn} style={{ overflow: "auto" }}>
+            <DeckList
+              deck={visibleDeck}
+              subTitle={subTitle}
+              settings={settings}
+              setOddsCallback={setOddsCallback}
+            />
+          </div>
         )}
         {!!settings.clock && (
           <Clock
