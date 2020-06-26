@@ -343,6 +343,9 @@ function startApp(): void {
         break;
 
       default:
+        if (method == "match_end") {
+          updateOverlayVisibility();
+        }
         if (to & IPC_BACKGROUND) background?.webContents.send(method, arg);
         if (to & IPC_RENDERER) mainWindow?.webContents.send(method, arg);
         if (to & IPC_OVERLAY) overlay?.webContents.send(method, arg);
@@ -435,12 +438,21 @@ function setSettings(settings: SettingsData): void {
 let overlayHideTimeout: NodeJS.Timeout | undefined = undefined;
 
 function updateOverlayVisibility(): void {
+  const overiewOpen = store.getState().overlay.isOverviewOpen;
   const shouldDisplayOverlay =
-    store.getState().overlay.isOverviewOpen ||
-    store.getState().settings.overlays?.some(getOverlayVisible);
+    overiewOpen || store.getState().settings.overlays?.some(getOverlayVisible);
   const isOverlayVisible = isEntireOverlayVisible();
-
-  //debugLog("shouldDisplayOverlay: ", shouldDisplayOverlay, "isOverlayVisible: ", isOverlayVisible);
+  /*
+  debugLog(
+    "shouldDisplayOverlay: " +
+      shouldDisplayOverlay +
+      ", isOverlayVisible: " +
+      isOverlayVisible +
+      ", overiewOpen: " +
+      overiewOpen,
+    "debug"
+  );
+  */
   if (!shouldDisplayOverlay && isOverlayVisible) {
     // hide entire overlay window
     // Add a 1 second timeout for animations
