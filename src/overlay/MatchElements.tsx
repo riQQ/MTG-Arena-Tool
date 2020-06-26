@@ -1,5 +1,5 @@
 import { ipcRenderer as ipc } from "electron";
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import useMeasure from "react-use-measure";
 
 import {
@@ -52,6 +52,7 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
   let subTitle = "";
   const [ref, bounds] = useMeasure();
   const fullSettings = useSelector((state: AppState) => state.settings);
+  const scrollBottom = useRef<null | HTMLDivElement>(null);
 
   // Auto adjust
   let doAutoSize = false;
@@ -85,6 +86,20 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
       );
     }
   }
+
+  useEffect(() => {
+    const scrollDiv = scrollBottom?.current;
+    // Autoscroll if the div is on bottom only
+    if (
+      scrollDiv &&
+      scrollDiv.scrollTop + scrollDiv.clientHeight > scrollDiv.scrollHeight - 56
+    ) {
+      const scrollHeight = scrollDiv.scrollHeight;
+      const height = scrollDiv.clientHeight;
+      const maxScrollTop = scrollHeight - height;
+      scrollDiv.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+    }
+  }, [scrollBottom, actionLog]);
 
   let cleanName = match.opponent && match.opponent.name;
   if (cleanName && cleanName !== "Sparky") {
@@ -151,10 +166,10 @@ export default function MatchElements(props: MatchElementsProps): JSX.Element {
         )}
         {settings.mode === OVERLAY_LOG && (
           <div
+            ref={scrollBottom}
             className={css.clickOn}
             style={{
               overflowY: "auto",
-              height: !!settings.title ? `calc(100% - 32px)` : `100%`,
             }}
           >
             <ActionLog logStr={actionLog} />
