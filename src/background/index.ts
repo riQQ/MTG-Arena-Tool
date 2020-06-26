@@ -451,12 +451,8 @@ async function logLoop(): Promise<void> {
   while (i < splitString.length - 1 || foundData !== 2) {
     const value = splitString[i];
     // Check if detailed logs / plugin support is disabled
-    // This should be an action rather than a simple popup
-    // Renderer should display a special popup with pretty instructions
     let strCheck = "DETAILED LOGS: DISABLED";
     if (value.includes(strCheck)) {
-      // PLACEHOLDER
-      // SEND ACTION TO SHOW POPUP , TO ENABLE DETAILED LOGS
       debugLog("LogLoop(): Detailed logs disabled!");
       reduxAction(
         globals.store.dispatch,
