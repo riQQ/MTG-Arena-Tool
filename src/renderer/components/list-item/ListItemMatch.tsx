@@ -101,11 +101,16 @@ export default function ListItemMatch({
           <div className={css.listMatchTitle}>
             {"vs " + match.opponent.name.slice(0, -6)}
           </div>
-          <div onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-            e.stopPropagation();
-            e.nativeEvent.stopImmediatePropagation();
-            copy(match.opponent.name);
-          }} className={css.copyButton} />
+          <div
+            onClick={(
+              e: React.MouseEvent<HTMLDivElement, MouseEvent>
+            ): void => {
+              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              copy(match.opponent.name);
+            }}
+            className={css.copyButton}
+          />
           <RankSmall rank={match.opponent}></RankSmall>
         </FlexTop>
         <FlexBottom style={{ alignItems: "center" }}>
