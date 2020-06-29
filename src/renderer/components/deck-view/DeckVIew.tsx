@@ -150,20 +150,17 @@ interface RaritiesCount {
 
 function getDeckRaritiesCount(deck: Deck): RaritiesCount {
   const rarities: RaritiesCount = { c: 0, u: 0, r: 0, m: 0 };
-
-  deck
-    .getMainboard()
-    .get()
-    .forEach(function (c: CardObject) {
-      const quantity = c.quantity;
-      const card = db.card(c.id);
-      if (quantity > 0 && card) {
-        if (card.rarity == "common") rarities.c += quantity;
-        else if (card.rarity == "uncommon") rarities.u += quantity;
-        else if (card.rarity == "rare") rarities.r += quantity;
-        else if (card.rarity == "mythic") rarities.m += quantity;
-      }
-    });
+  const cards = [...deck.getMainboard().get(), ...deck.getSideboard().get()];
+  cards.forEach(function (c: CardObject) {
+    const quantity = c.quantity;
+    const card = db.card(c.id);
+    if (quantity > 0 && card) {
+      if (card.rarity == "common") rarities.c += quantity;
+      else if (card.rarity == "uncommon") rarities.u += quantity;
+      else if (card.rarity == "rare") rarities.r += quantity;
+      else if (card.rarity == "mythic") rarities.m += quantity;
+    }
+  });
 
   return rarities;
 }
