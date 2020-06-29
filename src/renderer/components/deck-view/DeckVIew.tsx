@@ -273,7 +273,11 @@ export function DeckView(props: DeckViewProps): JSX.Element {
             ></div>
             <div className={indexCss.deckName}>{deck.getName()}</div>
             <ShareButton type="deck" data={deck.getSave()} />
-            <IncognitoButton id={deck.id} />
+            {props.deck.type == "InternalDeck" ? (
+              <IncognitoButton id={deck.id} />
+            ) : (
+              <></>
+            )}
             <div className={indexCss.deckTopColors}>
               <ManaCost colors={deck.getColors().get()} />
             </div>
@@ -300,38 +304,39 @@ export function DeckView(props: DeckViewProps): JSX.Element {
             {deckView == VIEW_REGULAR && (
               <>
                 <div style={{ display: "flex", justifyContent: "center" }}>
+                  {props.deck.type == "InternalDeck" ? (
+                    <>
+                      <Button
+                        style={{ margin: "16px" }}
+                        className={indexCss.buttonSimple}
+                        text="Deck Changes"
+                        onClick={deckChangesView}
+                      />
+                      <Button
+                        style={{ margin: "16px" }}
+                        className={indexCss.buttonSimple}
+                        text="Card Winrates"
+                        onClick={deckWinratesView}
+                      />
+                    </>
+                  ) : (
+                    <></>
+                  )}
                   <Button
-                    className={
-                      indexCss.buttonSimple + " " + indexCss.exportDeck
-                    }
-                    text="Deck Changes"
-                    onClick={deckChangesView}
-                  />
-                  <Button
-                    className={
-                      indexCss.buttonSimple + " " + indexCss.exportDeck
-                    }
-                    text="Card Winrates"
-                    onClick={deckWinratesView}
-                  />
-                  <Button
-                    className={
-                      indexCss.buttonSimple + " " + indexCss.exportDeck
-                    }
+                    style={{ margin: "16px" }}
+                    className={indexCss.buttonSimple}
                     text="Visual View"
                     onClick={visualView}
                   />
                   <Button
-                    className={
-                      indexCss.buttonSimple + " " + indexCss.exportDeck
-                    }
+                    style={{ margin: "16px" }}
+                    className={indexCss.buttonSimple}
                     text="Export to Arena"
                     onClick={arenaExport}
                   />
                   <Button
-                    className={
-                      indexCss.buttonSimple + " " + indexCss.exportDeck
-                    }
+                    style={{ margin: "16px" }}
+                    className={indexCss.buttonSimple}
                     text="Export to .txt"
                     onClick={txtExport}
                   />
