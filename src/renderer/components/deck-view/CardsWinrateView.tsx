@@ -19,6 +19,7 @@ import sectionCss from "../settings/Sections.css";
 import indexCss from "../../index.css";
 import css from "./CardsWinrateView.css";
 import Section from "../misc/Section";
+import Flex from "../misc/Flex";
 
 function getWinrateValue(wins: number, losses: number): number {
   return wins + losses == 0 ? -1 : Math.round((100 / (wins + losses)) * wins);
@@ -313,10 +314,20 @@ export default function CardsWinratesView(
 
   return (
     <div className={css.cardsWrViewGrid}>
-      <Section style={{ gridArea: "controls" }}>
-        <div
+      <Section
+        style={{
+          padding: "16px",
+          gridArea: "controls",
+          justifyContent: "center",
+        }}
+      >
+        <Flex
           className={sectionCss.centered_setting_container}
-          style={{ width: "auto", justifyContent: "center" }}
+          style={{
+            margin: "0px 8px 0px 0px",
+            width: "auto",
+            justifyContent: "center",
+          }}
         >
           <label>Deck Version:</label>
           <ReactSelect
@@ -325,7 +336,7 @@ export default function CardsWinratesView(
             current={deckVersions[0]}
             callback={setDeckVersionFilter}
           />
-        </div>
+        </Flex>
         <Button text="Normal View" onClick={setRegularView} />
       </Section>
       <Section style={{ gridArea: "desc" }}>

@@ -63,8 +63,12 @@ export default function ChangesDeckView(
 
   return (
     <div className={deckViewCss.regularViewGrid}>
-      <Section style={{ gridArea: "controls" }}>
-        <Button text="Normal View" onClick={setRegularView} />
+      <Section style={{ padding: "16px", gridArea: "controls" }}>
+        <Button
+          style={{ margin: "auto" }}
+          text="Normal View"
+          onClick={setRegularView}
+        />
       </Section>
       <Section
         style={{
