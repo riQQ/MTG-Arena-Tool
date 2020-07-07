@@ -573,6 +573,11 @@ function showWindow(): void {
       updaterWindow.show();
     else updaterWindow.moveTop();
   }
+  if (process.platform == "darwin" && !app.dock.isVisible()) {
+    app.dock.show().then(() => {
+      app.dock.setIcon(path.join(__dirname, icon256));
+    });
+  }
 }
 
 function quit(): void {
@@ -727,6 +732,10 @@ function createMainWindow(): BrowserWindow {
   tray.setToolTip("MTG Arena Tool");
   tray.setContextMenu(contextMenu);
 
+  if (process.platform == "darwin") {
+    app.dock.setIcon(path.join(__dirname, icon256));
+  }
+
   win.on("resize", () => {
     if (mainTimeout) {
       clearTimeout(mainTimeout);
@@ -759,5 +768,7 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   if (!mainWindow) {
     mainWindow = createMainWindow();
+  //} else {
+  //  showWindow();
   }
 });
