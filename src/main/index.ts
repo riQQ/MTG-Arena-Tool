@@ -768,7 +768,7 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   if (!mainWindow) {
     mainWindow = createMainWindow();
-  //} else {
-  //  showWindow();
+    //} else {
+    //  showWindow();
   }
 });
