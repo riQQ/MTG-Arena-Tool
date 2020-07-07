@@ -65,13 +65,13 @@ export default function CollectionTableControls(
       style={{
         display: "flex",
         flexWrap: "wrap",
-        color: "var(--color-light)",
-        paddingBottom: "8px",
+        color: "var(--color-text)",
+        paddingBottom: "4px",
       }}
     >
       <div className={tableCss.reactTableToggles}>
         <SmallTextButton onClick={exportRows}>Export</SmallTextButton>
-        <span style={{ paddingBottom: "8px", marginLeft: "12px" }}>
+        <span style={{ paddingBottom: "4px", marginLeft: "12px" }}>
           Presets:
         </span>
         <SmallTextButton
@@ -142,7 +142,6 @@ export default function CollectionTableControls(
         <MediumTextButton
           onClick={(): void => setTogglesVisible(!togglesVisible)}
           className={indexCss.buttonSimple}
-          style={{ margin: "0 0 5px 12px" }}
         >
           {togglesVisible ? "Hide" : "Show"} Column Toggles
         </MediumTextButton>
@@ -177,7 +176,7 @@ export default function CollectionTableControls(
           />
         )}
         {!legacyModes.includes(tableMode) && (
-          <PagingControls {...pagingProps} />
+          <PagingControls align={"flex-end"} {...pagingProps} />
         )}
       </div>
     </div>

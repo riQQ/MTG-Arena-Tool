@@ -72,7 +72,10 @@
     "mac": {
       "target": "pkg",
       "icon": "src/assets/icons/icon-512.ico",
-      "artifactName": "${productName}-${version}.${ext}"
+      "artifactName": "${productName}-${version}.${ext}",
+      "extendInfo": {
+        "LSUIElement": 1
+      }
     },
     "linux": {
       "target": "AppImage",
