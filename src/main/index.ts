@@ -243,6 +243,14 @@ function startApp(): void {
         mainWindow?.minimize();
         break;
 
+      case "renderer_window_maximize":
+        if (mainWindow?.isMaximized()) {
+          mainWindow.restore();
+        } else {
+          mainWindow?.maximize();
+        }
+        break;
+
       case "set_arena_state":
         setArenaState(arg);
         break;
@@ -670,8 +678,8 @@ function createMainWindow(): BrowserWindow {
     backgroundColor: "#000",
     frame: false,
     show: false,
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 700,
     title: "MTG Arena Tool",
     icon: path.join(__dirname, iconNormal),
     webPreferences: {
