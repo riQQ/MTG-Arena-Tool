@@ -44,6 +44,7 @@ export type RarityFilterKeys =
   | "uncommon"
   | "rare"
   | "mythic"
+  | "token"
   | "land";
 
 export type RarityFilterValue = { [key in RarityFilterKeys]: boolean };
@@ -53,6 +54,7 @@ export const defaultRarity: RarityFilterValue = {
   uncommon: true,
   rare: true,
   mythic: true,
+  token: true,
   land: true,
 };
 
@@ -64,6 +66,7 @@ export function RarityFilter(props: RarityFilterProps): JSX.Element {
     uncommon: "Uncommon",
     rare: "Rare",
     mythic: "Mythic",
+    token: "Token",
     land: "Land",
   };
   const [filterValue, onClickMultiFilter] = useMultiSelectFilter(props);
