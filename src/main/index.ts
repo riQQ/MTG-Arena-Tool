@@ -434,13 +434,13 @@ function setSettings(settings: SettingsData): void {
     openAtLogin: settings.startup,
   });
 
+  updateOverlayVisibility();
+
   // Send settings update
   overlay?.setAlwaysOnTop(settings.overlay_ontop, "pop-up-menu");
   if (settings.overlay_ontop && overlay && !overlay.isAlwaysOnTop()) {
     overlay.moveTop();
   }
-
-  updateOverlayVisibility();
 }
 
 let overlayHideTimeout: NodeJS.Timeout | undefined = undefined;
@@ -461,6 +461,7 @@ function updateOverlayVisibility(): void {
     "debug"
   );
   */
+  hideDock();
   if (!shouldDisplayOverlay && isOverlayVisible) {
     // hide entire overlay window
     // Add a 1 second timeout for animations
@@ -475,6 +476,7 @@ function updateOverlayVisibility(): void {
     overlaySetBounds();
     overlay?.show();
   }
+  showDock();
 }
 
 function isEntireOverlayVisible(): boolean {
@@ -551,6 +553,20 @@ function hideWindow(): void {
   }
 }
 
+function hideDock(): void {
+  if (process.platform == "darwin") {
+    app.dock.hide();
+  }
+}
+
+function showDock(): void {
+  if (process.platform == "darwin" && !app.dock.isVisible()) {
+    app.dock.show().then(() => {
+      app.dock.setIcon(path.join(__dirname, icon256));
+    });
+  }
+}
+
 function toggleWindow(): void {
   if (mainWindow && mainWindow.isVisible()) {
     if (!mainWindow.isMinimized()) {
@@ -573,11 +589,7 @@ function showWindow(): void {
       updaterWindow.show();
     else updaterWindow.moveTop();
   }
-  if (process.platform == "darwin" && !app.dock.isVisible()) {
-    app.dock.show().then(() => {
-      app.dock.setIcon(path.join(__dirname, icon256));
-    });
-  }
+  showDock();
 }
 
 function quit(): void {
@@ -732,9 +744,7 @@ function createMainWindow(): BrowserWindow {
   tray.setToolTip("MTG Arena Tool");
   tray.setContextMenu(contextMenu);
 
-  if (process.platform == "darwin") {
-    app.dock.setIcon(path.join(__dirname, icon256));
-  }
+  showDock();
 
   win.on("resize", () => {
     if (mainTimeout) {
