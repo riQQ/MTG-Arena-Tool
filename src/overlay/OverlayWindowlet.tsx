@@ -22,7 +22,7 @@ import CloseIcon from "../assets/images/svg/win-close.svg";
 import SettingsIcon from "../assets/images/svg/icon-settings.svg";
 import DEFAULT_BACKGROUND from "../assets/images/main-background.jpg";
 
-export interface OverlayWindowletProps {
+interface OverlayWindowletProps {
   arenaState: number;
   actionLog: string;
   draft?: InternalDraftv2;

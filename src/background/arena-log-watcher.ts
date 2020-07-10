@@ -46,7 +46,7 @@ interface StartProps {
   onFinish: () => void;
 }
 
-export function start({
+function start({
   path,
   chunkSize,
   onLogEntry,
@@ -410,6 +410,12 @@ function entrySwitch(entry: LogEntry): void {
     case "PlayerInventory.GetRewardSchedule":
       if (entry.arrow == "<==") {
         Labels.GetPlayerInventoryGetRewardSchedule(entry);
+      }
+      break;
+
+    case "PlayerInventory.GetFormats":
+      if (entry.arrow == "<==") {
+        Labels.GetPlayerInventoryGetFormats(entry);
       }
       break;
 

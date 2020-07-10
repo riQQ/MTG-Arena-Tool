@@ -18,7 +18,7 @@ export interface HttpTask {
   [key: string]: string;
 }
 
-export interface HttpTaskCallback {
+interface HttpTaskCallback {
   (
     error?: Error | null,
     task?: HttpTask,
@@ -59,7 +59,7 @@ export function makeSimpleResponseHandler(
   };
 }
 
-export function getRequestOptions(task: HttpTask): RequestOptions {
+function getRequestOptions(task: HttpTask): RequestOptions {
   let options: RequestOptions;
   switch (task.method) {
     case "get_database":

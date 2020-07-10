@@ -5,7 +5,7 @@ import { USER_DATA_DIR, showBusy, hideBusyIfDone } from "./databaseUtil";
 import sanitize from "sanitize-filename";
 import debugLog from "../debugLog";
 
-export class DatabaseNotInitializedError extends Error {
+class DatabaseNotInitializedError extends Error {
   constructor() {
     super("LocalDatabase has not been initialized.");
     this.name = "DatabaseNotInitializedError";

@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-use-before-define, @typescript-eslint/camelcase */
 import { app, ipcRenderer as ipc, remote } from "electron";
 import path from "path";
+import { DbCardData } from "../types/Metadata";
+import { WinLossGate } from "../types/event";
 import {
   IPC_BACKGROUND,
   IPC_RENDERER,
   CARD_RARITIES,
 } from "../shared/constants";
-import { WinLossGate } from "../types/event";
 import store from "../shared/redux/stores/rendererStore";
-import { MissingWildcards, CardCounts } from "./components/decks/types";
 import Deck from "../shared/deck";
 import db from "../shared/database";
-
 import sharedCss from "../shared/shared.css";
+import { MissingWildcards, CardCounts } from "./components/decks/types";
 
 export const actionLogDir = path.join(
   (app || remote.app).getPath("userData"),
@@ -101,7 +101,7 @@ export function compareWinrates(a: Winrate, b: Winrate): -1 | 0 | 1 {
   return compareColorWinrates(a, b);
 }
 
-export function compareColorWinrates(winA: Winrate, winB: Winrate): -1 | 0 | 1 {
+function compareColorWinrates(winA: Winrate, winB: Winrate): -1 | 0 | 1 {
   const a = winA.colors ?? [];
   const b = winB.colors ?? [];
 
@@ -209,7 +209,7 @@ export function getWildcardsMissing(
   return Math.max(0, needed - copiesLeft);
 }
 
-export function getCardsMissingCount(deck: Deck, grpid: number): number {
+function getCardsMissingCount(deck: Deck, grpid: number): number {
   const mainMissing = getWildcardsMissing(deck, grpid, false);
   const sideboardMissing = getWildcardsMissing(deck, grpid, true);
   return mainMissing + sideboardMissing;
@@ -253,4 +253,86 @@ export function getMissingCardCounts(deck: Deck): CardCounts {
     }
   });
   return missingCards;
+}
+
+export const usedFormats: Record<string, string> = {
+  Standard: "Standard",
+  BO1: "Standard",
+  "Traditional Standard": "TraditionalStandard",
+  BO3: "TraditionalStandard",
+  "Traditional Historic": "TraditionalHistoric",
+  HBO3: "TraditionalHistoric",
+  Historic: "Historic",
+  HBO1: "Historic",
+  Brawl: "Brawl",
+  Singleton: "Singleton",
+  Pauper: "Pauper",
+  "Historic Pauper": "HistoricPauper",
+  "Historic Brawl": "HistoricBrawl",
+};
+
+export function getCardFormats(card: DbCardData): string[] {
+  const formats = store.getState().renderer.formats;
+  const allowed: string[] = [];
+  const arenaSetCode = db.sets[card.set]?.arenacode || card.set;
+  Object.keys(formats).map((name) => {
+    const format = formats[name];
+    if (
+      format.allowedTitleIds.includes(card.titleId) ||
+      format.sets.includes(arenaSetCode)
+    ) {
+      if (name == "Pauper" || name == "HistoricPauper") {
+        if (card.rarity == "common") {
+          allowed.push(name);
+        }
+      } else {
+        allowed.push(name);
+      }
+    }
+  });
+  return allowed;
+}
+
+export function getCardBanned(card: DbCardData): string[] {
+  const formats = store.getState().renderer.formats;
+  const banned: string[] = [];
+  Object.keys(formats).map((name) => {
+    const format = formats[name];
+    if (format.bannedTitleIds.includes(card.titleId)) {
+      banned.push(name);
+    }
+  });
+  return banned;
+}
+
+export function getCardSuspended(card: DbCardData): string[] {
+  const formats = store.getState().renderer.formats;
+  const suspended: string[] = [];
+  Object.keys(formats).map((name) => {
+    const format = formats[name];
+    if (format.suspendedTitleIds.includes(card.titleId)) {
+      suspended.push(name);
+    }
+  });
+  return suspended;
+}
+
+export function getCardIsCraftable(card: DbCardData): boolean {
+  const formats = getCardFormats(card);
+  if (
+    formats.includes("Standard") ||
+    formats.includes("Historic") ||
+    formats.includes("Singleton")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function getCardInBoosters(card: DbCardData): boolean {
+  const set = db.sets[card.set];
+  if (set?.collation !== -1 && card.booster) {
+    return true;
+  }
+  return false;
 }

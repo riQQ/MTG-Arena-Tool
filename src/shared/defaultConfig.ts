@@ -18,7 +18,7 @@ import {
 } from "./constants";
 import { SettingsData } from "../types/settings";
 
-export const overlayCfg = {
+const overlayCfg = {
   alpha: 1,
   alpha_back: 0.7,
   bounds: { width: 300, height: 600, x: 0, y: 0 },
@@ -81,7 +81,8 @@ const defaultConfig = {
     decksTableState: undefined,
     decksTableMode: DECKS_ART_MODE,
     collectionTableState: undefined,
-    collectionTableMode: COLLECTION_CARD_MODE,
+    collectionQuery: "f:standard r>token",
+    collectionMode: COLLECTION_CARD_MODE,
     matchesTableState: undefined,
     matchesTableMode: MATCHES_LIST_MODE,
     skip_firstpass: false,
