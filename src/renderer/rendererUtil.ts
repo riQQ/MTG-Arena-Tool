@@ -196,13 +196,19 @@ export function getWildcardsMissing(
     }
   });
 
+  // Set to a high number to simulate infinity
+  const INFINITE = 999;
+  if (have == 4) {
+    have = INFINITE;
+  }
+
   let copiesLeft = have;
   if (isSideboard) {
     copiesLeft = Math.max(0, copiesLeft - mainQuantity);
 
     const infiniteCards = [67306, 69172]; // petitioners, rat colony, etc
     if (have >= 4 && infiniteCards.indexOf(grpid) >= 0) {
-      copiesLeft = 4;
+      copiesLeft = INFINITE;
     }
   }
 
