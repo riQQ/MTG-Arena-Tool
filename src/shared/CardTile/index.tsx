@@ -172,7 +172,10 @@ interface MissingCardsProps {
 function MissingCardSprite(props: MissingCardsProps): JSX.Element {
   const { missing, cardRarity, listStyle, ww } = props;
 
-  const xoff = CARD_RARITIES.indexOf(cardRarity) * -24;
+  const xoff =
+    CARD_RARITIES.filter((r) => r !== "token" && r !== "land").indexOf(
+      cardRarity
+    ) * -24;
   const yoff = missing * -24;
 
   let className = css.notOwnedSprite;
