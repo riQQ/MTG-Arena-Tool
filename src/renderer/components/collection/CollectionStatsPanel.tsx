@@ -23,8 +23,9 @@ import { reduxAction } from "../../../shared/redux/sharedRedux";
 import indexCss from "../../index.css";
 import economyCss from "../economy/economy.css";
 import Flex from "../misc/Flex";
-import getFiltersFromQuery, { removeFilterFromQuery } from "./collectionQuery";
-import { InBoolFilter } from "./types";
+import { removeFilterFromQuery } from "./collectionQuery";
+import { InBoolFilter, CardsData } from "./types";
+import { Filters } from "react-table";
 
 const getRarityKey = (
   rarity: string
@@ -43,11 +44,13 @@ export default function CollectionStatsPanel({
   boosterMath,
   clickCompletionCallback,
   setQuery,
+  defaultFilters,
 }: {
   stats?: CollectionStats;
   boosterMath: boolean;
   clickCompletionCallback: () => void;
   setQuery: (query: string) => void;
+  defaultFilters: Filters<CardsData>;
 }): JSX.Element {
   const {
     countMode,
@@ -66,7 +69,6 @@ export default function CollectionStatsPanel({
 
   let boostersMode = inBoostersMode[0];
 
-  const defaultFilters = getFiltersFromQuery(query);
   defaultFilters.map((f: any) => {
     if (f.id == "boosters") {
       const filter: InBoolFilter = f.value;

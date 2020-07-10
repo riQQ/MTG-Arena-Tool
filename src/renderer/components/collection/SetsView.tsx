@@ -8,12 +8,13 @@ import Section from "../misc/Section";
 import indexCss from "../../index.css";
 import css from "./SetsView.css";
 import CollectionStatsPanel from "./CollectionStatsPanel";
-import { removeFilterFromQuery } from "./collectionQuery";
+import getFiltersFromQuery, { removeFilterFromQuery } from "./collectionQuery";
 import { useSelector } from "react-redux";
 import { AppState } from "../../../shared/redux/stores/rendererStore";
 import { SetCompletionStats } from "./SetCompletionStats";
 import Flex from "../misc/Flex";
 import notFound from "../../../assets/images/notfound.png";
+import { ArrayFilter } from "./types";
 
 interface SetsViewProps {
   stats: CollectionStats;
@@ -22,7 +23,6 @@ interface SetsViewProps {
 
 export default function SetsView(props: SetsViewProps): JSX.Element {
   const { stats, setQuery } = props;
-  const [currentSet, setCurrentSet] = useState<string | undefined>();
   const query = useSelector(
     (state: AppState) => state.settings.collectionQuery
   );
@@ -32,6 +32,17 @@ export default function SetsView(props: SetsViewProps): JSX.Element {
     mythicDraftFactor,
     boosterWinFactor,
   } = useSelector((state: AppState) => state.collection);
+
+  let defaultSet = undefined;
+  const defaultFilters = getFiltersFromQuery(query);
+  defaultFilters.map((f: any) => {
+    if (f.id == "set") {
+      const filter: ArrayFilter = f.value;
+      defaultSet = filter.arr[0] || undefined;
+    }
+  });
+
+  const [currentSet, setCurrentSet] = useState<string | undefined>(defaultSet);
 
   const currentSetName = Object.keys(database.sets).filter(
     (s) => database.sets[s].code.toLowerCase() == currentSet
@@ -124,6 +135,7 @@ export default function SetsView(props: SetsViewProps): JSX.Element {
           stats={stats}
           boosterMath={true}
           clickCompletionCallback={(): void => {}}
+          defaultFilters={defaultFilters}
         />
       </Section>
     </div>
