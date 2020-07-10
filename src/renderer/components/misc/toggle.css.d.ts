@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace ToggleCssNamespace {
+declare namespace ToggleCssModule {
   export interface IToggleCss {
     switch: string;
     "switch-container": string;
@@ -13,9 +13,9 @@ declare namespace ToggleCssNamespace {
   }
 }
 
-declare const ToggleCssModule: ToggleCssNamespace.IToggleCss & {
+declare const ToggleCssModule: ToggleCssModule.IToggleCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: ToggleCssNamespace.IToggleCss;
+  locals: ToggleCssModule.IToggleCss;
 };
 
 export = ToggleCssModule;

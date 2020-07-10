@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace TopNavCssNamespace {
+declare namespace TopNavCssModule {
   export interface ITopNavCss {
     constructedRank: string;
     constructed_rank: string;
@@ -54,9 +54,9 @@ declare namespace TopNavCssNamespace {
   }
 }
 
-declare const TopNavCssModule: TopNavCssNamespace.ITopNavCss & {
+declare const TopNavCssModule: TopNavCssModule.ITopNavCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: TopNavCssNamespace.ITopNavCss;
+  locals: TopNavCssModule.ITopNavCss;
 };
 
 export = TopNavCssModule;

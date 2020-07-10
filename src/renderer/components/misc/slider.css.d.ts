@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace SliderCssNamespace {
+declare namespace SliderCssModule {
   export interface ISliderCss {
     slidecontainer: string;
     sliderMarkHor: string;
@@ -14,9 +14,9 @@ declare namespace SliderCssNamespace {
   }
 }
 
-declare const SliderCssModule: SliderCssNamespace.ISliderCss & {
+declare const SliderCssModule: SliderCssModule.ISliderCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: SliderCssNamespace.ISliderCss;
+  locals: SliderCssModule.ISliderCss;
 };
 
 export = SliderCssModule;

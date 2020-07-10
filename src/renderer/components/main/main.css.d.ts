@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace MainCssNamespace {
+declare namespace MainCssModule {
   export interface IMainCss {
     messageBig: string;
     messageCenter: string;
@@ -15,9 +15,9 @@ declare namespace MainCssNamespace {
   }
 }
 
-declare const MainCssModule: MainCssNamespace.IMainCss & {
+declare const MainCssModule: MainCssModule.IMainCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: MainCssNamespace.IMainCss;
+  locals: MainCssModule.IMainCss;
 };
 
 export = MainCssModule;

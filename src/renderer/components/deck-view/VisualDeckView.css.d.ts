@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace VisualDeckViewCssNamespace {
+declare namespace VisualDeckViewCssModule {
   export interface IVisualDeckViewCss {
     deckVisualCard: string;
     deckVisualCardImg: string;
@@ -23,9 +23,9 @@ declare namespace VisualDeckViewCssNamespace {
   }
 }
 
-declare const VisualDeckViewCssModule: VisualDeckViewCssNamespace.IVisualDeckViewCss & {
+declare const VisualDeckViewCssModule: VisualDeckViewCssModule.IVisualDeckViewCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: VisualDeckViewCssNamespace.IVisualDeckViewCss;
+  locals: VisualDeckViewCssModule.IVisualDeckViewCss;
 };
 
 export = VisualDeckViewCssModule;

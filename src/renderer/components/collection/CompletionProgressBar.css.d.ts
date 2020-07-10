@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace CompletionProgressBarCssNamespace {
+declare namespace CompletionProgressBarCssModule {
   export interface ICompletionProgressBarCss {
     statsSetBar: string;
     statsSetCompletion: string;
@@ -15,9 +15,9 @@ declare namespace CompletionProgressBarCssNamespace {
   }
 }
 
-declare const CompletionProgressBarCssModule: CompletionProgressBarCssNamespace.ICompletionProgressBarCss & {
+declare const CompletionProgressBarCssModule: CompletionProgressBarCssModule.ICompletionProgressBarCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: CompletionProgressBarCssNamespace.ICompletionProgressBarCss;
+  locals: CompletionProgressBarCssModule.ICompletionProgressBarCss;
 };
 
 export = CompletionProgressBarCssModule;

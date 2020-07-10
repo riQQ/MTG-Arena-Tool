@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace PopupsCssNamespace {
+declare namespace PopupsCssModule {
   export interface IPopupsCss {
     "error-info-bottom": string;
     "error-info-text": string;
@@ -33,9 +33,9 @@ declare namespace PopupsCssNamespace {
   }
 }
 
-declare const PopupsCssModule: PopupsCssNamespace.IPopupsCss & {
+declare const PopupsCssModule: PopupsCssModule.IPopupsCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: PopupsCssNamespace.IPopupsCss;
+  locals: PopupsCssModule.IPopupsCss;
 };
 
 export = PopupsCssModule;

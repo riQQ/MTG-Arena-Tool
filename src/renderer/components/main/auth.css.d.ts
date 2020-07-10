@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace AuthCssNamespace {
+declare namespace AuthCssModule {
   export interface IAuthCss {
     launchLoginLink: string;
     launch_login_link: string;
@@ -13,9 +13,9 @@ declare namespace AuthCssNamespace {
   }
 }
 
-declare const AuthCssModule: AuthCssNamespace.IAuthCss & {
+declare const AuthCssModule: AuthCssModule.IAuthCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: AuthCssNamespace.IAuthCss;
+  locals: AuthCssModule.IAuthCss;
 };
 
 export = AuthCssModule;

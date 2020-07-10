@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace AppCssNamespace {
+declare namespace AppCssModule {
   export interface IAppCss {
     "app-wrapper": string;
     "app-wrapper-back": string;
@@ -22,9 +22,9 @@ declare namespace AppCssNamespace {
   }
 }
 
-declare const AppCssModule: AppCssNamespace.IAppCss & {
+declare const AppCssModule: AppCssModule.IAppCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: AppCssNamespace.IAppCss;
+  locals: AppCssModule.IAppCss;
 };
 
 export = AppCssModule;

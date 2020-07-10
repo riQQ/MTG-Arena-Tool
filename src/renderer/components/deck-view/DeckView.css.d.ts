@@ -1,15 +1,15 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace DeckViewCssNamespace {
+declare namespace DeckViewCssModule {
   export interface IDeckViewCss {
     "regular-view-grid": string;
     regularViewGrid: string;
   }
 }
 
-declare const DeckViewCssModule: DeckViewCssNamespace.IDeckViewCss & {
+declare const DeckViewCssModule: DeckViewCssModule.IDeckViewCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: DeckViewCssNamespace.IDeckViewCss;
+  locals: DeckViewCssModule.IDeckViewCss;
 };
 
 export = DeckViewCssModule;

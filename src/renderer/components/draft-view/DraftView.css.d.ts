@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace DraftViewCssNamespace {
+declare namespace DraftViewCssModule {
   export interface IDraftViewCss {
     "draft-card": string;
     "draft-card-cont": string;
@@ -22,9 +22,9 @@ declare namespace DraftViewCssNamespace {
   }
 }
 
-declare const DraftViewCssModule: DraftViewCssNamespace.IDraftViewCss & {
+declare const DraftViewCssModule: DraftViewCssModule.IDraftViewCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: DraftViewCssNamespace.IDraftViewCss;
+  locals: DraftViewCssModule.IDraftViewCss;
 };
 
 export = DraftViewCssModule;

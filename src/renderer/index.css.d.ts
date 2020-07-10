@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace IndexCssNamespace {
+declare namespace IndexCssModule {
   export interface IIndexCss {
     archiveLabel: string;
     archive_label: string;
@@ -168,11 +168,9 @@ declare namespace IndexCssNamespace {
     library_stat: string;
     lineBottomBorder: string;
     lineDark: string;
-    lineLight: string;
     lineLighter: string;
     line_bottom_border: string;
     line_dark: string;
-    line_light: string;
     line_lighter: string;
     link: string;
     listDeck: string;
@@ -425,9 +423,9 @@ declare namespace IndexCssNamespace {
   }
 }
 
-declare const IndexCssModule: IndexCssNamespace.IIndexCss & {
+declare const IndexCssModule: IndexCssModule.IIndexCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: IndexCssNamespace.IIndexCss;
+  locals: IndexCssModule.IIndexCss;
 };
 
 export = IndexCssModule;

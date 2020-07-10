@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace TablesCssNamespace {
+declare namespace TablesCssModule {
   export interface ITablesCss {
     innerDiv: string;
     inner_div: string;
@@ -27,9 +27,9 @@ declare namespace TablesCssNamespace {
   }
 }
 
-declare const TablesCssModule: TablesCssNamespace.ITablesCss & {
+declare const TablesCssModule: TablesCssModule.ITablesCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: TablesCssNamespace.ITablesCss;
+  locals: TablesCssModule.ITablesCss;
 };
 
 export = TablesCssModule;

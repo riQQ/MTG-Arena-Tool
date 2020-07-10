@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace ListItemCssNamespace {
+declare namespace ListItemCssModule {
   export interface IListItemCss {
     copyButton: string;
     copy_button: string;
@@ -59,9 +59,9 @@ declare namespace ListItemCssNamespace {
   }
 }
 
-declare const ListItemCssModule: ListItemCssNamespace.IListItemCss & {
+declare const ListItemCssModule: ListItemCssModule.IListItemCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: ListItemCssNamespace.IListItemCss;
+  locals: ListItemCssModule.IListItemCss;
 };
 
 export = ListItemCssModule;

@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace CardTileCssNamespace {
+declare namespace CardTileCssModule {
   export interface ICardTileCss {
     cardTile: string;
     cardTileContainer: string;
@@ -41,9 +41,9 @@ declare namespace CardTileCssNamespace {
   }
 }
 
-declare const CardTileCssModule: CardTileCssNamespace.ICardTileCss & {
+declare const CardTileCssModule: CardTileCssModule.ICardTileCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: CardTileCssNamespace.ICardTileCss;
+  locals: CardTileCssModule.ICardTileCss;
 };
 
 export = CardTileCssModule;

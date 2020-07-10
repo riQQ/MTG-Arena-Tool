@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace SelectScssNamespace {
+declare namespace SelectScssModule {
   export interface ISelectScss {
     ASinput: string;
     ASsuggestion: string;
@@ -33,9 +33,9 @@ declare namespace SelectScssNamespace {
   }
 }
 
-declare const SelectScssModule: SelectScssNamespace.ISelectScss & {
+declare const SelectScssModule: SelectScssModule.ISelectScss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: SelectScssNamespace.ISelectScss;
+  locals: SelectScssModule.ISelectScss;
 };
 
 export = SelectScssModule;

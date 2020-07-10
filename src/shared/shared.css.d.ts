@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace SharedCssNamespace {
+declare namespace SharedCssModule {
   export interface ISharedCss {
     absolute: string;
     autoWidth: string;
@@ -199,9 +199,9 @@ declare namespace SharedCssNamespace {
   }
 }
 
-declare const SharedCssModule: SharedCssNamespace.ISharedCss & {
+declare const SharedCssModule: SharedCssModule.ISharedCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: SharedCssNamespace.ISharedCss;
+  locals: SharedCssModule.ISharedCss;
 };
 
 export = SharedCssModule;

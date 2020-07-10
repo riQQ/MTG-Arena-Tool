@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace EconomyCssNamespace {
+declare namespace EconomyCssModule {
   export interface IEconomyCss {
     economyCard: string;
     economyDayStats: string;
@@ -52,9 +52,9 @@ declare namespace EconomyCssNamespace {
   }
 }
 
-declare const EconomyCssModule: EconomyCssNamespace.IEconomyCss & {
+declare const EconomyCssModule: EconomyCssModule.IEconomyCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: EconomyCssNamespace.IEconomyCss;
+  locals: EconomyCssModule.IEconomyCss;
 };
 
 export = EconomyCssModule;

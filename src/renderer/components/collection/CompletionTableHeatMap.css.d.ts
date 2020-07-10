@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace CompletionTableHeatMapCssNamespace {
+declare namespace CompletionTableHeatMapCssModule {
   export interface ICompletionTableHeatMapCss {
     completionTable: string;
     completionTableCard: string;
@@ -32,9 +32,9 @@ declare namespace CompletionTableHeatMapCssNamespace {
   }
 }
 
-declare const CompletionTableHeatMapCssModule: CompletionTableHeatMapCssNamespace.ICompletionTableHeatMapCss & {
+declare const CompletionTableHeatMapCssModule: CompletionTableHeatMapCssModule.ICompletionTableHeatMapCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: CompletionTableHeatMapCssNamespace.ICompletionTableHeatMapCss;
+  locals: CompletionTableHeatMapCssModule.ICompletionTableHeatMapCss;
 };
 
 export = CompletionTableHeatMapCssModule;

@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace ExploreTabCssNamespace {
+declare namespace ExploreTabCssModule {
   export interface IExploreTabCss {
     exploreButtonsContainer: string;
     exploreButtonsRow: string;
@@ -13,9 +13,9 @@ declare namespace ExploreTabCssNamespace {
   }
 }
 
-declare const ExploreTabCssModule: ExploreTabCssNamespace.IExploreTabCss & {
+declare const ExploreTabCssModule: ExploreTabCssModule.IExploreTabCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: ExploreTabCssNamespace.IExploreTabCss;
+  locals: ExploreTabCssModule.IExploreTabCss;
 };
 
 export = ExploreTabCssModule;

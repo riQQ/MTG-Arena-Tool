@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace CardsWinrateViewCssNamespace {
+declare namespace CardsWinrateViewCssModule {
   export interface ICardsWinrateViewCss {
     "card-wr-item": string;
     "card-wr-line": string;
@@ -33,9 +33,9 @@ declare namespace CardsWinrateViewCssNamespace {
   }
 }
 
-declare const CardsWinrateViewCssModule: CardsWinrateViewCssNamespace.ICardsWinrateViewCss & {
+declare const CardsWinrateViewCssModule: CardsWinrateViewCssModule.ICardsWinrateViewCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: CardsWinrateViewCssNamespace.ICardsWinrateViewCss;
+  locals: CardsWinrateViewCssModule.ICardsWinrateViewCss;
 };
 
 export = CardsWinrateViewCssModule;

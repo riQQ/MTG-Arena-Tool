@@ -1,6 +1,6 @@
 /* eslint-disable */
 // GENERATED FILE; DO NOT EDIT
-declare namespace MatchViewCssNamespace {
+declare namespace MatchViewCssModule {
   export interface IMatchViewCss {
     gameNext: string;
     gamePrev: string;
@@ -23,9 +23,9 @@ declare namespace MatchViewCssNamespace {
   }
 }
 
-declare const MatchViewCssModule: MatchViewCssNamespace.IMatchViewCss & {
+declare const MatchViewCssModule: MatchViewCssModule.IMatchViewCss & {
   /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: MatchViewCssNamespace.IMatchViewCss;
+  locals: MatchViewCssModule.IMatchViewCss;
 };
 
 export = MatchViewCssModule;
