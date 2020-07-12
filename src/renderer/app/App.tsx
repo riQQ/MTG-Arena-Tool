@@ -131,10 +131,12 @@ function App(): JSX.Element {
       )}
       <div
         className={
-          loginState == LOGIN_OK
+          process.platform == "linux"
+            ? loginState == LOGIN_OK
+              ? css.appWrapperNoFrame
+              : css.appWrapperBackNoFrame
+            : loginState == LOGIN_OK
             ? css.appWrapper
-            : process.platform == "linux"
-            ? css.appWrapperBackNoFrame
             : css.appWrapperBack
         }
       >
