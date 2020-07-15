@@ -83,7 +83,7 @@ export default function ListItemDraft({
       </Column>
 
       <Column style={{ display: "flex" }}>
-        <ShareButton type="draft" data={draft} />
+        <ShareButton type="draft" style={{ margin: "auto 0" }} data={draft} />
       </Column>
 
       <ArchiveButton
