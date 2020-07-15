@@ -46,16 +46,18 @@ export function CardPoolRares(props: { pool: number[] }): JSX.Element {
   );
 
   let element: JSX.Element | JSX.Element[] = <></>;
-  if (pool.length < 6) {
-    element = pool
-      .map((cardId: string | number) => db.card(cardId))
-      .filter(
-        (card: DbCardData | undefined) =>
-          card && (card.rarity == "rare" || card.rarity == "mythic")
-      )
-      .map((card: DbCardData | undefined, index: number) => {
+  const filteredPool = pool
+    .map((cardId: string | number) => db.card(cardId))
+    .filter(
+      (card: DbCardData | undefined) =>
+        card && (card.rarity == "rare" || card.rarity == "mythic")
+    );
+  if (filteredPool.length < 6) {
+    element = filteredPool.map(
+      (card: DbCardData | undefined, index: number) => {
         return card ? <RoundCard key={index} card={card}></RoundCard> : <></>;
-      });
+      }
+    );
   } else {
     element = (
       <div style={{ margin: "auto" }}>
