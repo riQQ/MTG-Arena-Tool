@@ -151,7 +151,7 @@ export function asyncWorker(task: HttpTask, callback: HttpTaskCallback): void {
   ) {
     setSyncState(SYNC_PUSH);
   }
-  debugLog("POST", _headers);
+  //debugLog("POST", _headers);
   const postData = qs.stringify(_headers);
   options.headers = {
     "Content-Type": "application/x-www-form-urlencoded",
