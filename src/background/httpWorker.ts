@@ -134,7 +134,9 @@ export function asyncWorker(task: HttpTask, callback: HttpTaskCallback): void {
     return;
   }
   const _headers: any = { ...task };
-  _headers.token = globals.store.getState().appsettings.token;
+  _headers.token = Buffer.from(
+    globals.store.getState().appsettings.token
+  ).toString("ascii");
   const options = getRequestOptions(task);
   if (task.method !== "notifications") {
     //ipcLog("SEND >> " + task.method + ", " + _headers.reqId + ", " + _headers.token);
@@ -193,6 +195,7 @@ export function asyncWorker(task: HttpTask, callback: HttpTaskCallback): void {
           // should never get to this point
           throw new Error(`Error handling request. (${task.method})`);
         } catch (error) {
+          debugLog(results, "debug");
           callback(error, task, results);
         }
       });
