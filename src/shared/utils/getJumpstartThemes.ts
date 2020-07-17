@@ -46,7 +46,7 @@ export const themeCards: Record<JumpstartThemes, string[]> = {
     "Terror of the Peaks",
   ],
   Lightning: ["Ball Lightning", "Lightning Phoenix", "Lightning Serpent"],
-  Minotaurs: ["Rageblood Shaman", "Sethron, Hurloon General*"],
+  Minotaurs: ["Rageblood Shaman", "Sethron, Hurloon General"],
   Cats: ["Feline Sovereign", "Lurking Predators"],
   Elves: ["Allosaurus Shepherd", "Craterhoof Behemoth", "Elvish Archdruid"],
   Lands: ["Oracle of Mul Daya", "Ulvenwald Hydra"],
@@ -119,7 +119,7 @@ export const themeCards: Record<JumpstartThemes, string[]> = {
     "Brash Taunter",
     "Hellrider",
     "Sin Prodder",
-    "Zurzoth, Chaos Rider*",
+    "Zurzoth, Chaos Rider",
   ],
   Goblins: [
     "Goblin Chieftain",
