@@ -355,23 +355,13 @@ function handleAuthResponse(
   parsedResult?: any
 ): void {
   if (error || !parsedResult) {
-    reduxAction(
-      globals.store.dispatch,
-      {
-        type: "SET_APP_SETTINGS",
-        arg: {
-          token: "",
-        },
-      },
-      IPC_ALL
-    );
     ipcSend("auth", {});
     ipcSend("toggle_login", true);
     ipcSend("login_failed", true);
     debugLog(error?.message, "error");
     ipcPop({
       text: error?.message,
-      time: 3000,
+      time: 100000,
       progress: -1,
     });
     return;
