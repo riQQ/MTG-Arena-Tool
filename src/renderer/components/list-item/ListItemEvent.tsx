@@ -34,6 +34,7 @@ import { InternalDraftv2 } from "../../../types/draft";
 import { useSpring, animated } from "react-spring";
 import { RaritySymbol } from "../misc/RaritySymbol";
 import { LabelText } from "../misc/LabelText";
+import getEventPrettyName from "../../../shared/utils/getEventPrettyName";
 
 export function CardPoolRares(props: { pool: number[] }): JSX.Element {
   const { pool } = props;
@@ -116,7 +117,7 @@ function EventMainRow({
   onRowClick: () => void;
 }): JSX.Element {
   const eventName =
-    db.events[event.InternalEventName] ??
+    getEventPrettyName(event.InternalEventName) ??
     event.displayName ??
     event.InternalEventName ??
     "Unknown";

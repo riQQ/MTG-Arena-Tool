@@ -3,6 +3,7 @@
 import getSetCodeInEventId from "../getSetInEventId";
 import database from "../../database";
 import { cardHasType, cardType } from "../../cardTypes";
+import getEventPrettyName from "../getEventPrettyName";
 
 describe("utils", () => {
   it("Set codes are detected preperly", () => {
@@ -29,5 +30,30 @@ describe("utils", () => {
       expect(cardHasType(ornithopter, "Artifact")).toBeTruthy();
       expect(cardHasType(ornithopter, "Creature")).toBeTruthy();
     }
+  });
+
+  it("Pretty event names are guessed properly", () => {
+    expect(getEventPrettyName("Ladder")).toBe("Standard Ranked");
+    expect(getEventPrettyName("Historic_Ladder")).toBe("Historic Ranked");
+
+    expect(getEventPrettyName("PremierDraft_M21_20200625")).toBe(
+      "Premier Draft M21"
+    );
+    expect(getEventPrettyName("QuickDraft_GRN_20190412")).toBe(
+      "Quick Draft GRN"
+    );
+    expect(getEventPrettyName("CompDraft_WAR_20190425")).toBe(
+      "Competitive Draft WAR"
+    );
+    expect(getEventPrettyName("Historic_Shakeup_20200606")).toBe(
+      "Historic Shakeup (June 2020)"
+    );
+    expect(getEventPrettyName("Play_Brawl")).toBe("Play Brawl");
+    expect(getEventPrettyName("Constructed_Event_2020")).toBe("Standard Event");
+    expect(getEventPrettyName("Traditional_Cons_Event_2020")).toBe(
+      "Traditional Standard Event"
+    );
+
+    expect(getEventPrettyName("Pauper_20190315")).toBe("Pauper (March 2019)");
   });
 });
