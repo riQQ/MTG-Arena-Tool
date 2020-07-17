@@ -240,7 +240,7 @@ function EventSubRows({
 
   const style = useSpring({
     height: expanded
-      ? (matchRows.length + (initialDraft.current ? 1 : 0)) * 64 + "px"
+      ? (matchRows.length + (initialDraft.current ? 1 : 0)) * 70 + "px"
       : "0px",
   });
 
