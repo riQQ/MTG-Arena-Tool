@@ -288,7 +288,7 @@ export function getCardFormats(card: DbCardData): string[] {
         const reprintSet = db.sets[reprint.set]?.arenacode || reprint.set;
         arenaSetCode.push(reprintSet);
       }
-    })
+    });
   }
 
   Object.keys(formats).map((name) => {
