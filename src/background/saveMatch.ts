@@ -101,6 +101,7 @@ function generateInternalMatch(
 
     const themeTile = themeCards[themes[0] as JumpstartThemes];
     newMatch.playerDeck.deckTileId = themeTile || DEFAULT_TILE;
+    newMatch.jumpstartTheme = themes.join(" ");
   }
 
   newMatch.oppDeck.commandZoneGRPIds = currentMatch.opponent.commanderGrpIds;
