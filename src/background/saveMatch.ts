@@ -13,7 +13,6 @@ import debugLog from "../shared/debugLog";
 import getJumpstartThemes, {
   themeCards,
 } from "../shared/utils/getJumpstartThemes";
-import database from "../shared/database";
 import { JumpstartThemes } from "../types/jumpstart";
 
 function matchResults(results: ResultSpec[]): number[] {
@@ -100,16 +99,8 @@ function generateInternalMatch(
     newMatch.jumpstartTheme = themes.join(" ");
     newMatch.playerDeck.name = newMatch.jumpstartTheme;
 
-    const themeTile = Object.keys(database.cards).filter((id) => {
-      return (
-        database.card(id)?.name ==
-        themeCards[(themes[0] as JumpstartThemes) || ""][0]
-      );
-    })[0];
-
-    newMatch.playerDeck.deckTileId = themeTile
-      ? parseInt(themeTile)
-      : DEFAULT_TILE;
+    const themeTile = themeCards[themes[0] as JumpstartThemes];
+    newMatch.playerDeck.deckTileId = themeTile || DEFAULT_TILE;
   }
 
   newMatch.oppDeck.commandZoneGRPIds = currentMatch.opponent.commanderGrpIds;
