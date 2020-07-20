@@ -68,7 +68,7 @@ function getDeckCurve(deck: Deck): number[][] {
 }
 
 export default function DeckManaCurve(props: {
-  className: string;
+  className?: string;
   deck: Deck;
 }): JSX.Element {
   const { className, deck } = props;
