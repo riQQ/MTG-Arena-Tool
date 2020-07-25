@@ -121,7 +121,7 @@ export default function saveMatch(id: string, matchEndTime: number): void {
   const match = existingMatch || generateInternalMatch(matchEndTime);
   if (!match) {
     debugLog(`COULD NOT GENERATE MATCH DATA!, id: ${id}`, "error");
-    debugLog(`${currentMatch}`, "debug");
+    debugLog(currentMatch, "debug");
     return;
   }
 
