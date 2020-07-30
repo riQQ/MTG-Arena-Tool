@@ -462,4 +462,4 @@ function finishLoading(): void {
   }
 }
 
-export default { startWatchingLog };
+export default { start, onLogEntryFound, startWatchingLog };

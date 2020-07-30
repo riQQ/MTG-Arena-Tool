@@ -1,0 +1,597 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parser parses a match consistently 1`] = `
+Object {
+  "GREtoClient": Array [],
+  "annotations": Object {},
+  "beginTime": 2020-07-30T17:17:34.719Z,
+  "cardsBottom": Array [],
+  "cardsCast": Array [],
+  "cardsFromSideboard": Array [],
+  "cardsLeft": Deck {
+    "_colors": Colors {
+      "b": 0,
+      "g": 0,
+      "r": 0,
+      "u": 0,
+      "w": 0,
+    },
+    "archetype": "",
+    "arenaMain": Array [],
+    "arenaSide": Array [],
+    "commandZoneGRPIds": Array [],
+    "companionGRPId": null,
+    "custom": false,
+    "description": "",
+    "format": "",
+    "id": "",
+    "lastUpdated": "",
+    "mainboard": CardsList {
+      "list": Array [],
+    },
+    "name": "",
+    "sideboard": CardsList {
+      "list": Array [],
+    },
+    "tags": Array [
+      undefined,
+    ],
+    "tile": 67003,
+  },
+  "cardsOdds": Chances {
+    "cardsLeft": 0,
+    "chanceArt": 0,
+    "chanceCre": 0,
+    "chanceEnc": 0,
+    "chanceIns": 0,
+    "chanceLan": 0,
+    "chancePla": 0,
+    "chanceSor": 0,
+    "deckSize": 0,
+    "landB": 0,
+    "landG": 0,
+    "landR": 0,
+    "landU": 0,
+    "landW": 0,
+    "sampleSize": 0,
+  },
+  "currentDeck": Deck {
+    "_colors": Colors {
+      "b": 0,
+      "g": 0,
+      "r": 0,
+      "u": 0,
+      "w": 0,
+    },
+    "archetype": "",
+    "arenaMain": Array [
+      Object {
+        "id": 70228,
+        "quantity": 4,
+      },
+      Object {
+        "id": 69644,
+        "quantity": 4,
+      },
+      Object {
+        "id": 69653,
+        "quantity": 4,
+      },
+      Object {
+        "id": 71908,
+        "quantity": 2,
+      },
+      Object {
+        "id": 69211,
+        "quantity": 4,
+      },
+      Object {
+        "id": 70285,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70634,
+        "quantity": 3,
+      },
+      Object {
+        "id": 71145,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70265,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70384,
+        "quantity": 4,
+      },
+      Object {
+        "id": 69393,
+        "quantity": 4,
+      },
+      Object {
+        "id": 70388,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70391,
+        "quantity": 4,
+      },
+      Object {
+        "id": 71293,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70504,
+        "quantity": 6,
+      },
+      Object {
+        "id": 70503,
+        "quantity": 7,
+      },
+      Object {
+        "id": 71870,
+        "quantity": 4,
+      },
+    ],
+    "arenaSide": Array [
+      Object {
+        "id": 69201,
+        "quantity": 3,
+      },
+      Object {
+        "id": 70141,
+        "quantity": 4,
+      },
+      Object {
+        "id": 70269,
+        "quantity": 2,
+      },
+      Object {
+        "id": 71158,
+        "quantity": 3,
+      },
+      Object {
+        "id": 69896,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70748,
+        "quantity": 1,
+      },
+    ],
+    "commandZoneGRPIds": Array [],
+    "companionGRPId": null,
+    "custom": false,
+    "description": "",
+    "format": "",
+    "id": "0cbcfb6f-96b1-42f1-a4c6-ec0b6f56ad01",
+    "lastUpdated": "2020-07-03T01:28:34.9011951",
+    "mainboard": CardsList {
+      "list": Array [
+        Object {
+          "id": 70228,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 69644,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 69653,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 71908,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 69211,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 70285,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70634,
+          "measurable": true,
+          "quantity": 3,
+        },
+        Object {
+          "id": 71145,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70265,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70384,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 69393,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 70388,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70391,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 71293,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70504,
+          "measurable": true,
+          "quantity": 6,
+        },
+        Object {
+          "id": 70503,
+          "measurable": true,
+          "quantity": 7,
+        },
+        Object {
+          "id": 71870,
+          "measurable": true,
+          "quantity": 4,
+        },
+      ],
+    },
+    "name": "Rakdos M21",
+    "sideboard": CardsList {
+      "list": Array [
+        Object {
+          "id": 69201,
+          "measurable": true,
+          "quantity": 3,
+        },
+        Object {
+          "id": 70141,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 70269,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 71158,
+          "measurable": true,
+          "quantity": 3,
+        },
+        Object {
+          "id": 69896,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70748,
+          "measurable": true,
+          "quantity": 1,
+        },
+      ],
+    },
+    "tags": Array [
+      "TraditionalStandard",
+    ],
+    "tile": 70228,
+  },
+  "currentPriority": 0,
+  "eventId": "AIBotMatch",
+  "gameInfo": Object {},
+  "gameObjects": Object {},
+  "gameWinner": 0,
+  "handsDrawn": Array [],
+  "idChanges": Object {},
+  "initialLibraryInstanceIds": Array [],
+  "instanceToCardIdMap": Object {},
+  "matchGameStats": Array [],
+  "matchId": "",
+  "msgId": 0,
+  "onThePlay": 0,
+  "oppSeat": 0,
+  "oppStats": Object {
+    "damage": Object {},
+    "lifeGained": 0,
+    "lifeLost": 0,
+    "lifeTotals": Array [],
+    "manaUsed": 0,
+  },
+  "opponent": Object {
+    "commanderGrpIds": Array [],
+    "leaderboardPlace": 0,
+    "name": "Sparky#00000",
+    "percentile": 0,
+    "rank": "Beginner",
+    "tier": 0,
+  },
+  "originalDeck": Deck {
+    "_colors": Colors {
+      "b": 0,
+      "g": 0,
+      "r": 0,
+      "u": 0,
+      "w": 0,
+    },
+    "archetype": "",
+    "arenaMain": Array [
+      Object {
+        "id": 70228,
+        "quantity": 4,
+      },
+      Object {
+        "id": 69644,
+        "quantity": 4,
+      },
+      Object {
+        "id": 69653,
+        "quantity": 4,
+      },
+      Object {
+        "id": 71908,
+        "quantity": 2,
+      },
+      Object {
+        "id": 69211,
+        "quantity": 4,
+      },
+      Object {
+        "id": 70285,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70634,
+        "quantity": 3,
+      },
+      Object {
+        "id": 71145,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70265,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70384,
+        "quantity": 4,
+      },
+      Object {
+        "id": 69393,
+        "quantity": 4,
+      },
+      Object {
+        "id": 70388,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70391,
+        "quantity": 4,
+      },
+      Object {
+        "id": 71293,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70504,
+        "quantity": 6,
+      },
+      Object {
+        "id": 70503,
+        "quantity": 7,
+      },
+      Object {
+        "id": 71870,
+        "quantity": 4,
+      },
+    ],
+    "arenaSide": Array [
+      Object {
+        "id": 69201,
+        "quantity": 3,
+      },
+      Object {
+        "id": 70141,
+        "quantity": 4,
+      },
+      Object {
+        "id": 70269,
+        "quantity": 2,
+      },
+      Object {
+        "id": 71158,
+        "quantity": 3,
+      },
+      Object {
+        "id": 69896,
+        "quantity": 2,
+      },
+      Object {
+        "id": 70748,
+        "quantity": 1,
+      },
+    ],
+    "commandZoneGRPIds": Array [],
+    "companionGRPId": null,
+    "custom": false,
+    "description": "",
+    "format": "",
+    "id": "0cbcfb6f-96b1-42f1-a4c6-ec0b6f56ad01",
+    "lastUpdated": "2020-07-03T01:28:34.9011951",
+    "mainboard": CardsList {
+      "list": Array [
+        Object {
+          "id": 70228,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 69644,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 69653,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 71908,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 69211,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 70285,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70634,
+          "measurable": true,
+          "quantity": 3,
+        },
+        Object {
+          "id": 71145,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70265,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70384,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 69393,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 70388,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70391,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 71293,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70504,
+          "measurable": true,
+          "quantity": 6,
+        },
+        Object {
+          "id": 70503,
+          "measurable": true,
+          "quantity": 7,
+        },
+        Object {
+          "id": 71870,
+          "measurable": true,
+          "quantity": 4,
+        },
+      ],
+    },
+    "name": "Rakdos M21",
+    "sideboard": CardsList {
+      "list": Array [
+        Object {
+          "id": 69201,
+          "measurable": true,
+          "quantity": 3,
+        },
+        Object {
+          "id": 70141,
+          "measurable": true,
+          "quantity": 4,
+        },
+        Object {
+          "id": 70269,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 71158,
+          "measurable": true,
+          "quantity": 3,
+        },
+        Object {
+          "id": 69896,
+          "measurable": true,
+          "quantity": 2,
+        },
+        Object {
+          "id": 70748,
+          "measurable": true,
+          "quantity": 1,
+        },
+      ],
+    },
+    "tags": Array [
+      "TraditionalStandard",
+    ],
+    "tile": 70228,
+  },
+  "player": Object {
+    "commanderGrpIds": Array [],
+  },
+  "playerSeat": 0,
+  "playerStats": Object {
+    "damage": Object {},
+    "lifeGained": 0,
+    "lifeLost": 0,
+    "lifeTotals": Array [],
+    "manaUsed": 0,
+  },
+  "players": Array [],
+  "priorityTimers": Object {
+    "last": 0,
+    "timers": Array [
+      0,
+      0,
+      0,
+      0,
+      0,
+    ],
+  },
+  "processedAnnotations": Array [],
+  "statsHeatMap": Array [],
+  "totalTurns": 0,
+  "turnInfo": Object {},
+  "zones": Object {},
+}
+`;

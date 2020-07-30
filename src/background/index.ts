@@ -599,3 +599,5 @@ function dataChop(data: string, startStr: string, endStr: string): string {
 
   return data;
 }
+
+module.exports = {};
