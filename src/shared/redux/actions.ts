@@ -46,6 +46,7 @@ export const actions = {
   ADD_CARDS_LIST: PlayerDataSlice.addCardsList,
   ADD_CARDS_KEYS: PlayerDataSlice.addCardsKeys,
   ADD_CARDS_FROM_STORE: PlayerDataSlice.addCardsFromStore,
+  SET_CARDS_TIME: PlayerDataSlice.setCardsTime,
   REMOVE_DECK_TAG: PlayerDataSlice.removeDeckTag,
   ADD_DECK_TAG: PlayerDataSlice.addDeckTag,
   SET_DECK_TAGS: PlayerDataSlice.setDeckTags,

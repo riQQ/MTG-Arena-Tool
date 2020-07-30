@@ -1,4 +1,5 @@
 /* eslint-env jest */
+import { actions } from "../../shared/redux/actions";
 import {} from "../index";
 import arenaLogWatcher from "../arena-log-watcher";
 import globals from "../globals";
@@ -31,10 +32,30 @@ function doStart(): Promise<void> {
   });
 }
 
+beforeAll(async () => {
+  await doStart();
+});
+
 describe("parser", () => {
-  it("parses a match consistently", async () => {
-    await doStart();
+  it("parses a match consistently", () => {
     globalStore.currentMatch.beginTime = new Date("2020-07-30T17:17:34.719Z");
     expect(globalStore.currentMatch).toMatchSnapshot();
+  });
+
+  it("parses decks", () => {
+    expect(globalStore.decks).toMatchSnapshot();
+  });
+
+  it("parses matches", () => {
+    expect(globalStore.matches).toMatchSnapshot();
+  });
+
+  it("parses events", () => {
+    expect(globalStore.events).toMatchSnapshot();
+  });
+
+  it("matches redux store", () => {
+    globals.store.dispatch(actions["SET_CARDS_TIME"](1596131827815));
+    expect(globals.store.getState()).toMatchSnapshot();
   });
 });
