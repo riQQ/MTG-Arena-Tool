@@ -32,11 +32,21 @@ function doStart(): Promise<void> {
   });
 }
 
+let startTime = 0;
+let endTime = 0;
 beforeAll(async () => {
+  startTime = new Date().getTime();
   await doStart();
+  endTime = new Date().getTime();
 });
 
 describe("parser", () => {
+  it("parses in a reasonable time", () => {
+    const time = endTime - startTime;
+    // Ran on my PC multiple times with ranges of 170 - 300ms
+    expect(time).toBeLessThan(500);
+  });
+
   it("parses a match consistently", () => {
     globalStore.currentMatch.beginTime = new Date("2020-07-30T17:17:34.719Z");
     expect(globalStore.currentMatch).toMatchSnapshot();
@@ -65,6 +75,5 @@ describe("parser", () => {
     expect(globals.store.getState().playerdata).toMatchSnapshot();
     expect(globals.store.getState().renderer).toMatchSnapshot();
     expect(globals.store.getState().seasonal).toMatchSnapshot();
-    expect(globals.store.getState().settings).toMatchSnapshot();
   });
 });
