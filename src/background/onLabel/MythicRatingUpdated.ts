@@ -4,11 +4,15 @@ import globals from "../globals";
 import { parseWotcTimeFallback } from "../backgroundUtil";
 
 import LogEntry from "../../types/logDecoder";
-import { MythicRatingUpdate } from "../../types/rank";
 import { reduxAction } from "../../shared/redux/sharedRedux";
-import { IPC_RENDERER } from "../../shared/constants";
 import globalStore, { seasonalList } from "../../shared/store";
-import { SeasonalRankData } from "../../types/Season";
+import {
+  constants,
+  MythicRatingUpdate,
+  SeasonalRankData,
+} from "mtgatool-shared";
+
+const { IPC_RENDERER } = constants;
 
 interface Entry extends LogEntry {
   json: () => MythicRatingUpdate;
@@ -38,6 +42,7 @@ export default function MythicRatingUpdated(entry: Entry): void {
     wasLossProtected: false,
     owner,
     playerId: playerData.playerId,
+    arenaId: playerData.playerId,
     player: playerData.playerName,
     rankUpdateType: type,
     seasonOrdinal: rank[type].seasonOrdinal,

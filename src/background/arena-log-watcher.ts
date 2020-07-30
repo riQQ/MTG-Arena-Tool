@@ -15,17 +15,19 @@ import {
   updateLoading,
   getDateFormat,
 } from "./backgroundUtil";
-import {
+import updateDeck from "./updateDeck";
+import globals from "./globals";
+import { reduxAction } from "../shared/redux/sharedRedux";
+import debugLog from "../shared/debugLog";
+import { constants } from "mtgatool-shared";
+
+const {
   ARENA_MODE_MATCH,
   ARENA_MODE_DRAFT,
   ARENA_MODE_IDLE,
   LOGIN_OK,
   IPC_RENDERER,
-} from "../shared/constants";
-import updateDeck from "./updateDeck";
-import globals from "./globals";
-import { reduxAction } from "../shared/redux/sharedRedux";
-import debugLog from "../shared/debugLog";
+} = constants;
 
 const debugLogSpeed = 0.001;
 let logReadEnd = null;
@@ -130,7 +132,7 @@ function fsWatch(
 
   async function start(): Promise<void> {
     lastSize = await attemptSize();
-    handle = setInterval(checkFile, interval);
+    handle = global.setInterval(checkFile, interval);
   }
 
   async function checkFile(): Promise<void> {
@@ -256,17 +258,6 @@ function entrySwitch(entry: LogEntry): void {
         Labels.InEventGetCombinedRankInfo(entry);
       }
       break;
-    // Aparently deprecated after Ikoria
-    // Will conflict with out new way of updating seasonal data if enabled again
-    /*
-    case "Rank.Updated":
-      Labels.RankUpdated(entry);
-      break;
-
-    case "MythicRating.Updated":
-      Labels.MythicRatingUpdated(entry);
-      break;
-    */
 
     case "Draft.Notify":
       Labels.InDraftNotify(entry);
@@ -452,7 +443,6 @@ function finishLoading(): void {
       ipcSend("set_arena_state", ARENA_MODE_IDLE);
     }
 
-    // replaces ipc "initialize"
     reduxAction(
       globals.store.dispatch,
       { type: "SET_LOADING", arg: false },

@@ -5,7 +5,7 @@ import async from "async";
 
 import makeId from "../shared/utils/makeId";
 import isEpochTimestamp from "../shared/utils/isEpochTimestamp";
-import db from "../shared/database";
+import database, { updateCache } from "../shared/database-wrapper";
 import { playerDb } from "../shared/db/LocalDatabase";
 
 import { ipcSend } from "./backgroundUtil";
@@ -30,17 +30,18 @@ import globalStore, {
   getMatch,
   getSeasonal,
 } from "../shared/store";
-import {
+import { reduxAction } from "../shared/redux/sharedRedux";
+import debugLog from "../shared/debugLog";
+import { constants, InternalMatch } from "mtgatool-shared";
+
+const {
   SYNC_CHECK,
   SYNC_OK,
   SYNC_IDLE,
   SYNC_FETCH,
   IPC_RENDERER,
   IPC_ALL,
-} from "../shared/constants";
-import { reduxAction } from "../shared/redux/sharedRedux";
-import { InternalMatch } from "../types/match";
-import debugLog from "../shared/debugLog";
+} = constants;
 
 export function initHttpQueue(): async.AsyncQueue<HttpTask> {
   globals.httpQueue = async.queue(asyncWorker);
@@ -307,15 +308,14 @@ function handleRePushLostMatchData(): void {
     matches: Object.keys(globalStore.matches).filter((id) => {
       const match = globalStore.matches[id];
       return (
-        !match.lastPushedDate &&
-        shufflerDataCollectionStart < match.date &&
-        match.date < dataLostEnd
-      ) || (
-        !match.lastPushedByVersion &&
-        match.bestOf === 3 &&
-        bo3SkippedStartVersion <= match.toolVersion &&
-        match.toolVersion < bo3SkipFixedVersion &&
-        (match.player.win === 2 || match.opponent.win === 2)
+        (!match.lastPushedDate &&
+          shufflerDataCollectionStart < match.date &&
+          match.date < dataLostEnd) ||
+        (!match.lastPushedByVersion &&
+          match.bestOf === 3 &&
+          bo3SkippedStartVersion <= match.toolVersion &&
+          match.toolVersion < bo3SkipFixedVersion &&
+          (match.player.win === 2 || match.opponent.win === 2))
       );
     }),
     drafts: [],
@@ -698,8 +698,8 @@ function handleGetDatabaseResponse(
     //resetLogLoop(100);
     // delete parsedResult.ok;
     ipcLog("Metadata: Ok");
-    db.handleSetDb(null, results);
-    db.updateCache(results);
+    database.setDatabase(results);
+    updateCache(results);
     ipcSend("set_db", results);
   }
   ipcPop({
@@ -733,9 +733,10 @@ export function httpGetDatabaseVersion(lang: string): void {
     makeSimpleResponseHandler((parsedResult: any) => {
       const lang = globals.store.getState().appsettings.metadataLang;
       if (
-        db.metadata &&
-        db.metadata.language &&
-        parsedResult.lang.toLowerCase() !== db.metadata.language.toLowerCase()
+        database.metadata &&
+        database.metadata.language &&
+        parsedResult.lang.toLowerCase() !==
+          database.metadata.language.toLowerCase()
       ) {
         // compare language
         ipcSend("popup", {
@@ -743,25 +744,25 @@ export function httpGetDatabaseVersion(lang: string): void {
           time: 5000,
         });
         ipcLog(
-          `Downloading database (had lang ${db.metadata.language}, needed ${parsedResult.lang})`
+          `Downloading database (had lang ${database.metadata.language}, needed ${parsedResult.lang})`
         );
         httpGetDatabase(lang);
-      } else if (parsedResult.latest > db.version) {
+      } else if (parsedResult.latest > database.version) {
         // Compare parsedResult.version with stored version
         ipcSend("popup", {
           text: `Downloading latest Database (v${parsedResult.latest})`,
           time: 5000,
         });
         ipcLog(
-          `Downloading latest database (had v${db.version}, found v${parsedResult.latest})`
+          `Downloading latest database (had v${database.version}, found v${parsedResult.latest})`
         );
         httpGetDatabase(lang);
       } else {
         ipcSend("popup", {
-          text: `Database up to date (v${db.version})`,
+          text: `Database up to date (v${database.version})`,
           time: 5000,
         });
-        ipcLog(`Database up to date (${db.version}), skipping download.`);
+        ipcLog(`Database up to date (${database.version}), skipping download.`);
       }
     })
   );

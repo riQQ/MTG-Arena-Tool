@@ -1,12 +1,12 @@
 import { playerDb } from "../../shared/db/LocalDatabase";
 import globals from "../globals";
 import LogEntry from "../../types/logDecoder";
-import { RankUpdate } from "../../types/rank";
-import { SeasonalRankData } from "../../types/Season";
-import { IPC_RENDERER } from "../../shared/constants";
 import { reduxAction } from "../../shared/redux/sharedRedux";
 import globalStore, { seasonalList } from "../../shared/store";
 import { httpSetSeasonal } from "../httpApi";
+import { constants, SeasonalRankData, RankUpdate } from "mtgatool-shared";
+
+const { IPC_RENDERER } = constants;
 
 interface Entry extends LogEntry {
   json: () => RankUpdate;
@@ -25,6 +25,7 @@ export default function RankUpdated(entry: Entry): void {
     ...json,
     owner,
     player: playerData.playerName,
+    arenaId: playerData.playerName,
     id: entry.hash,
     //date: globals.logTime.toISOString(),
     timestamp: globals.logTime.getTime(),
