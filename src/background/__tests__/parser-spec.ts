@@ -56,6 +56,15 @@ describe("parser", () => {
 
   it("matches redux store", () => {
     globals.store.dispatch(actions["SET_CARDS_TIME"](1596131827815));
-    expect(globals.store.getState()).toMatchSnapshot();
+    expect(globals.store.getState().deckChanges).toMatchSnapshot();
+    expect(globals.store.getState().decks).toMatchSnapshot();
+    expect(globals.store.getState().drafts).toMatchSnapshot();
+    expect(globals.store.getState().economy).toMatchSnapshot();
+    expect(globals.store.getState().events).toMatchSnapshot();
+    expect(globals.store.getState().matches).toMatchSnapshot();
+    expect(globals.store.getState().playerdata).toMatchSnapshot();
+    expect(globals.store.getState().renderer).toMatchSnapshot();
+    expect(globals.store.getState().seasonal).toMatchSnapshot();
+    expect(globals.store.getState().settings).toMatchSnapshot();
   });
 });
