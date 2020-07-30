@@ -17,20 +17,6 @@ import {
   DetailsKeyType,
 } from "../types/greInterpreter";
 
-import {
-  KeyValuePairInfo,
-  GREToClientMessage,
-  AnnotationInfo,
-  GameObjectInfo,
-  TurnInfo,
-  ZoneInfo,
-  GREMessageType,
-  AnnotationType,
-  PlayerInfo,
-  GameStateMessage,
-  ZoneType,
-} from "../assets/proto/GreTypes";
-
 import getMatchGameStats from "./getMatchGameStats";
 
 import globalStore from "../shared/store";
@@ -59,6 +45,19 @@ import {
 } from "../shared/store/currentMatchStore";
 import debugLog from "../shared/debugLog";
 import { constants, objectClone, useSet, countValues } from "mtgatool-shared";
+import {
+  ZoneInfo,
+  PlayerInfo,
+  ZoneType,
+  AnnotationInfo,
+  GameObjectInfo,
+  AnnotationType,
+  KeyValuePairInfo,
+  GameStateMessage,
+  TurnInfo,
+  GREToClientMessage,
+  GREMessageType,
+} from "mtgatool-shared/dist/types/greTypes";
 
 const { IPC_OVERLAY } = constants;
 

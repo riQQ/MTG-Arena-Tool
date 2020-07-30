@@ -4,7 +4,6 @@ import { playerDb } from "../shared/db/LocalDatabase";
 import { ipcSend, normalizeISOString } from "./backgroundUtil";
 import { reduxAction } from "../shared/redux/sharedRedux";
 import globalStore, { getMatch } from "../shared/store";
-import { ResultSpec } from "../assets/proto/GreTypes";
 import getOpponentDeck from "./getOpponentDeck";
 import { httpSetMatch } from "./httpApi";
 import debugLog from "../shared/debugLog";
@@ -15,6 +14,7 @@ import {
   JumpstartThemes,
   InternalMatch,
 } from "mtgatool-shared";
+import { ResultSpec } from "mtgatool-shared/dist/types/greTypes";
 
 const { IPC_RENDERER, IPC_OVERLAY, DEFAULT_TILE } = constants;
 
