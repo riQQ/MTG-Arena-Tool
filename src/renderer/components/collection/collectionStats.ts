@@ -157,8 +157,7 @@ export function getCollectionStats(cardIds: number[]): CollectionStats {
   cardIds.forEach((cardId) => {
     const card = db.card(cardId);
     if (!card) return;
-    if (!card.collectible || card.rarity === "land" || card.rarity === "token")
-      return;
+    if (card.rarity === "land" || card.rarity === "token") return;
     if (!(card.set in stats)) return;
 
     let cardSet = card.set;
