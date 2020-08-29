@@ -14,7 +14,7 @@ function getFrontUrl(hoverGrpId: number, quality: string): string {
   const cardObj = db.card(hoverGrpId);
   let newImg;
   try {
-    newImg = `https://img.scryfall.com/cards${cardObj?.images[quality]}`;
+    newImg = cardObj?.images[quality];
   } catch (e) {
     newImg = notFound;
   }
@@ -32,7 +32,7 @@ function getBackUrl(hoverGrpId: number, quality: string): string {
   ) {
     cardObj = db.card(cardObj.dfcId);
     try {
-      newImg = `https://img.scryfall.com/cards${cardObj?.images[quality]}`;
+      newImg = cardObj?.images[quality];
     } catch (e) {
       newImg = notFound;
     }
