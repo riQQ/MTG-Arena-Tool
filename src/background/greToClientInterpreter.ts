@@ -521,7 +521,7 @@ const AnnotationType_TargetSpec = function (ann: Annotations): void {
   if (isObjectACard(affector)) {
     text = actionLogGenerateLink(affector.grpId);
   }
-  actionLog(seat, globals.logTime, `${text} targetted ${target}`);
+  actionLog(seat, globals.logTime, `${text} targeted ${target}`);
 };
 
 const AnnotationType_Scry = function (ann: Annotations): void {
