@@ -24,7 +24,7 @@ export default function SetsFilter(props: SetsFilterProps): JSX.Element {
     "Jumpstart",
     "Historic Anthology 1",
     "Historic Anthology 2",
-    "Historic Anthology 3",
+    "Historic Anthology 3"
   );
   const filterSets: (CardSet & { name: string })[] = filterable.map((set) => {
     return { name: set, ...db.sets[set] };
@@ -62,7 +62,7 @@ export default function SetsFilter(props: SetsFilterProps): JSX.Element {
           filtered.indexOf(set.code.toLowerCase()) == -1
             ? index.setFilterOn
             : ""
-        }`;
+          }`;
         return (
           <div
             key={set.code.toLowerCase()}

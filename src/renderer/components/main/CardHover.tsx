@@ -14,7 +14,7 @@ function getFrontUrl(hoverGrpId: number, quality: string): string {
   const cardObj = db.card(hoverGrpId);
   let newImg;
   try {
-    newImg = cardObj?.images[quality];
+    newImg = cardObj?.images[quality] || notFound;
   } catch (e) {
     newImg = notFound;
   }
