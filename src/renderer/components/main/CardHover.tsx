@@ -8,7 +8,12 @@ import notFound from "../../../assets/images/notfound.png";
 import NoCard from "../../../assets/images/nocard.png";
 import sharedCss from "../../../shared/shared.css";
 import { constants } from "mtgatool-shared";
-const { FACE_DFC_FRONT, FACE_DFC_BACK } = constants;
+const {
+  FACE_DFC_FRONT,
+  FACE_DFC_BACK,
+  FACE_MODAL_BACK,
+  FACE_MODAL_FRONT,
+} = constants;
 
 function getFrontUrl(hoverGrpId: number, quality: string): string {
   const cardObj = db.card(hoverGrpId);
@@ -26,7 +31,10 @@ function getBackUrl(hoverGrpId: number, quality: string): string {
   let newImg;
   if (
     cardObj &&
-    (cardObj.dfc == FACE_DFC_BACK || cardObj.dfc == FACE_DFC_FRONT) &&
+    (cardObj.dfc == FACE_DFC_BACK ||
+      cardObj.dfc == FACE_DFC_FRONT ||
+      cardObj.dfc == FACE_MODAL_BACK ||
+      cardObj.dfc == FACE_MODAL_FRONT) &&
     cardObj.dfcId &&
     cardObj.dfcId !== true
   ) {

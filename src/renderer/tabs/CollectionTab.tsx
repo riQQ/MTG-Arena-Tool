@@ -25,6 +25,12 @@ import { useSelector } from "react-redux";
 import appCss from "../app/app.css";
 import { PlayerData } from "../../shared/redux/slices/playerDataSlice";
 import { getRarityFilterVal } from "../components/collection/filters";
+import {
+  FACE_ADVENTURE,
+  FACE_DFC_BACK,
+  FACE_MODAL_BACK,
+  FACE_SPLIT,
+} from "mtgatool-shared/dist/shared/constants";
 
 const { DRAFT_RANKS, IPC_ALL, IPC_RENDERER, DRAFT_RANKS_LOLA } = constants;
 
@@ -116,7 +122,13 @@ function getCollectionData(
       });
     });
   return db.cardList
-    .filter((card) => card.dfc !== 1 && card.dfc !== 7 && card.dfc !== 5)
+    .filter(
+      (card) =>
+        card.dfc !== FACE_DFC_BACK &&
+        card.dfc !== FACE_ADVENTURE &&
+        card.dfc !== FACE_SPLIT &&
+        card.dfc !== FACE_MODAL_BACK
+    )
     .map(
       (card): CardsData => {
         const dfc = db.card(card.dfcId !== true ? card.dfcId || 0 : 0);
