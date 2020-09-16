@@ -83,7 +83,10 @@ export default function CardHover(): JSX.Element {
     if (
       !(
         cardObj &&
-        (cardObj.dfc == FACE_DFC_BACK || cardObj.dfc == FACE_DFC_FRONT) &&
+        (cardObj.dfc == FACE_DFC_BACK ||
+          cardObj.dfc == FACE_DFC_FRONT ||
+          cardObj.dfc == FACE_MODAL_BACK ||
+          cardObj.dfc == FACE_MODAL_FRONT) &&
         cardObj.dfcId
       )
     ) {
