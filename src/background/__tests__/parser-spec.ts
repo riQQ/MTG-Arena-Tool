@@ -44,7 +44,7 @@ describe("parser", () => {
   it("parses in a reasonable time", () => {
     const time = endTime - startTime;
     // Ran on my PC multiple times with ranges of 170 - 300ms
-    expect(time).toBeLessThan(500);
+    expect(time).toBeLessThan(800);
   });
 
   it("parses a match consistently", () => {
