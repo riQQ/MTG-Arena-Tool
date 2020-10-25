@@ -388,6 +388,12 @@ function entrySwitch(entry: LogEntry): void {
       }
       break;
 
+    case "Event.GetActiveEventsV3":
+      if (entry.arrow == "<==") {
+        Labels.InEventGetActiveEventsV3(entry);
+      }
+      break;
+
     case "MatchGameRoomStateChangedEvent":
       Labels.MatchGameRoomStateChangedEvent(entry);
       break;
