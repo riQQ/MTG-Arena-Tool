@@ -62,7 +62,7 @@ export default function SetsFilter(props: SetsFilterProps): JSX.Element {
           filtered.indexOf(set.code.toLowerCase()) == -1
             ? index.setFilterOn
             : ""
-          }`;
+        }`;
         return (
           <div
             key={set.code.toLowerCase()}

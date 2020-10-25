@@ -12,7 +12,7 @@ import {
   DbCardData,
   WinLossGate,
 } from "mtgatool-shared";
-import { ipcSend } from './ipcSend';
+import { ipcSend } from "./ipcSend";
 
 const { CARD_RARITIES } = constants;
 

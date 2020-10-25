@@ -10,7 +10,7 @@ import { isHidingArchived } from "../components/tables/filters";
 import { TagCounts } from "../components/tables/types";
 import { useAggregatorData } from "../components/tables/useAggregatorData";
 import { toggleArchived } from "../rendererUtil";
-import { ipcSend } from '../ipcSend';
+import { ipcSend } from "../ipcSend";
 import { reduxAction } from "../../shared/redux/sharedRedux";
 import { matchesList, getMatch } from "../../shared/store";
 import store, { AppState } from "../../shared/redux/stores/rendererStore";
