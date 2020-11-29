@@ -40,6 +40,7 @@ import {
   getEventPrettyName,
   MatchGameStats,
   InternalMatch,
+  compareCards,
 } from "mtgatool-shared";
 
 const { IPC_NONE } = constants;
@@ -153,6 +154,8 @@ function MatchView(props: MatchViewProps): JSX.Element {
   };
 
   const clickArena = (): void => {
+    deck.sortMainboard(compareCards);
+    deck.sortSideboard(compareCards);
     ipcSend("set_clipboard", deck.getExportArena());
     ipcSend("popup", {
       text: `Decklist copied to clipboard.`,

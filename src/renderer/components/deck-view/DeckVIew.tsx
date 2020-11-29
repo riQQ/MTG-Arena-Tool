@@ -10,6 +10,7 @@ import {
   getDeckLandsAmmount,
   InternalDeck,
   CardObject,
+  compareCards,
 } from "mtgatool-shared";
 import Button from "../misc/Button";
 import { ipcSend } from "../../ipcSend";
@@ -153,6 +154,8 @@ function DeckView(props: DeckViewProps): JSX.Element {
   }, [deck.id]);
 
   const arenaExport = (): void => {
+    deck.sortMainboard(compareCards);
+    deck.sortSideboard(compareCards);
     const list = deck.getExportArena();
     ipcSend("set_clipboard", list);
     const newTime = timestamp() + 2000;
@@ -171,6 +174,8 @@ function DeckView(props: DeckViewProps): JSX.Element {
   };
 
   const txtExport = (): void => {
+    deck.sortMainboard(compareCards);
+    deck.sortSideboard(compareCards);
     const list = deck.getExportArena();
     ipcSend("export_txt", { str: list, name: deck.getName() });
   };
