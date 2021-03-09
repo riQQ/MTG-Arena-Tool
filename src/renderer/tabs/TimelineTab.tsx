@@ -212,7 +212,7 @@ function TimeLinePart(props: TimelinePartProps): JSX.Element {
         <polygon points={rectPoints} strokeWidth="0" />
         <polyline points={linePoints} strokeWidth="1" />
       </svg>
-      {(() => {
+      {((): any => {
         if (index === 0 || props.oldClass !== props.newClass) {
           const matches = data
             .filter((d) => d.oldClass === props.newClass)
