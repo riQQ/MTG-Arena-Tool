@@ -575,9 +575,9 @@ async function logLoop(): Promise<void> {
     IPC_RENDERER
   );
 
+  httpApi.httpGetActiveEvents();
   // Begin auto login too, if enabled
   if (autoLogin) {
-    httpApi.httpGetActiveEvents();
     debugLog("automatic login process started..");
     ipcSend("toggle_login", false);
     if (rememberMe && username && token) {
