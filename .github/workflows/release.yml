@@ -29,6 +29,11 @@ jobs:
         GH_TOKEN: ${{ github.token }}
     - name: "Print dist dir"
       run: "ls dist/"
+    - name: Upload dist as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: release-${{ matrix.os }}
+        path: dist/*
 
   releaseJob:
     runs-on: ubuntu-latest
