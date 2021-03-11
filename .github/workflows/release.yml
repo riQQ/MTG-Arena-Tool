@@ -33,7 +33,8 @@ jobs:
   releaseJob:
     runs-on: ubuntu-latest
     name: Publish release
-    
+    needs: build-job
+
     steps:
     - run: |
         pwd
