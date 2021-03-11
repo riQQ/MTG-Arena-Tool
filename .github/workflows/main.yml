@@ -25,7 +25,8 @@ jobs:
         uses: "Manuel-777/gh-action-bump-version@master"
         with:
           tag-prefix: ''
+        # use PAT to be able to trigger another workflow
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
       - name: "cat package.json"
         run: cat ./package.json
