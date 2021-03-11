@@ -25,10 +25,8 @@ jobs:
       run: "npm test"
     - name: "Build release (npm)"
       run: "npm run dist"
-    - uses: actions/upload-artifact@v2
-      with:
-        name: release-${{ matrix.os }}
-        path: dist/*
+      env:
+        GH_TOKEN: ${{ github.token }}
 
   releaseJob:
     runs-on: ubuntu-latest
