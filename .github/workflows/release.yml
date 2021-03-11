@@ -7,7 +7,7 @@ on:
 jobs:
   build-job:
     runs-on: ${{ matrix.os }}
-    name: "Build and test ${{ matrix.os }}"
+    name: "Build, test and release (${{ matrix.os }})"
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -23,7 +23,7 @@ jobs:
       run: "npm install"
     - name: "Test"
       run: "npm test"
-    - name: "Build release (npm)"
+    - name: "Build release, create GitHub release and upload assets (electron-builder)"
       run: "npm run dist"
       env:
         GH_TOKEN: ${{ github.token }}
@@ -36,23 +36,3 @@ jobs:
         path: |
           dist/*
           !dist/*-unpacked/**
-
-  releaseJob:
-    runs-on: ubuntu-latest
-    name: Publish release
-    needs: build-job
-
-    steps:
-    - run: |
-        pwd
-        ls -a
-    - name: Download all artifacts
-      uses: actions/download-artifact@v2
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: '**/*'
-        prerelease: true
-        draft: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
