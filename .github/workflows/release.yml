@@ -1,0 +1,50 @@
+name: "Release"
+
+on:
+  push:
+    tags: 'v*'
+
+jobs:
+  build-job:
+    runs-on: ${{ matrix.os }}
+    name: "Build and test ${{ matrix.os }}"
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: "Setup node"
+      uses: actions/setup-node@v1
+      with:
+        node-version: '14'
+    - name: "Checkout source code"
+      uses: "actions/checkout@v2"
+    - name: "Install modules"
+      run: "npm install"
+    - name: "Test"
+      run: "npm test"
+    - name: "Build release (npm)"
+      run: "npm run dist"
+    - uses: actions/upload-artifact@v2
+      with:
+        name: release-${{ matrix.os }}
+        path: dist/*
+
+  releaseJob:
+    runs-on: ubuntu-latest
+    name: Publish release
+    
+    steps:
+    - run: |
+        pwd
+        ls -a
+    - name: Download all artifacts
+      uses: actions/download-artifact@v2
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: '**/*'
+        prerelease: true
+        draft: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
