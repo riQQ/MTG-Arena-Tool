@@ -33,7 +33,9 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: release-${{ matrix.os }}
-        path: dist/*
+        path: |
+          dist/*
+          !dist/*-unpacked/**
 
   releaseJob:
     runs-on: ubuntu-latest
