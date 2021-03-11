@@ -35,4 +35,4 @@ jobs:
         name: release-${{ matrix.os }}
         path: |
           dist/*
-          !dist/*-unpacked/**
+          !dist/*/**
