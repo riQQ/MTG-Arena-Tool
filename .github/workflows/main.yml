@@ -27,6 +27,6 @@ jobs:
           tag-prefix: ''
         # use PAT to be able to trigger another workflow
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       - name: "cat package.json"
         run: cat ./package.json
