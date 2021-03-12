@@ -7,7 +7,7 @@ on:
 jobs:
   build-job:
     runs-on: ${{ matrix.os }}
-    name: "Build, test and release (${{ matrix.os }})"
+    name: "Release (${{ matrix.os }})"
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
