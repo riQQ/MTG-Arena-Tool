@@ -29,7 +29,7 @@
   "homepage": "https://mtgatool.com/",
   "repository": "https://github.com/riQQ/MTG-Arena-Tool",
   "bugs": "https://github.com/riQQ/MTG-Arena-Tool/issues",
-  "version": "5.5.12",
+  "version": "111.1",
   "scripts": {
     "start:renderer": "webpack --config webpack.dev.renderer.js && npm run run-electron",
     "start:background": "webpack --config webpack.dev.background.js && npm run run-electron",
